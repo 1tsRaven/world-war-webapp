@@ -16,10 +16,10 @@
     height: 100vh;
     margin: 0;
     text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
   }
-  .box {
-    padding: 30px;
-  }
+  .box { max-width: 400px; }
   .spinner {
     border: 4px solid #333;
     border-top: 4px solid #4ade80;
@@ -33,12 +33,13 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+  #status { line-height: 1.8; font-size: 15px; }
 </style>
 </head>
 <body>
 <div class="box">
   <h2>⏳ در حال تأیید هویت...</h2>
-  <div class="spinner"></div>
+  <div class="spinner" id="spinner"></div>
   <p id="status">لطفاً صبر کنید...</p>
 </div>
 
@@ -48,8 +49,8 @@
   tg.expand();
 
   const statusEl = document.getElementById('status');
+  const spinnerEl = document.getElementById('spinner');
 
-  // آدرس بک‌اند پایتون‌انیور خودت رو اینجا بذار
   const BACKEND_URL = 'https://else1234.pythonanywhere.com/verify';
 
   fetch(BACKEND_URL, {
@@ -57,22 +58,32 @@
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       initData: tg.initData,
-      user_id: tg.initDataUnsafe?.user?.id || null
+      user_id: tg.initDataUnsafe?.user?.id || null,
+      device: navigator.userAgent
     })
   })
   .then(res => res.json())
   .then(data => {
-    if (data.ok) {
-      statusEl.textContent = '✅ تأیید شد!';
-      setTimeout(() => tg.close(), 1000);
+    spinnerEl.style.display = 'none';
+    if (data.status === 'APPROVED') {
+      statusEl.innerHTML = '✅ تأیید شد!<br>در حال بستن...';
+      setTimeout(() => tg.close(), 1500);
+    } else if (data.status === 'REJECTED') {
+      if (data.reason === 'non_iran_ip') {
+        statusEl.innerHTML = '⚠️ فقط کاربران داخل ایران می‌توانند وارد شوند.<br><br>لطفاً VPN خود را خاموش کنید و دوباره تلاش کنید.';
+      } else {
+        statusEl.innerHTML = '❌ ' + (data.error || 'دسترسی رد شد.');
+      }
+      setTimeout(() => tg.close(), 4000);
     } else {
-      statusEl.textContent = '❌ ' + (data.error || 'خطا');
-      setTimeout(() => tg.close(), 2000);
+      statusEl.innerHTML = '❌ ' + (data.error || 'خطای نامشخص');
+      setTimeout(() => tg.close(), 3000);
     }
   })
   .catch(err => {
-    statusEl.textContent = '❌ خطای شبکه';
-    setTimeout(() => tg.close(), 2000);
+    spinnerEl.style.display = 'none';
+    statusEl.innerHTML = '❌ خطای شبکه<br>دوباره تلاش کنید.';
+    setTimeout(() => tg.close(), 3000);
   });
 </script>
 </body>
