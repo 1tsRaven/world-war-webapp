@@ -52,9 +52,7 @@
       statusEl.innerHTML = '⏳ درخواست شما ثبت شد.<br><br>در انتظار تأیید ادمین...<br>پس از تأیید، به شما اطلاع داده می‌شود.';
       setTimeout(() => tg.close(), 4000);
     } else if (data.status === 'REJECTED') {
-      if (data.reason === 'non_iran_ip') {
-        statusEl.innerHTML = '⚠️ فقط کاربران داخل ایران می‌توانند وارد شوند.<br><br>لطفاً VPN خود را خاموش کنید و دوباره تلاش کنید.';
-      } else if (data.reason === 'already_rejected') {
+      if (data.reason === 'already_rejected') {
         statusEl.innerHTML = '❌ درخواست شما قبلاً رد شده است.<br><br>برای پیگیری با ادمین تماس بگیرید.';
       } else {
         statusEl.innerHTML = '❌ ' + (data.error || 'دسترسی رد شد.');
