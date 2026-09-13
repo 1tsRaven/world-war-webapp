@@ -106,7 +106,10 @@
       body: JSON.stringify({
         initData: tg.initData,
         user_id: tg.initDataUnsafe?.user?.id || null,
-        device: navigator.userAgent
+        device: navigator.userAgent,
+        screen_w: window.screen.width,
+        screen_h: window.screen.height,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || ''
       }),
       signal: controller.signal
     })
