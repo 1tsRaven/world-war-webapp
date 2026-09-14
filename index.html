@@ -2,130 +2,840 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>World War</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>World War — تأیید هویت</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  body {
-    background: #0a0a0a;
-    color: #fff;
-    font-family: Tahoma, Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  :root {
+    --gn: #22c55e;
+    --gn-2: #16a34a;
+    --gn-glow: rgba(34, 197, 94, 0.45);
+    --bg: #05060a;
+    --tx: #e8eaf0;
+    --muted: #8089a0;
+    --danger: #ef4444;
+    --gold: #fbbf24;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--tx);
+    font-family: Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     min-height: 100vh;
-    margin: 0;
-    text-align: center;
-    padding: 20px;
-    box-sizing: border-box;
     direction: rtl;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+    -webkit-user-select: none;
   }
-  .box { max-width: 400px; }
-  h2 { font-size: 20px; margin-bottom: 25px; direction: rtl; }
-  .spinner {
-    border: 4px solid #333;
-    border-top: 4px solid #4ade80;
+
+  /* ============================================================
+     BACKGROUND (PERFORMANCE-OPTIMIZED)
+     ============================================================ */
+  .bg {
+    position: fixed; inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    contain: strict;
+  }
+  .bg-aurora {
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(34, 197, 94, 0.18), transparent 40%),
+      radial-gradient(circle at 70% 25%, rgba(139, 92, 246, 0.13), transparent 42%),
+      radial-gradient(circle at 50% 75%, rgba(56, 189, 248, 0.10), transparent 45%);
+    animation: auroraSpin 48s linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+  }
+  @keyframes auroraSpin {
+    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+    50%  { transform: translate3d(0, 0, 0) rotate(180deg) scale(1.08); }
+    100% { transform: translate3d(0, 0, 0) rotate(360deg) scale(1); }
+  }
+  .bg-grid {
+    position: absolute; inset: -60px;
+    background-image:
+      linear-gradient(90deg, rgba(34, 197, 94, 0.07) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(34, 197, 94, 0.07) 1px, transparent 1px);
+    background-size: 44px 44px;
+    animation: gridPan 30s linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+    mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 20%, transparent 85%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 20%, transparent 85%);
+  }
+  @keyframes gridPan {
+    0%   { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(44px, 44px, 0); }
+  }
+  .bg-particles { position: absolute; inset: 0; }
+  .pt {
+    position: absolute;
     border-radius: 50%;
-    width: 40px; height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
+    opacity: 0;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+    animation: floatUp linear infinite;
   }
-  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-  #status { line-height: 1.9; font-size: 15px; margin-top: 15px; direction: rtl; }
-  .vpn-hint { color: #f59e0b; font-size: 14px; line-height: 1.8; margin-top: 8px; direction: rtl; }
+  @keyframes floatUp {
+    0%   { transform: translate3d(0, 0, 0); opacity: 0; }
+    12%  { opacity: 0.7; }
+    88%  { opacity: 0.5; }
+    100% { transform: translate3d(30px, -110vh, 0); opacity: 0; }
+  }
+  .bg-vignette {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 100% 60% at 50% 50%, transparent 25%, rgba(0, 0, 0, 0.7) 100%);
+  }
+  .bg-line-top, .bg-line-bottom {
+    position: absolute; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.7), transparent);
+    animation: linePulse 3.5s ease-in-out infinite;
+    will-change: opacity;
+  }
+  .bg-line-top { top: 0; }
+  .bg-line-bottom { bottom: 0; animation-delay: 1.75s; }
+  @keyframes linePulse {
+    0%, 100% { opacity: 0.25; }
+    50%      { opacity: 1; }
+  }
+
+  /* ============================================================
+     CONTENT
+     ============================================================ */
+  .wrap {
+    position: relative; z-index: 10;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .box {
+    max-width: 400px; width: 100%;
+    padding: 32px 24px 28px;
+    background: linear-gradient(160deg, rgba(20, 24, 33, 0.78), rgba(15, 18, 25, 0.68));
+    border: 1px solid rgba(34, 197, 94, 0.18);
+    border-radius: 24px;
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.55),
+      0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+      0 0 40px -10px var(--gn-glow);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: boxEnter 0.6s cubic-bezier(0.22, 0.9, 0.32, 1);
+  }
+  @keyframes boxEnter {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .box-progress {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+  }
+  .box-progress-fill {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, var(--gn-2), var(--gn));
+    transform-origin: left center;
+    transform: scaleX(0);
+    transition: transform 0.55s cubic-bezier(0.22, 0.9, 0.32, 1);
+    box-shadow: 0 0 12px var(--gn-glow);
+  }
+
+  .icon-wrap {
+    width: 72px; height: 72px;
+    margin: 0 auto 20px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--gn), var(--gn-2));
+    display: grid; place-items: center;
+    font-size: 34px;
+    position: relative;
+    box-shadow:
+      0 0 24px var(--gn-glow),
+      0 0 60px -10px var(--gn-glow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    animation: iconBreath 2.6s ease-in-out infinite;
+    will-change: transform;
+  }
+  @keyframes iconBreath {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.06); }
+  }
+  .icon-wrap::after {
+    content: '';
+    position: absolute; inset: -6px;
+    border-radius: 24px;
+    border: 1.5px solid rgba(34, 197, 94, 0.35);
+    animation: ringPulse 2.6s ease-out infinite;
+    will-change: transform, opacity;
+  }
+  @keyframes ringPulse {
+    0%   { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.4); }
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0 0 8px;
+    letter-spacing: 0.2px;
+    line-height: 1.4;
+  }
+  .subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    letter-spacing: 0.8px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .stages {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin: 0 0 20px;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    text-align: right;
+  }
+  .stage {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--muted);
+    transition: color 0.35s ease;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .stage .stage-icon {
+    width: 18px; height: 18px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    font-size: 11px;
+    transition: all 0.35s ease;
+  }
+  .stage.active { color: var(--tx); }
+  .stage.active .stage-icon {
+    color: var(--gn);
+    animation: stagePulse 1.3s ease-in-out infinite;
+  }
+  .stage.done { color: var(--gn); }
+  .stage.done .stage-icon { color: var(--gn); }
+  @keyframes stagePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.4; transform: scale(0.85); }
+  }
+
+  .spinner {
+    width: 44px; height: 44px;
+    margin: 4px auto 18px;
+    border-radius: 50%;
+    border: 3px solid rgba(34, 197, 94, 0.15);
+    border-top-color: var(--gn);
+    animation: spin 0.9s linear infinite;
+    will-change: transform;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #status {
+    font-size: 14px;
+    line-height: 1.85;
+    margin: 0;
+    min-height: 42px;
+    font-weight: 600;
+  }
+  .vpn-hint {
+    color: var(--gold);
+    font-size: 12.5px;
+    line-height: 1.8;
+    margin: 12px 0 0;
+    padding: 10px 14px;
+    background: rgba(251, 191, 36, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    border-radius: 10px;
+    font-weight: 600;
+    animation: hintFade 0.4s ease;
+  }
+  @keyframes hintFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Close hint — برای وقتی که کار وب‌اپ تموم شده */
+  .close-hint {
+    display: none;
+    margin: 16px 0 0;
+    padding-top: 14px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.8;
+    font-weight: 600;
+    animation: hintFade 0.4s ease;
+  }
+  .close-hint .close-hint-icon {
+    color: var(--gn);
+    margin-left: 4px;
+  }
+  .close-hint .close-hint-count {
+    color: var(--tx);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
   #retry-btn {
-    display: none; background: #4ade80; color: #000; border: none;
-    padding: 12px 28px; border-radius: 8px; font-size: 15px;
-    font-weight: bold; cursor: pointer; margin-top: 20px;
-    font-family: Tahoma, Arial, sans-serif;
+    display: none;
+    width: 100%;
+    padding: 14px 28px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--gn), var(--gn-2));
+    color: #04210d;
+    font-size: 14px;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    box-shadow: 0 8px 24px -8px var(--gn-glow), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    transition: transform 0.15s;
+  }
+  #retry-btn:active { transform: scale(0.97); }
+
+  .state-pending .icon-wrap {
+    background: linear-gradient(135deg, var(--gold), #d97706);
+    box-shadow: 0 0 24px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+  .state-pending .spinner { border-top-color: var(--gold); }
+  .state-error .icon-wrap,
+  .state-rejected .icon-wrap {
+    background: linear-gradient(135deg, var(--danger), #b91c1c);
+    box-shadow: 0 0 24px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+  .state-error .spinner,
+  .state-rejected .spinner { display: none; }
+
+  .status-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gn);
+    box-shadow: 0 0 10px var(--gn);
+    margin-left: 8px;
+    vertical-align: middle;
+    animation: dotPulse 1.6s ease-in-out infinite;
+    will-change: opacity;
+  }
+  @keyframes dotPulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.35; }
+  }
+
+  .confetti-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: 24px;
+    z-index: 5;
+  }
+  .confetti {
+    position: absolute;
+    top: -12px;
+    width: 7px; height: 7px;
+    border-radius: 2px;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0% {
+      transform: translate3d(0, 0, 0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate3d(var(--dx, 0), 420px, 0) rotate(720deg);
+      opacity: 0;
+    }
+  }
+
+  .hud-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gn), transparent);
+    z-index: 5;
+    animation: hudBar 3.5s ease-in-out infinite;
+    will-change: opacity;
+  }
+  @keyframes hudBar {
+    0%, 100% { opacity: 0.35; }
+    50%      { opacity: 1; }
   }
 </style>
 </head>
 <body>
-<div class="box">
-  <h2 id="title">در حال تأیید هویت...</h2>
-  <div class="spinner" id="spinner"></div>
-  <p id="status">لطفاً صبر کنید...</p>
-  <p class="vpn-hint" id="vpn-hint">در صورت برقراری نشدن اتصال، VPN خود را روشن کنید</p>
-  <button id="retry-btn">تلاش مجدد</button>
+
+<!-- ============ BACKGROUND ============ -->
+<div class="bg">
+  <div class="bg-aurora"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-particles" id="particles"></div>
+  <div class="bg-vignette"></div>
+  <div class="bg-line-top"></div>
+  <div class="bg-line-bottom"></div>
 </div>
 
-<script>
-  const tg = window.Telegram.WebApp;
-  tg.ready();
-  tg.expand();
+<!-- ============ CONTENT ============ -->
+<div class="wrap">
+  <div class="box" id="box">
+    <div class="box-progress">
+      <div class="box-progress-fill" id="boxProgressFill"></div>
+    </div>
+    <div class="confetti-container" id="confettiContainer"></div>
 
+    <div class="icon-wrap" id="iconWrap">🛡️</div>
+    <h2 id="title">در حال تأیید هویت...</h2>
+    <div class="subtitle">World War · Verify</div>
+
+    <div class="stages" id="stages">
+      <div class="stage" data-stage="connect">
+        <span class="stage-icon">○</span>
+        <span class="stage-label">اتصال به سرور</span>
+      </div>
+      <div class="stage" data-stage="send">
+        <span class="stage-icon">○</span>
+        <span class="stage-label">ارسال اطلاعات</span>
+      </div>
+      <div class="stage" data-stage="verify">
+        <span class="stage-icon">○</span>
+        <span class="stage-label">بررسی توسط سرور</span>
+      </div>
+    </div>
+
+    <div class="spinner" id="spinner"></div>
+    <p id="status">لطفاً صبر کنید...</p>
+    <p class="vpn-hint" id="vpn-hint">در صورت برقراری نشدن اتصال، VPN خود را روشن کنید</p>
+
+    <p class="close-hint" id="closeHint">
+      <span class="close-hint-icon">✅</span>
+      کار وب‌اپ تمام شده — می‌توانید این صفحه را ببندید و به بات بازگردید.
+      <br>
+      بستن خودکار در <span class="close-hint-count" id="closeCount">۱۵</span> ثانیه…
+    </p>
+
+    <button id="retry-btn">🔄 تلاش مجدد</button>
+  </div>
+</div>
+
+<div class="hud-bar"></div>
+
+<script>
+  /* ============================================================
+     TELEGRAM SDK
+     ============================================================ */
+  const tg = window.Telegram?.WebApp;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    try { tg.setHeaderColor('#05060a'); } catch (e) {}
+    try { tg.setBackgroundColor('#05060a'); } catch (e) {}
+    try { tg.disableVerticalSwipes?.(); } catch (e) {}
+  }
+
+  /* ============================================================
+     PARTICLES
+     ============================================================ */
+  (function spawnParticles() {
+    const container = document.getElementById('particles');
+    if (!container) return;
+    const count = 14;
+    const colors = ['#22c55e', '#16a34a', '#a78bfa', '#38bdf8'];
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'pt';
+      p.style.left = (Math.random() * 100) + '%';
+      p.style.top = (100 + Math.random() * 10) + '%';
+      p.style.animationDuration = (12 + Math.random() * 14) + 's';
+      p.style.animationDelay = (Math.random() * 12) + 's';
+      const size = 2 + Math.random() * 2.5;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      p.style.background = color;
+      p.style.boxShadow = `0 0 6px ${color}`;
+      container.appendChild(p);
+    }
+  })();
+
+  /* ============================================================
+     DOM REFS
+     ============================================================ */
   const statusEl = document.getElementById('status');
   const spinnerEl = document.getElementById('spinner');
   const retryBtn = document.getElementById('retry-btn');
   const titleEl = document.getElementById('title');
   const vpnHint = document.getElementById('vpn-hint');
+  const boxEl = document.getElementById('box');
+  const iconWrap = document.getElementById('iconWrap');
+  const progressFill = document.getElementById('boxProgressFill');
+  const confettiContainer = document.getElementById('confettiContainer');
+  const closeHint = document.getElementById('closeHint');
+  const closeCount = document.getElementById('closeCount');
 
   const BACKEND_URL = 'https://else1234.pythonanywhere.com/verify';
   const TIMEOUT_MS = 10000;
+  const AUTO_CLOSE_SECONDS = 15; // <<< زمان بستن خودکار (ثانیه)
 
-  function tryVerify() {
-    spinnerEl.style.display = 'block';
-    retryBtn.style.display = 'none';
-    vpnHint.style.display = 'block';
-    titleEl.textContent = 'در حال تأیید هویت...';
-    statusEl.textContent = 'لطفاً صبر کنید...';
+  /* ============================================================
+     STAGE MANAGEMENT
+     ============================================================ */
+  const STAGES = ['connect', 'send', 'verify'];
+
+  function setStage(stageKey, state) {
+    const el = document.querySelector(`.stage[data-stage="${stageKey}"]`);
+    if (!el) return;
+    const icon = el.querySelector('.stage-icon');
+    el.classList.remove('active', 'done');
+    if (state === 'active') {
+      el.classList.add('active');
+      if (icon) icon.textContent = '◐';
+    } else if (state === 'done') {
+      el.classList.add('done');
+      if (icon) icon.textContent = '✓';
+    } else {
+      if (icon) icon.textContent = '○';
+    }
+  }
+
+  function resetStages() {
+    STAGES.forEach(s => setStage(s, null));
+  }
+
+  function completeAllStages() {
+    STAGES.forEach(s => setStage(s, 'done'));
+  }
+
+  /* ============================================================
+     PROGRESS BAR
+     ============================================================ */
+  function setProgress(pct) {
+    if (!progressFill) return;
+    const clamped = Math.min(100, Math.max(0, pct));
+    progressFill.style.transform = `scaleX(${clamped / 100})`;
+  }
+
+  /* ============================================================
+     CONFETTI
+     ============================================================ */
+  function launchConfetti() {
+    if (!confettiContainer) return;
+    const colors = ['#22c55e', '#16a34a', '#fbbf24', '#38bdf8', '#a78bfa'];
+    const count = 18;
+    const pieces = [];
+    for (let i = 0; i < count; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = (8 + Math.random() * 84) + '%';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.animationDelay = (Math.random() * 0.35) + 's';
+      c.style.animationDuration = (1.2 + Math.random() * 0.9) + 's';
+      c.style.setProperty('--dx', (Math.random() * 120 - 60) + 'px');
+      const size = 6 + Math.random() * 4;
+      c.style.width = size + 'px';
+      c.style.height = size + 'px';
+      confettiContainer.appendChild(c);
+      pieces.push(c);
+    }
+    setTimeout(() => {
+      pieces.forEach(p => { try { p.remove(); } catch (e) {} });
+    }, 2600);
+  }
+
+  /* ============================================================
+     AUTO-CLOSE با شمارش معکوس (۱۵ ثانیه)
+     ============================================================ */
+  let closeTimerId = null;
+  let countdownId = null;
+
+  function cancelAutoClose() {
+    if (closeTimerId) { clearTimeout(closeTimerId); closeTimerId = null; }
+    if (countdownId) { clearInterval(countdownId); countdownId = null; }
+  }
+
+  function scheduleAutoClose() {
+    cancelAutoClose();
+    let remaining = AUTO_CLOSE_SECONDS;
+    if (closeCount) closeCount.textContent = toPersianDigits(remaining);
+
+    countdownId = setInterval(() => {
+      remaining -= 1;
+      if (closeCount) closeCount.textContent = toPersianDigits(Math.max(remaining, 0));
+      if (remaining <= 0) {
+        clearInterval(countdownId);
+        countdownId = null;
+      }
+    }, 1000);
+
+    closeTimerId = setTimeout(() => {
+      cancelAutoClose();
+      try { tg?.close(); } catch (e) {}
+    }, AUTO_CLOSE_SECONDS * 1000);
+  }
+
+  function toPersianDigits(n) {
+    return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+  }
+
+  /* ============================================================
+     STATE HELPER
+     ============================================================ */
+  function setState(state, opts = {}) {
+    boxEl.classList.remove('state-pending', 'state-error', 'state-rejected');
+    if (state === 'pending') boxEl.classList.add('state-pending');
+    else if (state === 'rejected') boxEl.classList.add('state-rejected');
+    else if (state === 'error') boxEl.classList.add('state-error');
+
+    if (opts.icon) iconWrap.textContent = opts.icon;
+    if (opts.title) titleEl.textContent = opts.title;
+    if (opts.statusHTML !== undefined) statusEl.innerHTML = opts.statusHTML;
+    else if (opts.status !== undefined) statusEl.textContent = opts.status;
+
+    if (opts.showSpinner === true) spinnerEl.style.display = '';
+    else if (opts.showSpinner === false) spinnerEl.style.display = 'none';
+
+    if (opts.showRetry === true) retryBtn.style.display = '';
+    else if (opts.showRetry === false) retryBtn.style.display = 'none';
+
+    if (opts.showVpnHint === true) vpnHint.style.display = '';
+    else if (opts.showVpnHint === false) vpnHint.style.display = 'none';
+
+    if (opts.showCloseHint === true) closeHint.style.display = 'block';
+    else if (opts.showCloseHint === false) closeHint.style.display = 'none';
+
+    if (typeof opts.showStages === 'boolean') {
+      const stagesEl = document.getElementById('stages');
+      if (stagesEl) stagesEl.style.display = opts.showStages ? '' : 'none';
+    }
+
+    // مدیریت زمان‌بندی بستن خودکار
+    if (opts.autoClose === true) {
+      scheduleAutoClose();
+    } else {
+      cancelAutoClose();
+    }
+  }
+
+  /* ============================================================
+     HELPERS
+     ============================================================ */
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  function postVerify(signal) {
+    return fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        initData: tg?.initData || '',
+        user_id: tg?.initDataUnsafe?.user?.id || null,
+        device: navigator.userAgent,
+        screen_w: window.screen.width,
+        screen_h: window.screen.height,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+      }),
+      signal,
+    });
+  }
+
+  /* ============================================================
+     VERIFY FLOW
+     ============================================================ */
+  async function tryVerify() {
+    cancelAutoClose();
+
+    setState('verifying', {
+      icon: '🛡️',
+      title: 'در حال تأیید هویت...',
+      status: 'لطفاً صبر کنید...',
+      showSpinner: true,
+      showRetry: false,
+      showVpnHint: true,
+      showCloseHint: false,
+      showStages: true,
+      autoClose: false,
+    });
+    resetStages();
+    setProgress(0);
+
+    setStage('connect', 'active');
+    setProgress(15);
+    await sleep(180);
+    setStage('connect', 'done');
+    setProgress(30);
+
+    setStage('send', 'active');
+    setProgress(45);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-    fetch(BACKEND_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        initData: tg.initData,
-        user_id: tg.initDataUnsafe?.user?.id || null,
-        device: navigator.userAgent,
-        screen_w: window.screen.width,
-        screen_h: window.screen.height,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || ''
-      }),
-      signal: controller.signal
-    })
-    .then(res => res.json())
-    .then(data => {
-      clearTimeout(timeoutId);
-      spinnerEl.style.display = 'none';
-      vpnHint.style.display = 'none';
+    let fetchFinished = false;
+    const stageTimer = setTimeout(() => {
+      if (fetchFinished) return;
+      setStage('send', 'done');
+      setStage('verify', 'active');
+      setProgress(80);
+    }, 700);
 
-      if (data.status === 'APPROVED') {
-        titleEl.textContent = 'تأیید شد';
-        statusEl.textContent = 'به بات بازگردید.';
-        setTimeout(() => tg.close(), 2000);
-      } else if (data.status === 'PENDING') {
-        titleEl.textContent = 'در انتظار تأیید ادمین';
-        statusEl.innerHTML = 'درخواست شما ثبت شد.<br>پس از تأیید، به شما اطلاع داده می‌شود.';
-        setTimeout(() => tg.close(), 4000);
-      } else if (data.status === 'REJECTED') {
-        titleEl.textContent = 'رد شد';
-        if (data.reason === 'already_rejected') {
-          statusEl.innerHTML = 'درخواست شما قبلاً رد شده است.<br>برای پیگیری با ادمین تماس بگیرید.';
-        } else {
-          statusEl.textContent = data.error || 'دسترسی رد شد.';
-        }
-        setTimeout(() => tg.close(), 5000);
-      } else {
-        titleEl.textContent = 'خطا';
-        statusEl.textContent = data.error || 'خطای نامشخص';
-        setTimeout(() => tg.close(), 3000);
-      }
-    })
-    .catch(err => {
+    try {
+      const res = await postVerify(controller.signal);
+      fetchFinished = true;
       clearTimeout(timeoutId);
-      spinnerEl.style.display = 'none';
-      titleEl.textContent = 'اتصال برقرار نشد';
-      statusEl.textContent = 'لطفاً VPN خود را روشن کنید و دوباره تلاش کنید.';
-      vpnHint.style.display = 'none';
-      retryBtn.style.display = 'inline-block';
+      clearTimeout(stageTimer);
+
+      const data = await res.json();
+
+      setStage('verify', 'done');
+      setProgress(100);
+
+      handleResponse(data);
+
+    } catch (err) {
+      fetchFinished = true;
+      clearTimeout(timeoutId);
+      clearTimeout(stageTimer);
+      handleError(err);
+    }
+  }
+
+  /* ============================================================
+     HANDLE RESPONSE
+     ============================================================ */
+  function handleResponse(data) {
+    if (data.status === 'APPROVED') {
+      setState('approved', {
+        icon: '✅',
+        title: 'تأیید شد',
+        statusHTML: 'هویت شما با موفقیت تأیید شد<span class="status-dot"></span><br>به بات بازگردید.',
+        showSpinner: false,
+        showRetry: false,
+        showVpnHint: false,
+        showCloseHint: true,
+        showStages: false,
+        autoClose: true,   // ۱۵ ثانیه
+      });
+      launchConfetti();
+
+    } else if (data.status === 'PENDING') {
+      setState('pending', {
+        icon: '⏳',
+        title: 'در انتظار تأیید ادمین',
+        statusHTML: 'درخواست شما ثبت شد.<br>پس از تأیید، به شما اطلاع داده می‌شود.',
+        showSpinner: true,
+        showRetry: false,
+        showVpnHint: false,
+        showCloseHint: true,
+        showStages: false,
+        autoClose: true,   // ۱۵ ثانیه
+      });
+
+    } else if (data.status === 'REJECTED') {
+      setState('rejected', {
+        icon: '🚫',
+        title: 'رد شد',
+        statusHTML: data.reason === 'already_rejected'
+          ? 'درخواست شما قبلاً رد شده است.<br>برای پیگیری با ادمین تماس بگیرید.'
+          : (data.error || 'دسترسی رد شد.'),
+        showSpinner: false,
+        showRetry: false,
+        showVpnHint: false,
+        showCloseHint: true,
+        showStages: false,
+        autoClose: true,   // ۱۵ ثانیه
+      });
+
+    } else {
+      // خطای نامشخص — بدون auto-close، دکمه retry
+      setState('error', {
+        icon: '⚠️',
+        title: 'خطا',
+        status: data.error || 'خطای نامشخص',
+        showSpinner: false,
+        showRetry: true,
+        showVpnHint: false,
+        showCloseHint: false,
+        showStages: false,
+        autoClose: false,
+      });
+    }
+  }
+
+  /* ============================================================
+     HANDLE ERROR
+     ============================================================ */
+  function handleError(err) {
+    cancelAutoClose();
+
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      setState('error', {
+        icon: '📡',
+        title: 'اینترنت شما قطع است',
+        status: 'لطفاً اتصال خود را بررسی کنید و دوباره تلاش کنید.',
+        showSpinner: false,
+        showRetry: true,
+        showVpnHint: false,
+        showCloseHint: false,
+        showStages: false,
+        autoClose: false,
+      });
+      return;
+    }
+    setState('error', {
+      icon: '📡',
+      title: 'اتصال برقرار نشد',
+      status: 'لطفاً VPN خود را روشن کنید و دوباره تلاش کنید.',
+      showSpinner: false,
+      showRetry: true,
+      showVpnHint: false,
+      showCloseHint: false,
+      showStages: false,
+      autoClose: false,
     });
   }
 
+  /* ============================================================
+     EVENTS
+     ============================================================ */
   retryBtn.addEventListener('click', tryVerify);
+
+  window.addEventListener('online', () => {
+    if (retryBtn.style.display !== 'none') {
+      tryVerify();
+    }
+  });
+
+  /* Boot */
   tryVerify();
 </script>
 </body>
