@@ -1727,7 +1727,13 @@ function cashOut() {
   crashState.phase = 'won';
   cancelAnimationFrame(crashState.rafId);
 
-  const win = Math.floor(crashState.betAmount * crashState.multiplier);
+  // FIX: مقدار شرط و ضریب رو قبل از هر تغییر دیگه اسنپ‌شات می‌گیریم
+  // و صریحاً به عدد تبدیل می‌کنیم تا سود همیشه از bet * multiplier محاسبه بشه
+  const bet = Number(crashState.betAmount) || 0;
+  const mult = Number(crashState.multiplier) || 1;
+  const win = Math.floor(bet * mult);
+  const net = win - bet;
+
   state.score += win;
   state.gamesPlayed++;
   saveMyStats();
@@ -1735,22 +1741,22 @@ function cashOut() {
 
   burstCrashParticles();
 
-  document.getElementById('crashStatus').textContent = `✅ Cash Out در ${crashState.multiplier.toFixed(2)}x`;
+  document.getElementById('crashStatus').textContent = `✅ Cash Out در ${mult.toFixed(2)}x`;
 
   crashState.phase = 'crashed';
   const btn = document.getElementById('crashActionBtn');
   btn.textContent = '🔄 دوباره';
   btn.className = 'crash-action-btn';
 
-  crashState.history.push(parseFloat(crashState.multiplier.toFixed(2)));
+  crashState.history.push(parseFloat(mult.toFixed(2)));
   if (crashState.history.length > 20) crashState.history.shift();
   updateCrashHistory();
 
   showModal({
     win: true,
     icon: '💰',
-    title: `برد در ${crashState.multiplier.toFixed(2)}x`,
-    body: `شرط: ${toPersianDigits(crashState.betAmount)}\nسود خالص: ${toPersianDigits(win - crashState.betAmount)}`,
+    title: `برد در ${mult.toFixed(2)}x`,
+    body: `شرط: ${toPersianDigits(bet)}\nسود خالص: ${toPersianDigits(net)}`,
     reward: `+${toPersianDigits(win)} امتیاز`,
     primaryText: '🔄 دوباره',
     onPrimary: () => resetCrashUI(),
