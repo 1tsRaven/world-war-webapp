@@ -10,6 +10,7 @@
     --gn: #22c55e; --gn-2: #16a34a; --gn-glow: rgba(34,197,94,.45);
     --bg: #05060a; --tx: #e8eaf0; --muted: #8089a0;
     --danger: #ef4444; --gold: #fbbf24; --purple: #a78bfa; --sky: #38bdf8;
+    --app-vh: 100vh;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -19,11 +20,11 @@
     direction: rtl;
     overflow-x: hidden;
     overflow-y: auto;
-    overscroll-behavior-y: contain;
     scrollbar-width: none;
     -ms-overflow-style: none;
     -webkit-font-smoothing: antialiased;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
     user-select: none; -webkit-user-select: none;
   }
   html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; display: none; }
@@ -52,51 +53,32 @@
   .wrap {
     position: relative; z-index: 10;
     width: 100%;
-    min-height: 100dvh;
-    display: flex;
+    min-height: var(--app-vh);
     padding: 8px;
-    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: max(40px, env(safe-area-inset-bottom));
   }
-
-  .screen {
-    display: none;
-    width: 100%;
-    max-width: 420px;
-    margin: auto;
-  }
+  .screen { display: none; width: 100%; max-width: 420px; margin: 0 auto; }
   .screen.active { display: block; }
 
-  /* Auto-size for very small phones */
-  @media (max-height: 600px) {
-    .wrap { padding: 6px; }
-    .box { padding: 14px 12px 12px; border-radius: 16px; }
-    h2 { font-size: 15px; margin-bottom: 3px; }
-    .subtitle { font-size: 9px; margin-bottom: 10px; }
-    .back-btn { padding: 6px 10px; margin-bottom: 8px; font-size: 11px; }
-    .crash-stage { height: 200px; margin-bottom: 8px; }
-    .plinko-stage { height: 260px; margin-bottom: 8px; }
-    .defense-area { height: 280px; margin: 10px 0; }
-    .crash-action-btn { padding: 12px; font-size: 14px; }
-    .game-card { padding: 10px 12px; }
-    .game-card .gc-icon { width: 40px; height: 40px; font-size: 20px; }
-    .game-card .gc-title { font-size: 13px; }
-    .game-card .gc-desc { font-size: 10px; }
-    .lb-list { max-height: 300px; }
-    .bet-input { padding: 11px; font-size: 14px; }
-    .quick-btn { padding: 7px 3px; font-size: 10.5px; }
-  }
-
-  /* Auto-size for small phones */
-  @media (max-height: 700px) and (min-height: 601px) {
-    .wrap { padding: 6px; }
-    .box { padding: 18px 14px 14px; border-radius: 18px; }
+  @media (max-height: 700px) {
+    .wrap { padding: 6px; padding-bottom: max(35px, env(safe-area-inset-bottom)); }
+    .box { padding: 16px 14px 14px; border-radius: 18px; }
     h2 { font-size: 17px; margin-bottom: 4px; }
     .subtitle { font-size: 10px; margin-bottom: 12px; }
     .back-btn { padding: 7px 12px; margin-bottom: 9px; }
     .crash-stage { height: 230px; margin-bottom: 9px; }
-    .plinko-stage { height: 290px; margin-bottom: 9px; }
-    .defense-area { height: 320px; }
     .crash-action-btn { padding: 13px; }
+    .plinko-stage { height: 290px; }
+    .defense-area { height: 320px; }
+  }
+  @media (max-height: 600px) {
+    .wrap { padding: 5px; padding-bottom: max(30px, env(safe-area-inset-bottom)); }
+    .box { padding: 14px 12px 12px; }
+    h2 { font-size: 15px; }
+    .crash-stage { height: 200px; }
+    .plinko-stage { height: 260px; }
+    .defense-area { height: 280px; }
   }
 
   .box { padding: 26px 20px 22px;
@@ -113,7 +95,6 @@
   .subtitle { font-size: 11px; color: var(--muted); margin-bottom: 18px;
     letter-spacing: .8px; font-weight: 700; text-transform: uppercase; }
 
-  /* Verify */
   .icon-wrap { width: 68px; height: 68px; margin: 0 auto 18px; border-radius: 20px;
     background: linear-gradient(135deg, var(--gn), var(--gn-2));
     display: grid; place-items: center; font-size: 32px; position: relative;
@@ -143,7 +124,6 @@
     color: var(--muted); line-height: 1.8; font-weight: 600; animation: fadeIn .4s ease; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  /* Buttons */
   .btn { width: 100%; padding: 14px 20px; margin-top: 16px; border: none; border-radius: 13px;
     background: linear-gradient(135deg, var(--gn), var(--gn-2)); color: #04210d;
     font-size: 14px; font-weight: 800; font-family: inherit; cursor: pointer;
@@ -160,7 +140,6 @@
     font-family: inherit; cursor: pointer; margin-bottom: 12px; }
   .back-btn:active { transform: scale(.96); }
 
-  /* Hub */
   .hub-header { text-align: center; margin-bottom: 18px; }
   .hub-title { font-size: 24px; font-weight: 900; margin: 0 0 4px;
     background: linear-gradient(135deg, var(--gn), var(--sky));
@@ -190,7 +169,6 @@
   .game-card .gc-desc { font-size: 11px; color: var(--muted); font-weight: 600; line-height: 1.4; }
   .game-card .gc-reward { font-size: 11px; color: var(--gold); margin-top: 4px; font-weight: 700; }
 
-  /* Difficulty */
   .diff-card { display: flex; align-items: center; gap: 14px; padding: 18px;
     margin-bottom: 12px; border-radius: 16px; cursor: pointer;
     transition: transform .15s, box-shadow .25s, border-color .25s;
@@ -212,7 +190,6 @@
   .diff-card.hard .dc-title { color: var(--danger); }
   .diff-card .dc-desc { font-size: 11.5px; color: var(--muted); font-weight: 600; line-height: 1.5; }
 
-  /* Defense */
   .defense-area { position: relative; width: 100%; height: 380px;
     background: linear-gradient(180deg, #0a0d15 0%, #131822 100%);
     border-radius: 16px; overflow: hidden; margin: 14px 0;
@@ -309,7 +286,6 @@
     100% { transform: scale(1); text-shadow: none; }
   }
 
-  /* Quiz */
   .quiz-progress { display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
   .quiz-progress .q-dot { flex: 1; min-width: 12px; height: 5px; background: rgba(255,255,255,.08);
     border-radius: 3px; transition: background .3s, box-shadow .3s; }
@@ -337,41 +313,27 @@
   .quiz-option.wrong { background: rgba(239,68,68,.15); border-color: var(--danger); color: var(--danger); }
   .quiz-option:disabled { cursor: default; }
 
-  /* Bet games shared */
-  .bet-warning {
-    padding: 10px 14px; margin-bottom: 12px;
-    background: rgba(239,68,68,.08);
-    border: 1px solid rgba(239,68,68,.25);
-    border-radius: 10px;
-    font-size: 11.5px; color: #fca5a5;
-    font-weight: 700; text-align: center; line-height: 1.6;
-  }
+  .bet-warning { padding: 10px 14px; margin-bottom: 12px;
+    background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.25);
+    border-radius: 10px; font-size: 11.5px; color: #fca5a5;
+    font-weight: 700; text-align: center; line-height: 1.6; }
   .bet-controls { display: flex; gap: 8px; margin-bottom: 10px; }
-  .bet-input {
-    flex: 1; padding: 14px; border-radius: 12px;
-    background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.1);
+  .bet-input { flex: 1; padding: 14px; border-radius: 12px;
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
     color: var(--tx); font-size: 16px; font-weight: 800;
     font-family: inherit; text-align: center;
-    font-variant-numeric: tabular-nums;
-    -moz-appearance: textfield;
-  }
+    font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
   .bet-input::-webkit-outer-spin-button,
   .bet-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .bet-input:focus { outline: none; border-color: var(--gn); }
   .quick-btns { display: flex; gap: 5px; margin-bottom: 12px; }
-  .quick-btn {
-    flex: 1; padding: 9px 4px; border-radius: 10px;
-    background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.08);
+  .quick-btn { flex: 1; padding: 9px 4px; border-radius: 10px;
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
     color: var(--tx); font-size: 11.5px; font-weight: 800;
     font-family: inherit; cursor: pointer;
-    font-variant-numeric: tabular-nums;
-    transition: transform .15s;
-  }
+    font-variant-numeric: tabular-nums; transition: transform .15s; }
   .quick-btn:active { transform: scale(.95); }
 
-  /* Crash */
   .crash-history { display: none; gap: 6px; overflow-x: auto;
     margin-bottom: 12px; padding: 4px 2px; scrollbar-width: none; }
   .crash-history::-webkit-scrollbar { display: none; }
@@ -424,7 +386,6 @@
     50%      { box-shadow: 0 8px 40px -4px rgba(251,191,36,.9); }
   }
 
-  /* Plinko */
   .plinko-stage { position: relative; width: 100%; height: 340px;
     background: linear-gradient(180deg, #0a0d15, #131822);
     border-radius: 16px; overflow: hidden;
@@ -448,7 +409,6 @@
     100% { transform: scale(1); }
   }
 
-  /* Leaderboard */
   .lb-list { display: flex; flex-direction: column; gap: 8px; max-height: 440px;
     overflow-y: auto; padding: 4px 2px; scrollbar-width: thin;
     scrollbar-color: rgba(34,197,94,.4) transparent; }
@@ -483,7 +443,6 @@
   .lb-sep { padding: 12px 8px 4px; text-align: center; color: var(--muted);
     font-size: 11px; font-weight: 700; letter-spacing: 1px; }
 
-  /* Modal */
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,.72);
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
@@ -545,34 +504,28 @@
 
 <div class="wrap">
 
-  <!-- ============ VERIFY ============ -->
   <div class="screen active" id="screen-verify">
     <div class="box">
       <div class="icon-wrap" id="verifyIcon">🛡️</div>
       <h2 id="verifyTitle">در حال تأیید هویت...</h2>
       <div class="subtitle">World War · Verify</div>
-
       <div class="stages" id="stagesBox">
         <div class="stage" data-stage="connect"><span class="stage-icon">○</span><span>اتصال به سرور</span></div>
         <div class="stage" data-stage="send"><span class="stage-icon">○</span><span>ارسال اطلاعات</span></div>
         <div class="stage" data-stage="verify"><span class="stage-icon">○</span><span>بررسی توسط سرور</span></div>
       </div>
-
       <div class="spinner" id="verifySpinner"></div>
       <p id="verifyStatus">لطفاً صبر کنید...</p>
-
       <p class="close-hint" id="closeHint">
         <span style="color:var(--gn)">✅</span>
         کار وب‌اپ تمام شده — می‌توانید این صفحه را ببندید و به بات بازگردید.
         <br><span style="font-size:11px">(این صفحه خودش بسته نمی‌شود)</span>
       </p>
-
       <button class="btn" id="enterGameBtn" style="display:none">🎮 ورود به بازی</button>
       <button class="btn secondary" id="retryBtn" style="display:none">🔄 تلاش مجدد</button>
     </div>
   </div>
 
-  <!-- ============ HUB ============ -->
   <div class="screen" id="screen-hub">
     <div class="box">
       <div class="hub-header">
@@ -627,7 +580,6 @@
     </div>
   </div>
 
-  <!-- ============ DIFFICULTY ============ -->
   <div class="screen" id="screen-difficulty">
     <div class="box">
       <button class="back-btn" onclick="showScreen('hub')">⬅️ بازگشت</button>
@@ -650,7 +602,6 @@
     </div>
   </div>
 
-  <!-- ============ DEFENSE ============ -->
   <div class="screen" id="screen-defense">
     <div class="box">
       <button class="back-btn" onclick="endDefense();showScreen('hub')">⬅️ بازگشت</button>
@@ -669,7 +620,6 @@
     </div>
   </div>
 
-  <!-- ============ QUIZ ============ -->
   <div class="screen" id="screen-quiz">
     <div class="box">
       <button class="back-btn" onclick="endQuiz();showScreen('hub')">⬅️ بازگشت</button>
@@ -685,17 +635,13 @@
     </div>
   </div>
 
-  <!-- ============ CRASH ============ -->
   <div class="screen" id="screen-crash">
     <div class="box">
       <button class="back-btn" onclick="stopCrash();showScreen('hub')">⬅️ بازگشت</button>
       <h2>🚀 موشک پرنده</h2>
       <div class="subtitle">Crash</div>
-
       <div class="bet-warning">⚠️ باخت در این بازی امتیاز و رتبه‌ت رو پایین میاره!</div>
-
       <div class="crash-history" id="crashHistory"></div>
-
       <div class="crash-stage" id="crashStage">
         <svg class="crash-curve" viewBox="0 0 400 260" preserveAspectRatio="none">
           <defs>
@@ -712,7 +658,6 @@
         <div class="crash-vehicle" id="crashVehicle" style="left: 6%; bottom: 6%;">🚀</div>
         <div class="crash-status" id="crashStatus">در انتظار...</div>
       </div>
-
       <div class="bet-controls">
         <input type="number" class="bet-input" id="crashBet" value="100" min="10" step="10" inputmode="numeric">
       </div>
@@ -723,26 +668,20 @@
         <button class="quick-btn" onclick="setBet('crash', 500)">۵۰۰</button>
         <button class="quick-btn" onclick="setBet('crash','max')">Max</button>
       </div>
-
       <button class="crash-action-btn" id="crashActionBtn" onclick="crashAction()">شرط بندی</button>
     </div>
   </div>
 
-  <!-- ============ PLINKO ============ -->
   <div class="screen" id="screen-plinko">
     <div class="box">
       <button class="back-btn" onclick="showScreen('hub')">⬅️ بازگشت</button>
-      <h2>⚪ پلینکو <span class="badge badge-easy" id="plinkoBadge">آسان</span></h2>
+      <h2>⚪ پلینکو <span class="badge badge-medium" id="plinkoBadge">متوسط</span></h2>
       <div class="subtitle">Plinko</div>
-
       <div class="bet-warning">⚠️ باخت در این بازی امتیاز و رتبه‌ت رو پایین میاره!</div>
-
       <div class="plinko-stage">
         <svg class="plinko-svg" id="plinkoSvg" viewBox="0 0 400 340" preserveAspectRatio="xMidYMid meet"></svg>
       </div>
-
       <div class="plinko-slots" id="plinkoSlots"></div>
-
       <div class="bet-controls">
         <input type="number" class="bet-input" id="plinkoBet" value="100" min="10" step="10" inputmode="numeric">
       </div>
@@ -753,18 +692,14 @@
         <button class="quick-btn" onclick="setBet('plinko', 500)">۵۰۰</button>
         <button class="quick-btn" onclick="setBet('plinko','max')">Max</button>
       </div>
-
       <button class="btn" id="plinkoActionBtn" onclick="dropBall()">انداختن توپ</button>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:14px;padding:4px;border-radius:12px;background:rgba(255,255,255,.04)">
-        <div class="diff-opt" data-diff="easy" onclick="setPlinkoDiff('easy')" style="padding:10px;border-radius:9px;text-align:center;font-size:12px;font-weight:800;color:var(--muted);cursor:pointer">🌱 آسان</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:14px;padding:4px;border-radius:12px;background:rgba(255,255,255,.04)">
         <div class="diff-opt" data-diff="medium" onclick="setPlinkoDiff('medium')" style="padding:10px;border-radius:9px;text-align:center;font-size:12px;font-weight:800;color:var(--muted);cursor:pointer">⚡ متوسط</div>
         <div class="diff-opt" data-diff="hard" onclick="setPlinkoDiff('hard')" style="padding:10px;border-radius:9px;text-align:center;font-size:12px;font-weight:800;color:var(--muted);cursor:pointer">🔥 سخت</div>
       </div>
     </div>
   </div>
 
-  <!-- ============ LEADERBOARD ============ -->
   <div class="screen" id="screen-leaderboard">
     <div class="box">
       <button class="back-btn" onclick="showScreen('hub')">⬅️ بازگشت</button>
@@ -779,7 +714,6 @@
 
 </div>
 
-<!-- MODAL -->
 <div class="modal" id="modal">
   <div class="modal-card" id="modalCard">
     <div class="modal-icon" id="modalIcon">🏆</div>
@@ -804,12 +738,30 @@ const VERIFY_TIMEOUT_MS = 10000;
    TELEGRAM SDK
    ================================================================ */
 const tg = window.Telegram?.WebApp;
+
+function setAppVh() {
+  try {
+    let h;
+    if (tg && (tg.viewportStableHeight || tg.viewportHeight)) {
+      h = tg.viewportStableHeight || tg.viewportHeight;
+    } else {
+      h = window.innerHeight;
+    }
+    document.documentElement.style.setProperty('--app-vh', h + 'px');
+  } catch(e) {}
+}
+
 if (tg) {
-  tg.ready(); tg.expand();
+  tg.ready();
+  tg.expand();
   try { tg.setHeaderColor('#05060a'); } catch(e) {}
   try { tg.setBackgroundColor('#05060a'); } catch(e) {}
-  try { tg.disableVerticalSwipes?.(); } catch(e) {}
+  try { tg.enableVerticalSwipes?.(); } catch(e) {}
+  try { tg.onEvent('viewportChanged', setAppVh); } catch(e) {}
 }
+setAppVh();
+window.addEventListener('resize', setAppVh);
+window.addEventListener('orientationchange', setAppVh);
 
 /* ================================================================
    HELPERS
@@ -1666,6 +1618,10 @@ function initCrash() {
 }
 
 function resetCrashUI() {
+  crashState.phase = 'idle';
+  crashState.cashedOut = false;
+  crashState.betAmount = 0;
+
   const multEl = document.getElementById('crashMultiplier');
   multEl.textContent = '1.00x';
   multEl.className = 'crash-multiplier';
@@ -1678,6 +1634,8 @@ function resetCrashUI() {
   v.style.left = '6%';
   v.style.bottom = '6%';
   v.style.transform = 'rotate(0deg)';
+  v.style.fontSize = '34px';
+  v.style.filter = '';
   v.textContent = '🚀';
 
   document.getElementById('curvePath').style.strokeDashoffset = '450';
@@ -1885,12 +1843,6 @@ function burstCrashParticles() {
    PLINKO GAME
    ================================================================ */
 const PLINKO_CONFIG = {
-  easy: {
-    rows: 8,
-    multipliers: [5.6, 2.1, 1.1, 1.0, 0.5, 1.0, 1.1, 2.1, 5.6],
-    colors: ['#dc2626', '#f97316', '#fbbf24', '#22c55e', '#3b82f6', '#22c55e', '#fbbf24', '#f97316', '#dc2626'],
-    label: 'آسان', badgeClass: 'badge-easy',
-  },
   medium: {
     rows: 12,
     multipliers: [10, 3, 1.6, 1.2, 1.1, 1.0, 0.5, 1.0, 1.1, 1.2, 1.6, 3, 10],
@@ -1909,7 +1861,7 @@ const PLINKO_CONFIG = {
   },
 };
 
-let plinkoDiff = 'easy';
+let plinkoDiff = 'medium';
 let plinkoRunning = false;
 let plinkoPegs = [];
 const PW = 400;
@@ -1925,6 +1877,7 @@ function initPlinko() {
 
 function setPlinkoDiff(diff) {
   if (plinkoRunning) return;
+  if (!PLINKO_CONFIG[diff]) diff = 'medium';
   plinkoDiff = diff;
   const conf = PLINKO_CONFIG[diff];
   const badge = document.getElementById('plinkoBadge');
@@ -2283,6 +2236,7 @@ function escapeHtml(s) {
    BOOT
    ================================================================ */
 window.addEventListener('load', () => {
+  setAppVh();
   tryVerify();
 });
 </script>
