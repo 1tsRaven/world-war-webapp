@@ -829,15 +829,45 @@ async function tryVerify() {
   setStage('connect', 'done');
   setStage('send', 'active');
 
-  // TEST MODE: bypass server verification so the mini-games can be tested locally.
-  await sleep(450);
-  setStage('send', 'done');
-  setStage('verify', 'active');
-  await sleep(650);
-  setStage('verify', 'done');
-  await handleVerifyResponse({ status: 'APPROVED' });
-}
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), VERIFY_TIMEOUT_MS);
 
+  let fetchDone = false;
+  const stageTimer = setTimeout(() => {
+    if (fetchDone) return;
+    setStage('send', 'done');
+    setStage('verify', 'active');
+  }, 700);
+
+  try {
+    const res = await fetch(API_BASE + '/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        initData: tg?.initData || '',
+        user_id: tg?.initDataUnsafe?.user?.id || null,
+        device: navigator.userAgent,
+        screen_w: window.screen.width,
+        screen_h: window.screen.height,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+      }),
+      signal: controller.signal,
+    });
+
+    fetchDone = true;
+    clearTimeout(timeoutId);
+    clearTimeout(stageTimer);
+
+    const data = await res.json();
+    setStage('verify', 'done');
+    handleVerifyResponse(data);
+  } catch (err) {
+    fetchDone = true;
+    clearTimeout(timeoutId);
+    clearTimeout(stageTimer);
+    handleVerifyError(err);
+  }
+}
 async function handleVerifyResponse(data) {
   const status = data.status || 'REJECTED';
   verificationStatus = status;
