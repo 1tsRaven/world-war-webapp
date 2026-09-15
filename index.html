@@ -3,657 +3,621 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>World War — تأیید هویت</title>
+<title>World War</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root {
-    --gn: #22c55e;
-    --gn-2: #16a34a;
-    --gn-glow: rgba(34, 197, 94, 0.45);
-    --bg: #05060a;
-    --tx: #e8eaf0;
-    --muted: #8089a0;
-    --danger: #ef4444;
-    --gold: #fbbf24;
+    --gn: #22c55e; --gn-2: #16a34a; --gn-glow: rgba(34,197,94,.45);
+    --bg: #05060a; --tx: #e8eaf0; --muted: #8089a0;
+    --danger: #ef4444; --gold: #fbbf24; --purple: #a78bfa; --sky: #38bdf8;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
-    margin: 0; padding: 0;
-    background: var(--bg);
-    color: var(--tx);
-    font-family: Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-    min-height: 100vh;
-    direction: rtl;
-    overflow: hidden;
-    overscroll-behavior: none;
+    margin: 0; padding: 0; min-height: 100vh;
+    background: var(--bg); color: var(--tx);
+    font-family: Tahoma, -apple-system, 'Segoe UI', Arial, sans-serif;
+    direction: rtl; overflow-x: hidden; overscroll-behavior: none;
     -webkit-font-smoothing: antialiased;
-    user-select: none;
-    -webkit-user-select: none;
+    user-select: none; -webkit-user-select: none;
   }
-
-  /* ============================================================
-     BACKGROUND (PERFORMANCE-OPTIMIZED)
-     ============================================================ */
-  .bg {
-    position: fixed; inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    overflow: hidden;
-    contain: strict;
-  }
-  .bg-aurora {
-    position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background:
-      radial-gradient(circle at 30% 30%, rgba(34, 197, 94, 0.18), transparent 40%),
-      radial-gradient(circle at 70% 25%, rgba(139, 92, 246, 0.13), transparent 42%),
-      radial-gradient(circle at 50% 75%, rgba(56, 189, 248, 0.10), transparent 45%);
-    animation: auroraSpin 48s linear infinite;
-    will-change: transform;
-    backface-visibility: hidden;
-    transform: translate3d(0, 0, 0);
-  }
-  @keyframes auroraSpin {
-    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-    50%  { transform: translate3d(0, 0, 0) rotate(180deg) scale(1.08); }
-    100% { transform: translate3d(0, 0, 0) rotate(360deg) scale(1); }
-  }
-  .bg-grid {
-    position: absolute; inset: -60px;
-    background-image:
-      linear-gradient(90deg, rgba(34, 197, 94, 0.07) 1px, transparent 1px),
-      linear-gradient(0deg, rgba(34, 197, 94, 0.07) 1px, transparent 1px);
-    background-size: 44px 44px;
-    animation: gridPan 30s linear infinite;
-    will-change: transform;
-    backface-visibility: hidden;
-    transform: translate3d(0, 0, 0);
+  .bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .bg-aurora { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle at 30% 30%, rgba(34,197,94,.18), transparent 40%),
+      radial-gradient(circle at 70% 25%, rgba(139,92,246,.13), transparent 42%),
+      radial-gradient(circle at 50% 75%, rgba(56,189,248,.10), transparent 45%);
+    animation: auroraSpin 48s linear infinite; }
+  @keyframes auroraSpin { to { transform: rotate(360deg); } }
+  .bg-grid { position: absolute; inset: -60px;
+    background-image: linear-gradient(90deg, rgba(34,197,94,.07) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(34,197,94,.07) 1px, transparent 1px);
+    background-size: 44px 44px; animation: gridPan 30s linear infinite;
     mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 20%, transparent 85%);
-    -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 20%, transparent 85%);
-  }
-  @keyframes gridPan {
-    0%   { transform: translate3d(0, 0, 0); }
-    100% { transform: translate3d(44px, 44px, 0); }
-  }
-  .bg-particles { position: absolute; inset: 0; }
-  .pt {
-    position: absolute;
-    border-radius: 50%;
-    opacity: 0;
-    will-change: transform, opacity;
-    backface-visibility: hidden;
-    transform: translate3d(0, 0, 0);
-    animation: floatUp linear infinite;
-  }
-  @keyframes floatUp {
-    0%   { transform: translate3d(0, 0, 0); opacity: 0; }
-    12%  { opacity: 0.7; }
-    88%  { opacity: 0.5; }
-    100% { transform: translate3d(30px, -110vh, 0); opacity: 0; }
-  }
-  .bg-vignette {
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 100% 60% at 50% 50%, transparent 25%, rgba(0, 0, 0, 0.7) 100%);
-  }
-  .bg-line-top, .bg-line-bottom {
-    position: absolute; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.7), transparent);
-    animation: linePulse 3.5s ease-in-out infinite;
-    will-change: opacity;
-  }
-  .bg-line-top { top: 0; }
-  .bg-line-bottom { bottom: 0; animation-delay: 1.75s; }
-  @keyframes linePulse {
-    0%, 100% { opacity: 0.25; }
-    50%      { opacity: 1; }
-  }
+    -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 20%, transparent 85%); }
+  @keyframes gridPan { to { transform: translate(44px,44px); } }
+  .bg-vignette { position: absolute; inset: 0;
+    background: radial-gradient(ellipse 100% 60% at 50% 50%, transparent 25%, rgba(0,0,0,.7) 100%); }
+  .bg-line-top, .bg-line-bottom { position: absolute; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(34,197,94,.7), transparent);
+    animation: linePulse 3.5s ease-in-out infinite; }
+  .bg-line-top { top: 0; } .bg-line-bottom { bottom: 0; animation-delay: 1.75s; }
+  @keyframes linePulse { 0%,100% { opacity: .25; } 50% { opacity: 1; } }
 
-  /* ============================================================
-     CONTENT
-     ============================================================ */
-  .wrap {
-    position: relative; z-index: 10;
-    min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-  }
-  .box {
-    max-width: 400px; width: 100%;
-    padding: 32px 24px 28px;
-    background: linear-gradient(160deg, rgba(20, 24, 33, 0.78), rgba(15, 18, 25, 0.68));
-    border: 1px solid rgba(34, 197, 94, 0.18);
-    border-radius: 24px;
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
-    box-shadow:
-      0 20px 60px rgba(0, 0, 0, 0.55),
-      0 0 0 1px rgba(255, 255, 255, 0.02) inset,
-      0 0 40px -10px var(--gn-glow);
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    animation: boxEnter 0.6s cubic-bezier(0.22, 0.9, 0.32, 1);
-  }
-  @keyframes boxEnter {
-    from { opacity: 0; transform: translateY(20px) scale(0.96); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
+  .wrap { position: relative; z-index: 10; min-height: 100vh; display: flex;
+    align-items: center; justify-content: center; padding: 16px; }
+  .screen { display: none; width: 100%; max-width: 420px; }
+  .screen.active { display: block; }
+  .box { padding: 26px 20px 22px;
+    background: linear-gradient(160deg, rgba(20,24,33,.85), rgba(15,18,25,.75));
+    border: 1px solid rgba(34,197,94,.18); border-radius: 22px;
+    backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: 0 20px 60px rgba(0,0,0,.55), 0 0 40px -10px var(--gn-glow);
+    text-align: center; position: relative; overflow: hidden;
+    animation: boxEnter .6s cubic-bezier(.22,.9,.32,1); }
+  @keyframes boxEnter { from { opacity: 0; transform: translateY(20px) scale(.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); } }
 
-  .box-progress {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.04);
-    overflow: hidden;
-  }
-  .box-progress-fill {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: linear-gradient(90deg, var(--gn-2), var(--gn));
-    transform-origin: left center;
-    transform: scaleX(0);
-    transition: transform 0.55s cubic-bezier(0.22, 0.9, 0.32, 1);
-    box-shadow: 0 0 12px var(--gn-glow);
-  }
+  h2 { font-size: 19px; font-weight: 800; margin: 0 0 6px; line-height: 1.4; }
+  .subtitle { font-size: 11px; color: var(--muted); margin-bottom: 18px;
+    letter-spacing: .8px; font-weight: 700; text-transform: uppercase; }
 
-  .icon-wrap {
-    width: 72px; height: 72px;
-    margin: 0 auto 20px;
-    border-radius: 20px;
+  /* Verify */
+  .icon-wrap { width: 68px; height: 68px; margin: 0 auto 18px; border-radius: 20px;
     background: linear-gradient(135deg, var(--gn), var(--gn-2));
-    display: grid; place-items: center;
-    font-size: 34px;
-    position: relative;
-    box-shadow:
-      0 0 24px var(--gn-glow),
-      0 0 60px -10px var(--gn-glow),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    animation: iconBreath 2.6s ease-in-out infinite;
-    will-change: transform;
-  }
-  @keyframes iconBreath {
-    0%, 100% { transform: scale(1); }
-    50%      { transform: scale(1.06); }
-  }
-  .icon-wrap::after {
-    content: '';
-    position: absolute; inset: -6px;
-    border-radius: 24px;
-    border: 1.5px solid rgba(34, 197, 94, 0.35);
-    animation: ringPulse 2.6s ease-out infinite;
-    will-change: transform, opacity;
-  }
-  @keyframes ringPulse {
-    0%   { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(1.4); }
-  }
-
-  h2 {
-    font-size: 20px;
-    font-weight: 800;
-    margin: 0 0 8px;
-    letter-spacing: 0.2px;
-    line-height: 1.4;
-  }
-  .subtitle {
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 20px;
-    letter-spacing: 0.8px;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  .stages {
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-    margin: 0 0 20px;
-    padding: 14px 16px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 14px;
-    text-align: right;
-  }
-  .stage {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12.5px;
-    color: var(--muted);
-    transition: color 0.35s ease;
-    font-weight: 600;
-    line-height: 1.4;
-  }
-  .stage .stage-icon {
-    width: 18px; height: 18px;
-    display: grid; place-items: center;
-    flex-shrink: 0;
-    font-size: 11px;
-    transition: all 0.35s ease;
-  }
+    display: grid; place-items: center; font-size: 32px; position: relative;
+    box-shadow: 0 0 24px var(--gn-glow), inset 0 1px 0 rgba(255,255,255,.3);
+    animation: iconBreath 2.6s ease-in-out infinite; }
+  @keyframes iconBreath { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+  .icon-wrap::after { content: ''; position: absolute; inset: -6px; border-radius: 24px;
+    border: 1.5px solid rgba(34,197,94,.35); animation: ringPulse 2.6s ease-out infinite; }
+  @keyframes ringPulse { to { opacity: 0; transform: scale(1.4); } }
+  .stages { display: flex; flex-direction: column; gap: 8px; margin: 0 0 18px;
+    padding: 12px 14px; background: rgba(255,255,255,.02);
+    border: 1px solid rgba(255,255,255,.05); border-radius: 12px; text-align: right; }
+  .stage { display: flex; align-items: center; gap: 9px; font-size: 12.5px;
+    color: var(--muted); font-weight: 600; transition: color .35s; }
+  .stage .stage-icon { width: 16px; display: inline-block; text-align: center; }
   .stage.active { color: var(--tx); }
-  .stage.active .stage-icon {
-    color: var(--gn);
-    animation: stagePulse 1.3s ease-in-out infinite;
-  }
+  .stage.active .stage-icon { color: var(--gn); animation: stagePulse 1.3s ease-in-out infinite; }
   .stage.done { color: var(--gn); }
-  .stage.done .stage-icon { color: var(--gn); }
-  @keyframes stagePulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%      { opacity: 0.4; transform: scale(0.85); }
-  }
-
-  .spinner {
-    width: 44px; height: 44px;
-    margin: 4px auto 18px;
-    border-radius: 50%;
-    border: 3px solid rgba(34, 197, 94, 0.15);
-    border-top-color: var(--gn);
-    animation: spin 0.9s linear infinite;
-    will-change: transform;
-  }
+  @keyframes stagePulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  .spinner { width: 40px; height: 40px; margin: 4px auto 16px; border-radius: 50%;
+    border: 3px solid rgba(34,197,94,.15); border-top-color: var(--gn);
+    animation: spin .9s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  #verifyStatus { font-size: 14px; line-height: 1.8; margin: 0; min-height: 40px; font-weight: 600; }
+  .close-hint { display: none; margin: 16px 0 0; padding-top: 14px;
+    border-top: 1px dashed rgba(255,255,255,.08); font-size: 12px;
+    color: var(--muted); line-height: 1.8; font-weight: 600; animation: fadeIn .4s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  #status {
-    font-size: 14px;
-    line-height: 1.85;
-    margin: 0;
-    min-height: 42px;
-    font-weight: 600;
+  /* Buttons */
+  .btn { width: 100%; padding: 14px 20px; margin-top: 16px; border: none; border-radius: 13px;
+    background: linear-gradient(135deg, var(--gn), var(--gn-2)); color: #04210d;
+    font-size: 14px; font-weight: 800; font-family: inherit; cursor: pointer;
+    letter-spacing: .3px;
+    box-shadow: 0 8px 24px -8px var(--gn-glow), inset 0 1px 0 rgba(255,255,255,.25);
+    transition: transform .15s; }
+  .btn:active { transform: scale(.97); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn.secondary { background: rgba(255,255,255,.06); color: var(--tx);
+    box-shadow: none; border: 1px solid rgba(255,255,255,.1); }
+  .back-btn { display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px; color: var(--muted); font-size: 12px; font-weight: 700;
+    font-family: inherit; cursor: pointer; margin-bottom: 12px; }
+  .back-btn:active { transform: scale(.96); }
+
+  /* Hub */
+  .hub-header { text-align: center; margin-bottom: 18px; }
+  .hub-title { font-size: 24px; font-weight: 900; margin: 0 0 4px;
+    background: linear-gradient(135deg, var(--gn), var(--sky));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .hub-sub { font-size: 11px; color: var(--muted); letter-spacing: 1.2px; font-weight: 700; }
+  .hub-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .stat-card { padding: 12px 8px; background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.06); border-radius: 12px; text-align: center; }
+  .stat-card .s-val { font-size: 20px; font-weight: 900; color: var(--gn); }
+  .stat-card .s-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; font-weight: 700; }
+  .game-card { display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+    border: 1px solid rgba(255,255,255,.07); border-radius: 16px; cursor: pointer;
+    transition: transform .15s, border-color .25s, box-shadow .25s; text-align: right; }
+  .game-card:active { transform: scale(.98); }
+  .game-card:hover { border-color: rgba(34,197,94,.3); box-shadow: 0 6px 20px -8px rgba(34,197,94,.3); }
+  .game-card .gc-icon { width: 48px; height: 48px; border-radius: 13px;
+    display: grid; place-items: center; font-size: 24px; flex-shrink: 0; }
+  .gc-icon.defense { background: linear-gradient(135deg, #dc2626, #f87171); }
+  .gc-icon.quiz { background: linear-gradient(135deg, #0891b2, #38bdf8); }
+  .gc-icon.leader { background: linear-gradient(135deg, #fbbf24, #d97706); }
+  .game-card .gc-info { flex: 1; min-width: 0; }
+  .game-card .gc-title { font-size: 14.5px; font-weight: 800; margin-bottom: 3px; }
+  .game-card .gc-desc { font-size: 11px; color: var(--muted); font-weight: 600; line-height: 1.4; }
+  .game-card .gc-reward { font-size: 11px; color: var(--gold); margin-top: 4px; font-weight: 700; }
+
+  /* Difficulty */
+  .diff-card { display: flex; align-items: center; gap: 14px; padding: 18px;
+    margin-bottom: 12px; border-radius: 16px; cursor: pointer;
+    transition: transform .15s, box-shadow .25s, border-color .25s;
+    text-align: right; border: 2px solid transparent; }
+  .diff-card:active { transform: scale(.98); }
+  .diff-card.easy { background: linear-gradient(135deg, rgba(34,197,94,.12), rgba(34,197,94,.04));
+    border-color: rgba(34,197,94,.3); }
+  .diff-card.easy:hover { box-shadow: 0 8px 24px -8px rgba(34,197,94,.5); border-color: var(--gn); }
+  .diff-card.hard { background: linear-gradient(135deg, rgba(239,68,68,.12), rgba(239,68,68,.04));
+    border-color: rgba(239,68,68,.3); }
+  .diff-card.hard:hover { box-shadow: 0 8px 24px -8px rgba(239,68,68,.5); border-color: var(--danger); }
+  .diff-card .dc-icon { width: 52px; height: 52px; border-radius: 14px;
+    display: grid; place-items: center; font-size: 26px; flex-shrink: 0; }
+  .diff-card.easy .dc-icon { background: linear-gradient(135deg, var(--gn), var(--gn-2)); }
+  .diff-card.hard .dc-icon { background: linear-gradient(135deg, var(--danger), #b91c1c); }
+  .diff-card .dc-info { flex: 1; }
+  .diff-card .dc-title { font-size: 16px; font-weight: 900; margin-bottom: 4px; }
+  .diff-card.easy .dc-title { color: var(--gn); }
+  .diff-card.hard .dc-title { color: var(--danger); }
+  .diff-card .dc-desc { font-size: 11.5px; color: var(--muted); font-weight: 600; line-height: 1.5; }
+
+  /* Defense */
+  .defense-area { position: relative; width: 100%; height: 380px;
+    background: linear-gradient(180deg, #0a0d15 0%, #131822 100%);
+    border-radius: 16px; overflow: hidden; margin: 14px 0;
+    border: 1px solid rgba(34,197,94,.15); touch-action: manipulation;
+    transition: box-shadow .2s; }
+  .defense-area::before { content: ''; position: absolute; inset: 0;
+    background-image: linear-gradient(90deg, rgba(34,197,94,.05) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(34,197,94,.05) 1px, transparent 1px);
+    background-size: 30px 30px; pointer-events: none; }
+  .defense-area::after { content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 50% 100%, rgba(34,197,94,.08), transparent 70%);
+    pointer-events: none; }
+  .defense-area.shake { animation: shakeAnim .4s cubic-bezier(.36,.07,.19,.97);
+    box-shadow: 0 0 30px -5px rgba(239,68,68,.6), inset 0 0 30px rgba(239,68,68,.2); }
+  @keyframes shakeAnim {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-8px, 4px); } 20% { transform: translate(7px, -3px); }
+    30% { transform: translate(-6px, -4px); } 40% { transform: translate(6px, 3px); }
+    50% { transform: translate(-5px, 2px); } 60% { transform: translate(5px, -2px); }
+    70% { transform: translate(-4px, 3px); } 80% { transform: translate(3px, -2px); }
+    90% { transform: translate(-2px, 1px); }
   }
-  .vpn-hint {
-    color: var(--gold);
-    font-size: 12.5px;
-    line-height: 1.8;
-    margin: 12px 0 0;
-    padding: 10px 14px;
-    background: rgba(251, 191, 36, 0.08);
-    border: 1px solid rgba(251, 191, 36, 0.2);
-    border-radius: 10px;
-    font-weight: 600;
-    animation: hintFade 0.4s ease;
+  .city-base { position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
+    background: linear-gradient(180deg, rgba(34,197,94,.4), rgba(34,197,94,.15));
+    border-top: 2px solid var(--gn); box-shadow: 0 -10px 30px -5px var(--gn-glow);
+    z-index: 1; display: grid; place-items: center; font-size: 20px;
+    transition: background .2s, box-shadow .2s; }
+  .city-base.hit { animation: baseHitAnim .55s ease-out; }
+  @keyframes baseHitAnim {
+    0%, 100% { background: linear-gradient(180deg, rgba(34,197,94,.4), rgba(34,197,94,.15));
+      box-shadow: 0 -10px 30px -5px var(--gn-glow); }
+    40% { background: linear-gradient(180deg, rgba(239,68,68,.85), rgba(239,68,68,.4));
+      box-shadow: 0 -10px 40px -5px rgba(239,68,68,.9), 0 0 60px rgba(239,68,68,.5); }
   }
-  @keyframes hintFade {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+  .missile-wrap { position: absolute; width: 44px; height: 52px; pointer-events: none;
+    z-index: 3; will-change: top; }
+  .m-trail { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+    width: 14px; height: 60px;
+    background: linear-gradient(to top, rgba(251,191,36,.95) 0%, rgba(249,115,22,.8) 30%,
+      rgba(239,68,68,.5) 60%, rgba(239,68,68,0) 100%);
+    border-radius: 50% 50% 0 0; filter: blur(4px); pointer-events: none;
+    animation: trailFlicker .14s infinite alternate; }
+  @keyframes trailFlicker { from { opacity: .65; height: 55px; } to { opacity: 1; height: 68px; } }
+  .m-emoji { position: absolute; inset: 0; display: grid; place-items: center;
+    font-size: 30px; transform: rotate(180deg); cursor: pointer;
+    filter: drop-shadow(0 0 10px rgba(239,68,68,.95)) drop-shadow(0 0 20px rgba(239,68,68,.5));
+    pointer-events: auto; transition: filter .1s; }
+  .m-emoji:active { filter: drop-shadow(0 0 16px rgba(251,191,36,1)) drop-shadow(0 0 30px rgba(251,191,36,.8)); }
+  .missile-wrap.boom { pointer-events: none; }
+  .missile-wrap.boom .m-emoji { animation: boomEmoji .45s cubic-bezier(.22,.9,.32,1) forwards; }
+  .missile-wrap.boom .m-trail { animation: boomTrail .4s ease-out forwards; }
+  @keyframes boomEmoji {
+    0% { transform: rotate(180deg) scale(1); opacity: 1; }
+    40% { transform: rotate(180deg) scale(1.6); opacity: .9; filter: drop-shadow(0 0 30px #fbbf24); }
+    100% { transform: rotate(180deg) scale(2.6); opacity: 0; }
+  }
+  @keyframes boomTrail { 0% { opacity: 1; height: 70px; } 100% { opacity: 0; height: 20px; filter: blur(10px); } }
+  .particle { position: absolute; width: 8px; height: 8px; border-radius: 50%;
+    pointer-events: none; z-index: 4; transform: translate(-50%, -50%);
+    animation: particleFly .7s cubic-bezier(.22,.9,.32,1) forwards; }
+  @keyframes particleFly {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0); opacity: 0; }
+  }
+  .score-popup { position: absolute; font-size: 20px; font-weight: 900; color: #fde047;
+    text-shadow: 0 0 12px rgba(251,191,36,.95), 0 0 24px rgba(251,191,36,.6);
+    pointer-events: none; z-index: 5; transform: translate(-50%, -50%);
+    animation: scoreFloat 1s cubic-bezier(.22,.9,.32,1) forwards; white-space: nowrap; }
+  @keyframes scoreFloat {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(.5); }
+    20% { opacity: 1; transform: translate(-50%, -80%) scale(1.3); }
+    100% { opacity: 0; transform: translate(-50%, -220%) scale(1); }
+  }
+  .impact-ring { position: absolute; width: 20px; height: 20px;
+    border: 3px solid #fbbf24; border-radius: 50%; transform: translate(-50%, -50%);
+    pointer-events: none; z-index: 4; animation: impactRing .5s ease-out forwards;
+    box-shadow: 0 0 20px rgba(251,191,36,.8), inset 0 0 20px rgba(251,191,36,.5); }
+  @keyframes impactRing {
+    0% { width: 20px; height: 20px; opacity: 1; border-width: 4px; }
+    100% { width: 100px; height: 100px; opacity: 0; border-width: 1px; }
+  }
+  .defense-hud { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px;
+    padding: 10px 8px; background: rgba(255,255,255,.03); border-radius: 12px;
+    font-size: 12px; font-weight: 800; }
+  .defense-hud .hud-item { display: flex; align-items: center; justify-content: center;
+    gap: 3px; padding: 4px 2px; border-radius: 8px; background: rgba(255,255,255,.03); }
+  .hud-val { color: var(--gn); font-variant-numeric: tabular-nums; font-size: 13px; }
+  .hud-val.warn { color: var(--danger); animation: stagePulse .8s ease-in-out infinite; }
+  .hud-val.combo { color: var(--gold); }
+  .hud-val.combo.hot { animation: comboPulse .35s ease-in-out; }
+  @keyframes comboPulse {
+    0% { transform: scale(1); text-shadow: none; }
+    50% { transform: scale(1.6); text-shadow: 0 0 12px rgba(251,191,36,.9); }
+    100% { transform: scale(1); text-shadow: none; }
   }
 
-  /* Close hint — برای وقتی که کار وب‌اپ تموم شده */
-  .close-hint {
-    display: none;
-    margin: 16px 0 0;
-    padding-top: 14px;
-    border-top: 1px dashed rgba(255, 255, 255, 0.08);
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.8;
-    font-weight: 600;
-    animation: hintFade 0.4s ease;
-  }
-  .close-hint .close-hint-icon {
-    color: var(--gn);
-    margin-left: 4px;
-  }
-  .close-hint .close-hint-count {
-    color: var(--tx);
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-  }
+  /* Quiz */
+  .quiz-progress { display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
+  .quiz-progress .q-dot { flex: 1; min-width: 12px; height: 5px; background: rgba(255,255,255,.08);
+    border-radius: 3px; transition: background .3s, box-shadow .3s; }
+  .quiz-progress .q-dot.done { background: var(--gn); box-shadow: 0 0 8px rgba(34,197,94,.5); }
+  .quiz-progress .q-dot.failed { background: var(--danger); box-shadow: 0 0 8px rgba(239,68,68,.5); }
+  .quiz-progress .q-dot.active { background: var(--gold); animation: stagePulse 1s ease-in-out infinite; }
+  .quiz-timer { display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+  .quiz-timer-ring { width: 48px; height: 48px; border-radius: 50%;
+    background: conic-gradient(var(--gn) 360deg, rgba(255,255,255,.1) 0deg);
+    display: grid; place-items: center; font-size: 15px; font-weight: 900;
+    transition: background .1s linear; }
+  .quiz-timer-ring span { width: 38px; height: 38px; border-radius: 50%; background: var(--bg);
+    display: grid; place-items: center; }
+  .quiz-timer-ring.warn { background: conic-gradient(var(--danger) 360deg, rgba(255,255,255,.1) 0deg); }
+  .quiz-question { font-size: 15px; font-weight: 800; padding: 16px 14px;
+    background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 14px; margin-bottom: 12px; line-height: 1.6; min-height: 70px;
+    display: grid; place-items: center; text-align: center; white-space: pre-line; }
+  .quiz-option { width: 100%; padding: 13px 16px; margin-bottom: 8px;
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px; color: var(--tx); font-size: 13.5px; font-weight: 700;
+    font-family: inherit; cursor: pointer; transition: all .2s; text-align: right; }
+  .quiz-option:active { transform: scale(.98); }
+  .quiz-option.correct { background: rgba(34,197,94,.15); border-color: var(--gn); color: var(--gn); }
+  .quiz-option.wrong { background: rgba(239,68,68,.15); border-color: var(--danger); color: var(--danger); }
+  .quiz-option:disabled { cursor: default; }
 
-  #retry-btn {
-    display: none;
-    width: 100%;
-    padding: 14px 28px;
-    margin-top: 20px;
-    border: none;
-    border-radius: 14px;
-    background: linear-gradient(135deg, var(--gn), var(--gn-2));
-    color: #04210d;
-    font-size: 14px;
-    font-weight: 800;
-    font-family: inherit;
-    cursor: pointer;
-    letter-spacing: 0.3px;
-    box-shadow: 0 8px 24px -8px var(--gn-glow), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-    transition: transform 0.15s;
+  /* Leaderboard */
+  .lb-list { display: flex; flex-direction: column; gap: 8px; max-height: 440px;
+    overflow-y: auto; padding: 4px 2px; scrollbar-width: thin;
+    scrollbar-color: rgba(34,197,94,.4) transparent; }
+  .lb-list::-webkit-scrollbar { width: 5px; }
+  .lb-list::-webkit-scrollbar-thumb { background: rgba(34,197,94,.4); border-radius: 3px; }
+  .lb-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
+    border-radius: 12px; transition: transform .15s, border-color .25s; text-align: right; }
+  .lb-row.me { background: linear-gradient(135deg, rgba(34,197,94,.15), rgba(34,197,94,.06));
+    border-color: rgba(34,197,94,.5); box-shadow: 0 0 20px -8px var(--gn-glow);
+    animation: lbPulse 2s ease-in-out infinite; }
+  @keyframes lbPulse {
+    0%,100% { box-shadow: 0 0 20px -8px var(--gn-glow); }
+    50% { box-shadow: 0 0 30px -5px var(--gn-glow); }
   }
-  #retry-btn:active { transform: scale(0.97); }
+  .lb-rank { width: 36px; height: 36px; border-radius: 10px;
+    display: grid; place-items: center; font-size: 14px; font-weight: 900;
+    background: rgba(255,255,255,.05); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .lb-rank.top1 { background: linear-gradient(135deg, #fbbf24, #d97706); color: #000; box-shadow: 0 0 15px rgba(251,191,36,.6); }
+  .lb-rank.top2 { background: linear-gradient(135deg, #cbd5e1, #94a3b8); color: #000; box-shadow: 0 0 12px rgba(203,213,225,.4); }
+  .lb-rank.top3 { background: linear-gradient(135deg, #d97706, #92400e); color: #fff; box-shadow: 0 0 12px rgba(217,119,6,.5); }
+  .lb-info { flex: 1; min-width: 0; }
+  .lb-name { font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; margin-bottom: 2px; }
+  .lb-sub { font-size: 10px; color: var(--muted); font-weight: 600;
+    display: flex; gap: 8px; align-items: center; }
+  .lb-score { font-size: 15px; font-weight: 900; color: var(--gn); flex-shrink: 0;
+    font-variant-numeric: tabular-nums; }
+  .lb-row.me .lb-score { color: var(--gold); }
+  .lb-empty { padding: 30px 20px; text-align: center; color: var(--muted);
+    font-size: 13px; font-weight: 600; }
+  .lb-sep { padding: 12px 8px 4px; text-align: center; color: var(--muted);
+    font-size: 11px; font-weight: 700; letter-spacing: 1px; }
 
-  .state-pending .icon-wrap {
-    background: linear-gradient(135deg, var(--gold), #d97706);
-    box-shadow: 0 0 24px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  }
-  .state-pending .spinner { border-top-color: var(--gold); }
-  .state-error .icon-wrap,
-  .state-rejected .icon-wrap {
-    background: linear-gradient(135deg, var(--danger), #b91c1c);
-    box-shadow: 0 0 24px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  }
-  .state-error .spinner,
-  .state-rejected .spinner { display: none; }
+  /* Modal */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.72);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal.show { display: flex; }
+  .modal-card { max-width: 340px; width: 100%;
+    background: linear-gradient(160deg, rgba(20,24,33,.98), rgba(15,18,25,.98));
+    border: 1px solid rgba(34,197,94,.35); border-radius: 22px; padding: 30px 22px 22px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,.7), 0 0 60px -10px var(--gn-glow);
+    animation: modalEnter .38s cubic-bezier(.22,.9,.32,1.2);
+    position: relative; overflow: hidden; }
+  @keyframes modalEnter { from { opacity: 0; transform: scale(.85) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); } }
+  .modal-card.win { border-color: rgba(34,197,94,.5); box-shadow: 0 20px 60px rgba(0,0,0,.7), 0 0 80px -10px rgba(34,197,94,.6); }
+  .modal-card.lose { border-color: rgba(239,68,68,.4); box-shadow: 0 20px 60px rgba(0,0,0,.7), 0 0 80px -10px rgba(239,68,68,.5); }
+  .modal-icon { font-size: 60px; margin-bottom: 10px; line-height: 1;
+    animation: iconPop .5s cubic-bezier(.22,.9,.32,1.6); }
+  @keyframes iconPop { from { transform: scale(0); } to { transform: scale(1); } }
+  .modal-card h3 { font-size: 21px; font-weight: 900; margin: 0 0 10px; }
+  .modal-card.win h3 { color: var(--gn); }
+  .modal-card.lose h3 { color: var(--danger); }
+  .modal-body { font-size: 13px; color: var(--muted); margin: 0 0 8px;
+    line-height: 1.9; font-weight: 600; white-space: pre-line; }
+  .modal-reward { display: inline-block; padding: 8px 16px;
+    background: rgba(251,191,36,.1); border: 1px solid rgba(251,191,36,.3);
+    border-radius: 12px; color: var(--gold); font-size: 15px; font-weight: 900;
+    margin: 6px 0 18px; font-variant-numeric: tabular-nums; }
+  .modal-reward.zero { background: rgba(255,255,255,.04);
+    border-color: rgba(255,255,255,.1); color: var(--muted); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .modal-btn { flex: 1; padding: 13px 10px; border: none; border-radius: 12px;
+    font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+    transition: transform .15s; }
+  .modal-btn:active { transform: scale(.96); }
+  .modal-btn.primary { background: linear-gradient(135deg, var(--gn), var(--gn-2));
+    color: #04210d; box-shadow: 0 6px 20px -8px var(--gn-glow); }
+  .modal-btn.secondary { background: rgba(255,255,255,.06); color: var(--tx);
+    border: 1px solid rgba(255,255,255,.1); }
 
-  .status-dot {
-    display: inline-block;
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--gn);
-    box-shadow: 0 0 10px var(--gn);
-    margin-left: 8px;
-    vertical-align: middle;
-    animation: dotPulse 1.6s ease-in-out infinite;
-    will-change: opacity;
-  }
-  @keyframes dotPulse {
-    0%, 100% { opacity: 1; }
-    50%      { opacity: 0.35; }
-  }
-
-  .confetti-container {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-    border-radius: 24px;
-    z-index: 5;
-  }
-  .confetti {
-    position: absolute;
-    top: -12px;
-    width: 7px; height: 7px;
-    border-radius: 2px;
-    will-change: transform, opacity;
-    backface-visibility: hidden;
-    animation: confettiFall linear forwards;
-  }
-  @keyframes confettiFall {
-    0% {
-      transform: translate3d(0, 0, 0) rotate(0deg);
-      opacity: 1;
-    }
-    100% {
-      transform: translate3d(var(--dx, 0), 420px, 0) rotate(720deg);
-      opacity: 0;
-    }
-  }
-
-  .hud-bar {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gn), transparent);
-    z-index: 5;
-    animation: hudBar 3.5s ease-in-out infinite;
-    will-change: opacity;
-  }
-  @keyframes hudBar {
-    0%, 100% { opacity: 0.35; }
-    50%      { opacity: 1; }
-  }
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 6px;
+    font-size: 10px; font-weight: 800; margin-right: 6px; }
+  .badge-easy { background: rgba(34,197,94,.15); color: var(--gn);
+    border: 1px solid rgba(34,197,94,.3); }
+  .badge-hard { background: rgba(239,68,68,.15); color: var(--danger);
+    border: 1px solid rgba(239,68,68,.3); }
 </style>
 </head>
 <body>
 
-<!-- ============ BACKGROUND ============ -->
 <div class="bg">
   <div class="bg-aurora"></div>
   <div class="bg-grid"></div>
-  <div class="bg-particles" id="particles"></div>
   <div class="bg-vignette"></div>
   <div class="bg-line-top"></div>
   <div class="bg-line-bottom"></div>
 </div>
 
-<!-- ============ CONTENT ============ -->
 <div class="wrap">
-  <div class="box" id="box">
-    <div class="box-progress">
-      <div class="box-progress-fill" id="boxProgressFill"></div>
+
+  <!-- ============ VERIFY ============ -->
+  <div class="screen active" id="screen-verify">
+    <div class="box">
+      <div class="icon-wrap" id="verifyIcon">🛡️</div>
+      <h2 id="verifyTitle">در حال تأیید هویت...</h2>
+      <div class="subtitle">World War · Verify</div>
+
+      <div class="stages" id="stagesBox">
+        <div class="stage" data-stage="connect"><span class="stage-icon">○</span><span>اتصال به سرور</span></div>
+        <div class="stage" data-stage="send"><span class="stage-icon">○</span><span>ارسال اطلاعات</span></div>
+        <div class="stage" data-stage="verify"><span class="stage-icon">○</span><span>بررسی توسط سرور</span></div>
+      </div>
+
+      <div class="spinner" id="verifySpinner"></div>
+      <p id="verifyStatus">لطفاً صبر کنید...</p>
+
+      <p class="close-hint" id="closeHint">
+        <span style="color:var(--gn)">✅</span>
+        کار وب‌اپ تمام شده — می‌توانید این صفحه را ببندید و به بات بازگردید.
+        <br><span style="font-size:11px">(این صفحه خودش بسته نمی‌شود)</span>
+      </p>
+
+      <button class="btn" id="enterGameBtn" style="display:none">🎮 ورود به بازی</button>
+      <button class="btn secondary" id="retryBtn" style="display:none">🔄 تلاش مجدد</button>
     </div>
-    <div class="confetti-container" id="confettiContainer"></div>
+  </div>
 
-    <div class="icon-wrap" id="iconWrap">🛡️</div>
-    <h2 id="title">در حال تأیید هویت...</h2>
-    <div class="subtitle">World War · Verify</div>
+  <!-- ============ HUB ============ -->
+  <div class="screen" id="screen-hub">
+    <div class="box">
+      <div class="hub-header">
+        <div class="hub-title">World War</div>
+        <div class="hub-sub">MINI GAMES HUB</div>
+      </div>
+      <div class="hub-stats">
+        <div class="stat-card"><div class="s-val" id="hubScore">۰</div><div class="s-lbl">⭐ امتیاز</div></div>
+        <div class="stat-card"><div class="s-val" id="hubGames">۰</div><div class="s-lbl">🎮 بازی</div></div>
+      </div>
+      <div class="game-card" onclick="openDifficulty('defense')">
+        <div class="gc-icon defense">🚀</div>
+        <div class="gc-info">
+          <div class="gc-title">دفاع از پایتخت</div>
+          <div class="gc-desc">موشک‌های سریع رو قبل از برخورد بزن!</div>
+          <div class="gc-reward">⭐ ۱۰ امتیاز/موشک</div>
+        </div>
+      </div>
+      <div class="game-card" onclick="openDifficulty('quiz')">
+        <div class="gc-icon quiz">🧠</div>
+        <div class="gc-info">
+          <div class="gc-title">کوییز جنگ</div>
+          <div class="gc-desc">از بانک ۳۰۰ سؤال تصادفی</div>
+          <div class="gc-reward">⭐ ۱۰ امتیاز/سؤال درست</div>
+        </div>
+      </div>
+      <div class="game-card" onclick="openLeaderboard()">
+        <div class="gc-icon leader">🏆</div>
+        <div class="gc-info">
+          <div class="gc-title">رتبه‌بندی</div>
+          <div class="gc-desc">ببین کی بهترینه</div>
+          <div class="gc-reward">🥇 ۲۰ نفر برتر</div>
+        </div>
+      </div>
+      <button class="btn secondary" onclick="backToVerify()">⬅️ بازگشت</button>
+    </div>
+  </div>
 
-    <div class="stages" id="stages">
-      <div class="stage" data-stage="connect">
-        <span class="stage-icon">○</span>
-        <span class="stage-label">اتصال به سرور</span>
+  <!-- ============ DIFFICULTY ============ -->
+  <div class="screen" id="screen-difficulty">
+    <div class="box">
+      <button class="back-btn" onclick="showScreen('hub')">⬅️ بازگشت</button>
+      <h2 id="diffTitle">درجه سختی</h2>
+      <div class="subtitle" id="diffSubtitle">Select Difficulty</div>
+      <div class="diff-card easy" onclick="selectDifficulty('easy')">
+        <div class="dc-icon">🌱</div>
+        <div class="dc-info">
+          <div class="dc-title">آسان</div>
+          <div class="dc-desc" id="diffEasyDesc">—</div>
+        </div>
       </div>
-      <div class="stage" data-stage="send">
-        <span class="stage-icon">○</span>
-        <span class="stage-label">ارسال اطلاعات</span>
-      </div>
-      <div class="stage" data-stage="verify">
-        <span class="stage-icon">○</span>
-        <span class="stage-label">بررسی توسط سرور</span>
+      <div class="diff-card hard" onclick="selectDifficulty('hard')">
+        <div class="dc-icon">🔥</div>
+        <div class="dc-info">
+          <div class="dc-title">سخت</div>
+          <div class="dc-desc" id="diffHardDesc">—</div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="spinner" id="spinner"></div>
-    <p id="status">لطفاً صبر کنید...</p>
-    <p class="vpn-hint" id="vpn-hint">در صورت برقراری نشدن اتصال، VPN خود را روشن کنید</p>
+  <!-- ============ DEFENSE ============ -->
+  <div class="screen" id="screen-defense">
+    <div class="box">
+      <button class="back-btn" onclick="endDefense();showScreen('hub')">⬅️ بازگشت</button>
+      <h2>🚀 دفاع از پایتخت <span class="badge badge-easy" id="defBadge">آسان</span></h2>
+      <div class="subtitle">Missile Defense</div>
+      <div class="defense-hud">
+        <div class="hud-item">⏱ <span class="hud-val" id="defTime">۳۰</span></div>
+        <div class="hud-item">❤️ <span class="hud-val" id="defLives">۳</span></div>
+        <div class="hud-item">⚡ <span class="hud-val combo" id="defCombo">۰</span></div>
+        <div class="hud-item">⭐ <span class="hud-val" id="defScore">۰</span></div>
+      </div>
+      <div class="defense-area" id="defenseArea">
+        <div class="city-base" id="cityBase">🏛️</div>
+      </div>
+      <button class="btn" id="defStartBtn" onclick="startDefense()">🎯 شروع بازی</button>
+    </div>
+  </div>
 
-    <p class="close-hint" id="closeHint">
-      <span class="close-hint-icon">✅</span>
-      کار وب‌اپ تمام شده — می‌توانید این صفحه را ببندید و به بات بازگردید.
-      <br>
-      بستن خودکار در <span class="close-hint-count" id="closeCount">۱۵</span> ثانیه…
-    </p>
+  <!-- ============ QUIZ ============ -->
+  <div class="screen" id="screen-quiz">
+    <div class="box">
+      <button class="back-btn" onclick="endQuiz();showScreen('hub')">⬅️ بازگشت</button>
+      <h2>🧠 کوییز جنگ <span class="badge badge-easy" id="quizBadge">آسان</span></h2>
+      <div class="subtitle" id="quizSubtitle">War Quiz · ۸ سؤال</div>
+      <div class="quiz-progress" id="quizProgress"></div>
+      <div class="quiz-timer">
+        <div class="quiz-timer-ring" id="quizTimerRing"><span id="quizTimerText">۸</span></div>
+      </div>
+      <div class="quiz-question" id="quizQuestion">آماده‌ای؟</div>
+      <div id="quizOptions"></div>
+      <button class="btn" id="quizStartBtn" onclick="startQuiz()">🎯 شروع کوییز</button>
+    </div>
+  </div>
 
-    <button id="retry-btn">🔄 تلاش مجدد</button>
+  <!-- ============ LEADERBOARD ============ -->
+  <div class="screen" id="screen-leaderboard">
+    <div class="box">
+      <button class="back-btn" onclick="showScreen('hub')">⬅️ بازگشت</button>
+      <h2>🏆 رتبه‌بندی</h2>
+      <div class="subtitle">Top 20 Players</div>
+      <div class="lb-list" id="lbList">
+        <div class="lb-empty">در حال بارگذاری...</div>
+      </div>
+      <button class="btn secondary" onclick="openLeaderboard()" style="margin-top:14px">🔄 بروزرسانی</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-card" id="modalCard">
+    <div class="modal-icon" id="modalIcon">🏆</div>
+    <h3 id="modalTitle">پایان بازی!</h3>
+    <p class="modal-body" id="modalBody">امتیاز شما</p>
+    <div class="modal-reward" id="modalReward">+۰ امتیاز</div>
+    <div class="modal-actions">
+      <button class="modal-btn primary" id="modalPrimary">🔄 دوباره</button>
+      <button class="modal-btn secondary" id="modalSecondary">🏠 منو</button>
+    </div>
   </div>
 </div>
 
-<div class="hud-bar"></div>
-
 <script>
-  /* ============================================================
-     TELEGRAM SDK
-     ============================================================ */
-  const tg = window.Telegram?.WebApp;
-  if (tg) {
-    tg.ready();
-    tg.expand();
-    try { tg.setHeaderColor('#05060a'); } catch (e) {}
-    try { tg.setBackgroundColor('#05060a'); } catch (e) {}
-    try { tg.disableVerticalSwipes?.(); } catch (e) {}
-  }
+/* ================================================================
+   CONSTANTS
+   ================================================================ */
+const API_BASE = 'https://else1234.pythonanywhere.com';
+const VERIFY_TIMEOUT_MS = 10000;
 
-  /* ============================================================
-     PARTICLES
-     ============================================================ */
-  (function spawnParticles() {
-    const container = document.getElementById('particles');
-    if (!container) return;
-    const count = 14;
-    const colors = ['#22c55e', '#16a34a', '#a78bfa', '#38bdf8'];
-    for (let i = 0; i < count; i++) {
-      const p = document.createElement('div');
-      p.className = 'pt';
-      p.style.left = (Math.random() * 100) + '%';
-      p.style.top = (100 + Math.random() * 10) + '%';
-      p.style.animationDuration = (12 + Math.random() * 14) + 's';
-      p.style.animationDelay = (Math.random() * 12) + 's';
-      const size = 2 + Math.random() * 2.5;
-      p.style.width = size + 'px';
-      p.style.height = size + 'px';
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      p.style.background = color;
-      p.style.boxShadow = `0 0 6px ${color}`;
-      container.appendChild(p);
-    }
-  })();
+/* ================================================================
+   TELEGRAM SDK
+   ================================================================ */
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready(); tg.expand();
+  try { tg.setHeaderColor('#05060a'); } catch(e) {}
+  try { tg.setBackgroundColor('#05060a'); } catch(e) {}
+  try { tg.disableVerticalSwipes?.(); } catch(e) {}
+}
 
-  /* ============================================================
-     DOM REFS
-     ============================================================ */
-  const statusEl = document.getElementById('status');
-  const spinnerEl = document.getElementById('spinner');
-  const retryBtn = document.getElementById('retry-btn');
-  const titleEl = document.getElementById('title');
-  const vpnHint = document.getElementById('vpn-hint');
-  const boxEl = document.getElementById('box');
-  const iconWrap = document.getElementById('iconWrap');
-  const progressFill = document.getElementById('boxProgressFill');
-  const confettiContainer = document.getElementById('confettiContainer');
-  const closeHint = document.getElementById('closeHint');
-  const closeCount = document.getElementById('closeCount');
+/* ================================================================
+   HELPERS
+   ================================================================ */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const toPersianDigits = s => String(s).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+const fmt = n => toPersianDigits(Number(n).toLocaleString('en-US'));
 
-  const BACKEND_URL = 'https://else1234.pythonanywhere.com/verify';
-  const TIMEOUT_MS = 10000;
-  const AUTO_CLOSE_SECONDS = 15; // <<< زمان بستن خودکار (ثانیه)
+/* ================================================================
+   GLOBAL STATE
+   ================================================================ */
+const state = { score: 0, gamesPlayed: 0 };
+let currentGame = null;
+let currentDifficulty = 'easy';
+let verificationStatus = 'NONE'; // APPROVED | PENDING | REJECTED | NONE
 
-  /* ============================================================
-     STAGE MANAGEMENT
-     ============================================================ */
-  const STAGES = ['connect', 'send', 'verify'];
+/* ================================================================
+   VERIFY FLOW
+   ================================================================ */
+const verifyIcon = document.getElementById('verifyIcon');
+const verifyTitle = document.getElementById('verifyTitle');
+const verifyStatus = document.getElementById('verifyStatus');
+const verifySpinner = document.getElementById('verifySpinner');
+const stagesBox = document.getElementById('stagesBox');
+const closeHint = document.getElementById('closeHint');
+const enterGameBtn = document.getElementById('enterGameBtn');
+const retryBtn = document.getElementById('retryBtn');
 
-  function setStage(stageKey, state) {
-    const el = document.querySelector(`.stage[data-stage="${stageKey}"]`);
-    if (!el) return;
-    const icon = el.querySelector('.stage-icon');
-    el.classList.remove('active', 'done');
-    if (state === 'active') {
-      el.classList.add('active');
-      if (icon) icon.textContent = '◐';
-    } else if (state === 'done') {
-      el.classList.add('done');
-      if (icon) icon.textContent = '✓';
-    } else {
-      if (icon) icon.textContent = '○';
-    }
-  }
+function setStage(key, st) {
+  const el = document.querySelector(`.stage[data-stage="${key}"]`);
+  if (!el) return;
+  el.classList.remove('active', 'done');
+  const icon = el.querySelector('.stage-icon');
+  if (st === 'active') { el.classList.add('active'); icon.textContent = '◐'; }
+  else if (st === 'done') { el.classList.add('done'); icon.textContent = '✓'; }
+  else { icon.textContent = '○'; }
+}
 
-  function resetStages() {
-    STAGES.forEach(s => setStage(s, null));
-  }
+function resetStages() {
+  ['connect', 'send', 'verify'].forEach(s => setStage(s, null));
+}
 
-  function completeAllStages() {
-    STAGES.forEach(s => setStage(s, 'done'));
-  }
+async function tryVerify() {
+  // reset UI
+  verifyIcon.textContent = '🛡️';
+  verifyTitle.textContent = 'در حال تأیید هویت...';
+  verifyStatus.textContent = 'لطفاً صبر کنید...';
+  verifySpinner.style.display = '';
+  stagesBox.style.display = '';
+  closeHint.style.display = 'none';
+  enterGameBtn.style.display = 'none';
+  retryBtn.style.display = 'none';
+  resetStages();
 
-  /* ============================================================
-     PROGRESS BAR
-     ============================================================ */
-  function setProgress(pct) {
-    if (!progressFill) return;
-    const clamped = Math.min(100, Math.max(0, pct));
-    progressFill.style.transform = `scaleX(${clamped / 100})`;
-  }
+  setStage('connect', 'active');
+  await sleep(250);
+  setStage('connect', 'done');
+  setStage('send', 'active');
 
-  /* ============================================================
-     CONFETTI
-     ============================================================ */
-  function launchConfetti() {
-    if (!confettiContainer) return;
-    const colors = ['#22c55e', '#16a34a', '#fbbf24', '#38bdf8', '#a78bfa'];
-    const count = 18;
-    const pieces = [];
-    for (let i = 0; i < count; i++) {
-      const c = document.createElement('div');
-      c.className = 'confetti';
-      c.style.left = (8 + Math.random() * 84) + '%';
-      c.style.background = colors[Math.floor(Math.random() * colors.length)];
-      c.style.animationDelay = (Math.random() * 0.35) + 's';
-      c.style.animationDuration = (1.2 + Math.random() * 0.9) + 's';
-      c.style.setProperty('--dx', (Math.random() * 120 - 60) + 'px');
-      const size = 6 + Math.random() * 4;
-      c.style.width = size + 'px';
-      c.style.height = size + 'px';
-      confettiContainer.appendChild(c);
-      pieces.push(c);
-    }
-    setTimeout(() => {
-      pieces.forEach(p => { try { p.remove(); } catch (e) {} });
-    }, 2600);
-  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), VERIFY_TIMEOUT_MS);
 
-  /* ============================================================
-     AUTO-CLOSE با شمارش معکوس (۱۵ ثانیه)
-     ============================================================ */
-  let closeTimerId = null;
-  let countdownId = null;
+  let fetchDone = false;
+  const stageTimer = setTimeout(() => {
+    if (fetchDone) return;
+    setStage('send', 'done');
+    setStage('verify', 'active');
+  }, 700);
 
-  function cancelAutoClose() {
-    if (closeTimerId) { clearTimeout(closeTimerId); closeTimerId = null; }
-    if (countdownId) { clearInterval(countdownId); countdownId = null; }
-  }
-
-  function scheduleAutoClose() {
-    cancelAutoClose();
-    let remaining = AUTO_CLOSE_SECONDS;
-    if (closeCount) closeCount.textContent = toPersianDigits(remaining);
-
-    countdownId = setInterval(() => {
-      remaining -= 1;
-      if (closeCount) closeCount.textContent = toPersianDigits(Math.max(remaining, 0));
-      if (remaining <= 0) {
-        clearInterval(countdownId);
-        countdownId = null;
-      }
-    }, 1000);
-
-    closeTimerId = setTimeout(() => {
-      cancelAutoClose();
-      try { tg?.close(); } catch (e) {}
-    }, AUTO_CLOSE_SECONDS * 1000);
-  }
-
-  function toPersianDigits(n) {
-    return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
-  }
-
-  /* ============================================================
-     STATE HELPER
-     ============================================================ */
-  function setState(state, opts = {}) {
-    boxEl.classList.remove('state-pending', 'state-error', 'state-rejected');
-    if (state === 'pending') boxEl.classList.add('state-pending');
-    else if (state === 'rejected') boxEl.classList.add('state-rejected');
-    else if (state === 'error') boxEl.classList.add('state-error');
-
-    if (opts.icon) iconWrap.textContent = opts.icon;
-    if (opts.title) titleEl.textContent = opts.title;
-    if (opts.statusHTML !== undefined) statusEl.innerHTML = opts.statusHTML;
-    else if (opts.status !== undefined) statusEl.textContent = opts.status;
-
-    if (opts.showSpinner === true) spinnerEl.style.display = '';
-    else if (opts.showSpinner === false) spinnerEl.style.display = 'none';
-
-    if (opts.showRetry === true) retryBtn.style.display = '';
-    else if (opts.showRetry === false) retryBtn.style.display = 'none';
-
-    if (opts.showVpnHint === true) vpnHint.style.display = '';
-    else if (opts.showVpnHint === false) vpnHint.style.display = 'none';
-
-    if (opts.showCloseHint === true) closeHint.style.display = 'block';
-    else if (opts.showCloseHint === false) closeHint.style.display = 'none';
-
-    if (typeof opts.showStages === 'boolean') {
-      const stagesEl = document.getElementById('stages');
-      if (stagesEl) stagesEl.style.display = opts.showStages ? '' : 'none';
-    }
-
-    // مدیریت زمان‌بندی بستن خودکار
-    if (opts.autoClose === true) {
-      scheduleAutoClose();
-    } else {
-      cancelAutoClose();
-    }
-  }
-
-  /* ============================================================
-     HELPERS
-     ============================================================ */
-  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-
-  function postVerify(signal) {
-    return fetch(BACKEND_URL, {
+  try {
+    const res = await fetch(API_BASE + '/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -664,179 +628,966 @@
         screen_h: window.screen.height,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
       }),
-      signal,
+      signal: controller.signal,
     });
+
+    fetchDone = true;
+    clearTimeout(timeoutId);
+    clearTimeout(stageTimer);
+
+    const data = await res.json();
+    setStage('verify', 'done');
+    handleVerifyResponse(data);
+  } catch (err) {
+    fetchDone = true;
+    clearTimeout(timeoutId);
+    clearTimeout(stageTimer);
+    handleVerifyError(err);
   }
+}
 
-  /* ============================================================
-     VERIFY FLOW
-     ============================================================ */
-  async function tryVerify() {
-    cancelAutoClose();
+async function handleVerifyResponse(data) {
+  const status = data.status || 'REJECTED';
+  verificationStatus = status;
 
-    setState('verifying', {
-      icon: '🛡️',
-      title: 'در حال تأیید هویت...',
-      status: 'لطفاً صبر کنید...',
-      showSpinner: true,
-      showRetry: false,
-      showVpnHint: true,
-      showCloseHint: false,
-      showStages: true,
-      autoClose: false,
+  const iconMap = { APPROVED: '✅', PENDING: '⏳', REJECTED: '🚫' };
+  const titleMap = { APPROVED: 'تأیید شد', PENDING: 'در انتظار تأیید ادمین', REJECTED: 'رد شد' };
+  const statusMap = {
+    APPROVED: 'هویت شما با موفقیت تأیید شد<br><span style="font-size:12px;color:var(--muted)">می‌تونید وارد بازی بشید</span>',
+    PENDING: 'درخواست شما در حال بررسیه<br><span style="font-size:12px;color:var(--gold)">می‌تونید از بازی‌ها استفاده کنید</span>',
+    REJECTED: 'درخواست شما رد شده<br><span style="font-size:12px;color:var(--danger)">برای پیگیری با ادمین تماس بگیرید</span><br><span style="font-size:12px;color:var(--muted)">ولی می‌تونید از بازی‌ها استفاده کنید</span>',
+  };
+
+  verifyIcon.textContent = iconMap[status] || '⚠️';
+  verifyTitle.textContent = titleMap[status] || 'وضعیت نامشخص';
+  verifyStatus.innerHTML = statusMap[status] || (data.error || 'خطای نامشخص');
+  verifySpinner.style.display = 'none';
+  stagesBox.style.display = 'none';
+  closeHint.style.display = 'block';
+  enterGameBtn.style.display = 'block';
+
+  // bootstrap امتیاز کاربر از سرور
+  bootstrapUserScore();
+}
+
+function handleVerifyError(err) {
+  verifyIcon.textContent = '📡';
+  verifyTitle.textContent = 'اتصال برقرار نشد';
+  verifyStatus.textContent = 'لطفاً VPN خود را روشن کنید و دوباره تلاش کنید.';
+  verifySpinner.style.display = 'none';
+  stagesBox.style.display = 'none';
+  closeHint.style.display = 'none';
+  enterGameBtn.style.display = 'none';
+  retryBtn.style.display = 'block';
+}
+
+retryBtn.addEventListener('click', tryVerify);
+
+/* ================================================================
+   BOOTSTRAP USER SCORE FROM SERVER
+   ================================================================ */
+async function bootstrapUserScore() {
+  try {
+    const res = await fetch(API_BASE + '/leaderboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ initData: tg?.initData || '' }),
     });
-    resetStages();
-    setProgress(0);
+    const data = await res.json();
+    if (data.ok && data.me) {
+      state.score = data.me.score;
+      state.gamesPlayed = data.me.games;
+    }
+  } catch (e) {}
+  saveLocalOnly();
+}
 
-    setStage('connect', 'active');
-    setProgress(15);
-    await sleep(180);
-    setStage('connect', 'done');
-    setProgress(30);
+/* ================================================================
+   LOCAL STORAGE (فقط برای بک‌آپ)
+   ================================================================ */
+const LB_KEY = 'ww_stats_v3';
+function saveLocalOnly() {
+  try {
+    localStorage.setItem(LB_KEY, JSON.stringify({
+      score: state.score, games: state.gamesPlayed,
+    }));
+  } catch (e) {}
+}
+function saveMyStats() {
+  saveLocalOnly();
+  // فقط کاربران تأییدشده/PENDING می‌تونن امتیاز بفرستن
+  if (verificationStatus !== 'APPROVED' && verificationStatus !== 'PENDING') return;
+  fetch(API_BASE + '/submit_score', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      initData: tg?.initData || '',
+      score: state.score,
+      games: state.gamesPlayed,
+    }),
+  }).catch(() => {});
+}
 
-    setStage('send', 'active');
-    setProgress(45);
+/* ================================================================
+   SCREEN NAVIGATION
+   ================================================================ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+  if (id === 'hub') updateHub();
+}
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+function backToVerify() { showScreen('verify'); }
+function updateHub() {
+  document.getElementById('hubScore').textContent = toPersianDigits(state.score);
+  document.getElementById('hubGames').textContent = toPersianDigits(state.gamesPlayed);
+}
 
-    let fetchFinished = false;
-    const stageTimer = setTimeout(() => {
-      if (fetchFinished) return;
-      setStage('send', 'done');
-      setStage('verify', 'active');
-      setProgress(80);
-    }, 700);
+enterGameBtn.addEventListener('click', () => showScreen('hub'));
 
-    try {
-      const res = await postVerify(controller.signal);
-      fetchFinished = true;
-      clearTimeout(timeoutId);
-      clearTimeout(stageTimer);
+/* ================================================================
+   DIFFICULTY
+   ================================================================ */
+function openDifficulty(game) {
+  currentGame = game;
+  const conf = game === 'defense' ? {
+    title: '🚀 درجه سختی دفاع', sub: 'Missile Defense',
+    easy: '⏱ ۲۵ ثانیه · 🐢 موشک‌های کم و آرام',
+    hard: '⏱ ۳۰ ثانیه · 🔥 موشک‌های زیاد و سریع',
+  } : {
+    title: '🧠 درجه سختی کوییز', sub: 'War Quiz',
+    easy: '📝 ۸ سؤال · ⏱ ۸ ثانیه هر سؤال',
+    hard: '📝 ۱۲ سؤال · ⏱ ۵ ثانیه هر سؤال',
+  };
+  document.getElementById('diffTitle').textContent = conf.title;
+  document.getElementById('diffSubtitle').textContent = conf.sub;
+  document.getElementById('diffEasyDesc').textContent = conf.easy;
+  document.getElementById('diffHardDesc').textContent = conf.hard;
+  showScreen('difficulty');
+}
+function selectDifficulty(level) {
+  currentDifficulty = level;
+  if (currentGame === 'defense') { initDefense(); showScreen('defense'); }
+  else if (currentGame === 'quiz') { initQuiz(); showScreen('quiz'); }
+}
 
-      const data = await res.json();
+/* ================================================================
+   MODAL
+   ================================================================ */
+function showModal({ win, icon, title, body, reward, rewardZero, primaryText, onPrimary, secondaryText, onSecondary }) {
+  const modal = document.getElementById('modal');
+  const card = document.getElementById('modalCard');
+  card.classList.remove('win', 'lose');
+  card.classList.add(win ? 'win' : 'lose');
+  document.getElementById('modalIcon').textContent = icon;
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').textContent = body;
+  const rewardEl = document.getElementById('modalReward');
+  rewardEl.textContent = reward;
+  rewardEl.classList.toggle('zero', !!rewardZero);
+  const prim = document.getElementById('modalPrimary');
+  const sec = document.getElementById('modalSecondary');
+  prim.textContent = primaryText || '🔄 دوباره';
+  sec.textContent = secondaryText || '🏠 منو';
+  const newPrim = prim.cloneNode(true);
+  const newSec = sec.cloneNode(true);
+  prim.parentNode.replaceChild(newPrim, prim);
+  sec.parentNode.replaceChild(newSec, sec);
+  newPrim.addEventListener('click', () => { closeModal(); onPrimary?.(); });
+  newSec.addEventListener('click', () => { closeModal(); onSecondary?.(); });
+  modal.classList.add('show');
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
 
-      setStage('verify', 'done');
-      setProgress(100);
+/* ================================================================
+   DEFENSE
+   ================================================================ */
+const DEFENSE_CONFIG = {
+  easy: { totalTime: 25, lives: 3, baseSpeed: 2.0, speedGrowth: 0.03,
+    randSpeedMax: 1.0, baseSpawn: 500, spawnDecay: 6, spawnMin: 380,
+    label: 'آسان', badgeClass: 'badge-easy' },
+  hard: { totalTime: 30, lives: 3, baseSpeed: 2.6, speedGrowth: 0.06,
+    randSpeedMax: 1.6, baseSpawn: 400, spawnDecay: 10, spawnMin: 300,
+    label: 'سخت', badgeClass: 'badge-hard' },
+};
+let defActive = false, defTime = 30, defLives = 3, defScore = 0, defCombo = 0;
+let defTimerId = null, defRaf = null, defLastSpawn = 0, defStartTs = 0;
+let defMissiles = [], defConfig = DEFENSE_CONFIG.easy;
 
-      handleResponse(data);
+function initDefense() {
+  defConfig = DEFENSE_CONFIG[currentDifficulty] || DEFENSE_CONFIG.easy;
+  endDefense();
+  defTime = defConfig.totalTime;
+  defLives = defConfig.lives;
+  defScore = 0; defCombo = 0;
+  resetDefHUD();
+  const badge = document.getElementById('defBadge');
+  badge.textContent = defConfig.label;
+  badge.className = 'badge ' + defConfig.badgeClass;
+  document.getElementById('defStartBtn').textContent = '🎯 شروع بازی';
+  document.getElementById('defStartBtn').style.display = 'block';
+}
 
-    } catch (err) {
-      fetchFinished = true;
-      clearTimeout(timeoutId);
-      clearTimeout(stageTimer);
-      handleError(err);
+function resetDefHUD() {
+  document.getElementById('defTime').textContent = toPersianDigits(defTime);
+  const lv = document.getElementById('defLives');
+  lv.textContent = toPersianDigits(defLives);
+  lv.classList.toggle('warn', defLives <= 1);
+  document.getElementById('defScore').textContent = toPersianDigits(defScore);
+  document.getElementById('defCombo').textContent = toPersianDigits(defCombo);
+}
+
+function startDefense() {
+  endDefense();
+  defActive = true;
+  defTime = defConfig.totalTime;
+  defLives = defConfig.lives;
+  defScore = 0; defCombo = 0;
+  defMissiles = []; defLastSpawn = 0;
+  defStartTs = performance.now();
+  resetDefHUD();
+  document.getElementById('defStartBtn').style.display = 'none';
+  const area = document.getElementById('defenseArea');
+  area.querySelectorAll('.missile-wrap, .particle, .score-popup, .impact-ring').forEach(m => m.remove());
+  defRaf = requestAnimationFrame(defLoop);
+  defTimerId = setInterval(() => {
+    if (!defActive) return;
+    defTime -= 1;
+    resetDefHUD();
+    if (defTime <= 0) endDefenseWithResult();
+  }, 1000);
+}
+
+function defLoop(ts) {
+  if (!defActive) return;
+  const elapsedSec = (ts - defStartTs) / 1000;
+  const c = defConfig;
+  const spawnInterval = Math.max(c.spawnMin, c.baseSpawn - Math.floor(elapsedSec / 5) * c.spawnDecay);
+  if (ts - defLastSpawn > spawnInterval) {
+    spawnMissile(elapsedSec);
+    defLastSpawn = ts;
+  }
+  const area = document.getElementById('defenseArea');
+  const baseY = area.clientHeight - 40;
+  for (let i = defMissiles.length - 1; i >= 0; i--) {
+    const m = defMissiles[i];
+    if (m.dead) continue;
+    m.y += m.vy;
+    m.el.style.top = m.y + 'px';
+    if (m.y + 52 >= baseY) {
+      m.dead = true;
+      m.el.remove();
+      defMissiles.splice(i, 1);
+      defLives -= 1;
+      defCombo = 0;
+      resetDefHUD();
+      shakeArea();
+      flashBase();
+      if (defLives <= 0) { endDefenseWithResult(); return; }
     }
   }
+  defRaf = requestAnimationFrame(defLoop);
+}
 
-  /* ============================================================
-     HANDLE RESPONSE
-     ============================================================ */
-  function handleResponse(data) {
-    if (data.status === 'APPROVED') {
-      setState('approved', {
-        icon: '✅',
-        title: 'تأیید شد',
-        statusHTML: 'هویت شما با موفقیت تأیید شد<span class="status-dot"></span><br>به بات بازگردید.',
-        showSpinner: false,
-        showRetry: false,
-        showVpnHint: false,
-        showCloseHint: true,
-        showStages: false,
-        autoClose: true,   // ۱۵ ثانیه
-      });
-      launchConfetti();
+function spawnMissile(elapsedSec) {
+  const area = document.getElementById('defenseArea');
+  const areaW = area.clientWidth;
+  const c = defConfig;
+  const wrap = document.createElement('div');
+  wrap.className = 'missile-wrap';
+  const trail = document.createElement('div');
+  trail.className = 'm-trail';
+  const emoji = document.createElement('div');
+  emoji.className = 'm-emoji';
+  emoji.textContent = '🚀';
+  wrap.appendChild(trail);
+  wrap.appendChild(emoji);
+  const x = 10 + Math.random() * (areaW - 64);
+  const y = -52;
+  wrap.style.left = x + 'px';
+  wrap.style.top = y + 'px';
+  const vy = (c.baseSpeed + elapsedSec * c.speedGrowth) + Math.random() * c.randSpeedMax;
+  const m = { el: wrap, x, y, vy, dead: false };
+  wrap.addEventListener('pointerdown', e => {
+    e.preventDefault(); e.stopPropagation();
+    if (m.dead || !defActive) return;
+    m.dead = true;
+    defCombo++;
+    const bonus = Math.min(defCombo, 10);
+    const gained = 10 + bonus;
+    defScore += gained;
+    resetDefHUD();
+    burstParticles(m.x + 22, m.y + 26);
+    showScorePopup(m.x + 22, m.y, `+${toPersianDigits(gained)}`);
+    showImpactRing(m.x + 22, m.y + 26);
+    pulseCombo();
+    wrap.classList.add('boom');
+    setTimeout(() => wrap.remove(), 500);
+    const idx = defMissiles.indexOf(m);
+    if (idx >= 0) defMissiles.splice(idx, 1);
+  }, { passive: false });
+  area.appendChild(wrap);
+  defMissiles.push(m);
+}
 
-    } else if (data.status === 'PENDING') {
-      setState('pending', {
-        icon: '⏳',
-        title: 'در انتظار تأیید ادمین',
-        statusHTML: 'درخواست شما ثبت شد.<br>پس از تأیید، به شما اطلاع داده می‌شود.',
-        showSpinner: true,
-        showRetry: false,
-        showVpnHint: false,
-        showCloseHint: true,
-        showStages: false,
-        autoClose: true,   // ۱۵ ثانیه
-      });
-
-    } else if (data.status === 'REJECTED') {
-      setState('rejected', {
-        icon: '🚫',
-        title: 'رد شد',
-        statusHTML: data.reason === 'already_rejected'
-          ? 'درخواست شما قبلاً رد شده است.<br>برای پیگیری با ادمین تماس بگیرید.'
-          : (data.error || 'دسترسی رد شد.'),
-        showSpinner: false,
-        showRetry: false,
-        showVpnHint: false,
-        showCloseHint: true,
-        showStages: false,
-        autoClose: true,   // ۱۵ ثانیه
-      });
-
-    } else {
-      // خطای نامشخص — بدون auto-close، دکمه retry
-      setState('error', {
-        icon: '⚠️',
-        title: 'خطا',
-        status: data.error || 'خطای نامشخص',
-        showSpinner: false,
-        showRetry: true,
-        showVpnHint: false,
-        showCloseHint: false,
-        showStages: false,
-        autoClose: false,
-      });
-    }
+function burstParticles(cx, cy) {
+  const area = document.getElementById('defenseArea');
+  const colors = ['#fbbf24', '#ef4444', '#f97316', '#fde047', '#fb923c'];
+  const count = 14;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = (Math.PI * 2 / count) * i + Math.random() * 0.5;
+    const dist = 30 + Math.random() * 55;
+    p.style.left = cx + 'px';
+    p.style.top = cy + 'px';
+    p.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+    p.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+    const color = colors[i % colors.length];
+    const size = 4 + Math.random() * 6;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.background = color;
+    p.style.boxShadow = `0 0 12px ${color}, 0 0 6px ${color}`;
+    area.appendChild(p);
+    setTimeout(() => p.remove(), 750);
   }
+}
+function showScorePopup(cx, cy, text) {
+  const area = document.getElementById('defenseArea');
+  const pop = document.createElement('div');
+  pop.className = 'score-popup';
+  pop.textContent = text;
+  pop.style.left = cx + 'px';
+  pop.style.top = cy + 'px';
+  area.appendChild(pop);
+  setTimeout(() => pop.remove(), 1000);
+}
+function showImpactRing(cx, cy) {
+  const area = document.getElementById('defenseArea');
+  const ring = document.createElement('div');
+  ring.className = 'impact-ring';
+  ring.style.left = cx + 'px';
+  ring.style.top = cy + 'px';
+  area.appendChild(ring);
+  setTimeout(() => ring.remove(), 520);
+}
+function shakeArea() {
+  const area = document.getElementById('defenseArea');
+  area.classList.remove('shake');
+  void area.offsetWidth;
+  area.classList.add('shake');
+  setTimeout(() => area.classList.remove('shake'), 420);
+}
+function flashBase() {
+  const base = document.getElementById('cityBase');
+  base.classList.remove('hit');
+  void base.offsetWidth;
+  base.classList.add('hit');
+  setTimeout(() => base.classList.remove('hit'), 560);
+}
+function pulseCombo() {
+  const el = document.getElementById('defCombo');
+  el.classList.remove('hot');
+  void el.offsetWidth;
+  el.classList.add('hot');
+  setTimeout(() => el.classList.remove('hot'), 400);
+}
 
-  /* ============================================================
-     HANDLE ERROR
-     ============================================================ */
-  function handleError(err) {
-    cancelAutoClose();
+function endDefense() {
+  defActive = false;
+  if (defRaf) { cancelAnimationFrame(defRaf); defRaf = null; }
+  if (defTimerId) { clearInterval(defTimerId); defTimerId = null; }
+  defMissiles.forEach(m => { try { m.el.remove(); } catch(e) {} });
+  defMissiles = [];
+}
 
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-      setState('error', {
-        icon: '📡',
-        title: 'اینترنت شما قطع است',
-        status: 'لطفاً اتصال خود را بررسی کنید و دوباره تلاش کنید.',
-        showSpinner: false,
-        showRetry: true,
-        showVpnHint: false,
-        showCloseHint: false,
-        showStages: false,
-        autoClose: false,
-      });
-      return;
+function endDefenseWithResult() {
+  const livesRemaining = defLives;
+  endDefense();
+  document.getElementById('defStartBtn').style.display = 'block';
+  document.getElementById('defStartBtn').textContent = '🔄 دوباره بازی کن';
+  const win = livesRemaining > 0;
+  state.score += defScore;
+  state.gamesPlayed++;
+  saveMyStats();
+  const diffLabel = defConfig.label;
+  if (win) {
+    showModal({ win: true, icon: '🏆', title: 'پایگاه حفظ شد!',
+      body: `درجه: ${diffLabel}\nامتیاز این بازی: ${toPersianDigits(defScore)}`,
+      reward: `+${toPersianDigits(defScore)} امتیاز`,
+      primaryText: '🔄 دوباره', onPrimary: () => startDefense(),
+      secondaryText: '🏠 منو', onSecondary: () => showScreen('hub') });
+  } else {
+    showModal({ win: false, icon: '💥', title: 'پایتخت سقوط کرد!',
+      body: `درجه: ${diffLabel}\nامتیاز این بازی: ${toPersianDigits(defScore)}`,
+      reward: defScore > 0 ? `+${toPersianDigits(defScore)} امتیاز` : 'بدون امتیاز',
+      rewardZero: defScore === 0,
+      primaryText: '🔄 تلاش مجدد', onPrimary: () => startDefense(),
+      secondaryText: '🏠 منو', onSecondary: () => showScreen('hub') });
+  }
+}
+
+/* ================================================================
+   QUIZ — بانک ۳۰۰ سؤال
+   ================================================================ */
+const RAW_QUESTIONS = [
+/* جغرافیا (۶۰) */
+["پایتخت فرانسه کدام شهر است؟","پاریس|لندن|برلین|رم",0],
+["بزرگ‌ترین کشور جهان از نظر مساحت؟","روسیه|کانادا|چین|آمریکا",0],
+["کدام کشور در دو قاره قرار دارد؟","ترکیه|مصر|روسیه|اندونزی",0],
+["بلندترین قله جهان کدام است؟","اورست|کی۲|دماوند|آلپ",0],
+["طولانی‌ترین رودخانه جهان؟","نیل|آمازون|می‌سی‌سی‌پی|یانگ‌تسه",0],
+["پایتخت استرالیا کدام شهر است؟","کانبرا|سیدنی|ملبورن|پرت",0],
+["بزرگ‌ترین دریاچه جهان؟","خزر|ویکتوریا|سوپریور|بایکال",0],
+["کدام کشور بیشترین همسایه را دارد؟","چین|روسیه|برزیل|هند",0],
+["پایتخت کانادا کدام شهر است؟","اتاوا|تورنتو|مونترال|ونکوور",0],
+["کدام قاره بیشترین کشور را دارد؟","آفریقا|آسیا|اروپا|آمریکا",0],
+["پایتخت برزیل کدام شهر است؟","برازیلیا|ریو|سائوپائولو|سالوادور",0],
+["کوچک‌ترین کشور جهان؟","واتیکان|موناکو|نائورو|سن‌مارینو",0],
+["پایتخت آلمان کدام شهر است؟","برلین|مونیخ|هامبورگ|فرانکفورت",0],
+["کدام کشور بیشترین جزیره را دارد؟","سوئد|اندونزی|فیلیپین|نروژ",0],
+["پایتخت ترکیه کدام شهر است؟","آنکارا|استانبول|ازمیر|بورسا",0],
+["پایتخت اسپانیا کدام شهر است؟","مادرید|بارسلونا|والنسیا|سویا",0],
+["پایتخت مصر کدام شهر است؟","قاهره|اسکندریه|اسوان|اقصر",0],
+["پایتخت ایتالیا کدام شهر است؟","رم|میلان|ناپل|تورین",0],
+["پایتخت روسیه کدام شهر است؟","مسکو|سن‌پترزبورگ|نووسیبیرسک|یکاترینبورگ",0],
+["پایتخت چین کدام شهر است؟","پکن|شانگهای|هنگ‌کنگ|گوانگژو",0],
+["پایتخت هند کدام شهر است؟","دهلی نو|بمبئی|کلکته|چنای",0],
+["پایتخت ژاپن کدام شهر است؟","توکیو|اوساکا|کیوتو|ناگویا",0],
+["پایتخت پرتغال کدام شهر است؟","لیسبون|پورتو|براگا|کویمبرا",0],
+["پایتخت یونان کدام شهر است؟","آتن|سالونیک|پاتراس|هراکلیون",0],
+["پایتخت اتریش کدام شهر است؟","وین|سالزبورگ|گراتس|لینتس",0],
+["پایتخت سوئد کدام شهر است؟","استکهلم|گوتنبرگ|مالمو|اوپسالا",0],
+["پایتخت نروژ کدام شهر است؟","اسلو|برگن|تروندهایم|استاوانگر",0],
+["پایتخت هلند کدام شهر است؟","آمستردام|لاهه|روتردام|اوترخت",0],
+["پایتخت بلژیک کدام شهر است؟","بروکسل|آنتورپ|گنت|بروژ",0],
+["پایتخت سوئیس کدام شهر است؟","برن|زوریخ|ژنو|بازل",0],
+["پایتخت لهستان کدام شهر است؟","ورشو|کراکوف|ووچ|وروتسواف",0],
+["پایتخت مالزی کدام شهر است؟","کوالالامپور|جورج‌تاون|جوهور بهرو|ایپوه",0],
+["پایتخت کره جنوبی کدام شهر است؟","سئول|بوسان|اینچئون|دگو",0],
+["پایتخت کره شمالی کدام شهر است؟","پیونگ‌یانگ|هامهونگ|چونگجین|کائسونگ",0],
+["پایتخت ویتنام کدام شهر است؟","هانوی|هوشی‌مین|دانانگ|هوئه",0],
+["پایتخت تایلند کدام شهر است؟","بانکوک|چیانگ‌مای|پوکت|پاتایا",0],
+["پایتخت اندونزی کدام شهر است؟","جاکارتا|سورابایا|باندونگ|مدان",0],
+["پایتخت آرژانتین کدام شهر است؟","بوئنوس آیرس|کوردوبا|روساریو|لا پلاتا",0],
+["پایتخت شیلی کدام شهر است؟","سانتیاگو|والپارایسو|کنسپسیون|آنتوفاگاستا",0],
+["پایتخت کلمبیا کدام شهر است؟","بوگوتا|مدلین|کالی|بارانکیلا",0],
+["پایتخت مکزیک کدام شهر است؟","مکزیکوسیتی|گودالاخارا|مونتری|پوئبلا",0],
+["پایتخت کوبا کدام شهر است؟","هاوانا|سانتیاگو|کاماگویی|اولگین",0],
+["پایتخت مراکش کدام شهر است؟","رباط|کازابلانکا|فاس|مراکش",0],
+["پایتخت آفریقای جنوبی (اداری) کدام شهر است؟","پرتوریا|کیپ‌تاون|ژوهانسبورگ|دوربان",0],
+["پایتخت نیجریه کدام شهر است؟","آبوجا|لاگوس|کانو|ایبادان",0],
+["پایتخت کنیا کدام شهر است؟","نایروبی|مومباسا|کیسومو|ناکورو",0],
+["پایتخت اتیوپی کدام شهر است؟","آدیس آبابا|دیردوا|مکله|گوندر",0],
+["پایتخت عربستان کدام شهر است؟","ریاض|جده|مکه|مدینه",0],
+["پایتخت امارات کدام شهر است؟","ابوظبی|دبی|شارجه|عجمان",0],
+["پایتخت قطر کدام شهر است؟","دوحه|الریان|الوکره|الخور",0],
+["پایتخت اردن کدام شهر است؟","امان|زرقا|اربد|عقبه",0],
+["پایتخت لبنان کدام شهر است؟","بیروت|طرابلس|صیدا|صور",0],
+["پایتخت عراق کدام شهر است؟","بغداد|بصره|موصل|اربیل",0],
+["بزرگ‌ترین اقیانوس جهان؟","آرام|اطلس|هند|منجمد شمالی",0],
+["بلندترین آبشار جهان؟","آنجل|نیاگارا|ویکتوریا|ایگوآزو",0],
+["کدام کشور در آمریکای جنوبی محصور در خشکی است؟","بولیوی|پرو|اکوادور|شیلی",0],
+["کدام دریا بزرگ‌ترین شوری جهان را دارد؟","دریای مرده|دریای سرخ|دریای مدیترانه|دریای سیاه",0],
+["گودال ماریانا در کدام اقیانوس است؟","آرام|اطلس|هند|منجمد جنوبی",0],
+["بزرگ‌ترین جزیره جهان؟","گرینلند|ماداگاسکار|بورنئو|گینه نو",0],
+["کدام کشور در دو قاره آمریکای شمالی و جنوبی واقع شده؟","پاناما|کاستاریکا|نیکاراگوئه|هندوراس",0],
+/* جنگ جهانی دوم (۶۰) */
+["جنگ جهانی دوم چه سالی شروع شد؟","۱۹۳۹|۱۹۳۸|۱۹۴۰|۱۹۴۱",0],
+["آلمان به کدام کشور در ۱ سپتامبر ۱۹۳۹ حمله کرد؟","لهستان|فرانسه|بلژیک|چکسلواکی",0],
+["عملیات اورلرد در کدام ساحل بود؟","نرماندی|کاله|بریتانی|سیسیل",0],
+["کدام شهر ژاپن اول بمباران اتمی شد؟","هیروشیما|ناگازاکی|توکیو|اوساکا",0],
+["نام عملیات آلمان برای حمله به شوروی چه بود؟","بارباروسا|اورلرد|سی‌لاین|تایفون",0],
+["نبرد استالینگراد در کدام کشور بود؟","شوروی|آلمان|لهستان|رومانی",0],
+["هیتلر در چه سالی خودکشی کرد؟","۱۹۴۵|۱۹۴۴|۱۹۴۶|۱۹۴۳",0],
+["کدام کشور در WWII بی‌طرف ماند؟","سوئیس|بلژیک|هلند|نروژ",0],
+["رهبر شوروی در WWII کی بود؟","استالین|لنین|خروشچف|برژنف",0],
+["نبرد میدوی در کدام اقیانوس بود؟","آرام|اطلس|هند|منجمد شمالی",0],
+["روز D چه تاریخی بود؟","۶ ژوئن ۱۹۴۴|۱ سپتامبر ۱۹۳۹|۷ دسامبر ۱۹۴۱|۸ مه ۱۹۴۵",0],
+["کدام شهر آلمان به دو نیم تقسیم شد؟","برلین|هامبورگ|مونیخ|بن",0],
+["رئیس‌جمهور آمریکا هنگام بمباران اتمی کی بود؟","ترومن|روزولت|آیزنهاور|کندی",0],
+["کنفرانس یالتا بین چه رهبرانی بود؟","روزولت، چرچیل، استالین|ترومن، چرچیل، استالین|روزولت، دگول، استالین|ترومن، چرچیل، مائو",0],
+["هولوکاست چه بود؟","نسل‌کشی یهودیان|جنگ داخلی|کودتای نظامی|پیمان صلح",0],
+["کدام کشور اولین بار اتم را روی ژاپن انداخت؟","آمریکا|شوروی|بریتانیا|آلمان",0],
+["نبرد بریتانیا چه نوع نبردی بود؟","هوایی|دریایی|زمینی|اطلاعاتی",0],
+["ارتش سرخ چه ارتشی بود؟","شوروی|چین|کره شمالی|ویتنام",0],
+["رهبر ایتالیا در WWII کی بود؟","موسولینی|هیتلر|فرانکو|سالازار",0],
+["کدام کشور عضو محور نبود؟","اسپانیا|آلمان|ایتالیا|ژاپن",0],
+["فرانکو رهبر کدام کشور بود؟","اسپانیا|پرتغال|ایتالیا|فرانسه",0],
+["کدام کشور در WWII از متفقین بود؟","برزیل|اسپانیا|سوئد|سوئیس",0],
+["هیتلر چه سالی صدراعظم آلمان شد؟","۱۹۳۳|۱۹۳۴|۱۹۳۵|۱۹۳۲",0],
+["آتش‌بس آلمان در چه تاریخی بود؟","۸ مه ۱۹۴۵|۹ مه ۱۹۴۵|۱ مه ۱۹۴۵|۷ مه ۱۹۴۵",0],
+["ژاپن چه تاریخی تسلیم شد؟","۲ سپتامبر ۱۹۴۵|۱۵ اوت ۱۹۴۵|۱ سپتامبر ۱۹۴۵|۱۰ سپتامبر ۱۹۴۵",0],
+["کدام کشور پس از WWII به دو بخش تقسیم شد؟","آلمان|اتریش|مجارستان|چکسلواکی",0],
+["چه سازمانی پس از WWII تشکیل شد؟","سازمان ملل|ناتو|اتحادیه اروپا|پیمان ورشو",0],
+["بمباران درسدن کدام کشور بود؟","آلمان|ژاپن|ایتالیا|فرانسه",0],
+["نام دو بمب اتمی پرتاب‌شده چه بود؟","لیتل بوی و فت من|آدام و ایو|جک و جیل|الفا و بتا",0],
+["عملیات تایفون چه بود؟","حمله آلمان به مسکو|حمله به بریتانیا|حمله به نرماندی|حمله به استالینگراد",0],
+["کدام ژنرال آلمانی در آفریقا فرمانده بود؟","رومل|گودریان|مانشتاین|کایتل",0],
+["کدام ژنرال آمریکایی فرمانده متفقین در اروپا بود؟","آیزنهاور|پاتون|مک‌آرتور|مارشال",0],
+["نبرد کورسک چه سالی بود؟","۱۹۴۳|۱۹۴۲|۱۹۴۴|۱۹۴۱",0],
+["عملیات مارکت گاردن کجا بود؟","هلند|بلژیک|فرانسه|آلمان",0],
+["کدام شهر شوروی محاصره شد؟","لنینگراد|مسکو|استالینگراد|کی‌یف",0],
+["محاصره لنینگراد چند روز طول کشید؟","۸۷۲|۵۰۰|۷۰۰|۱۰۰۰",0],
+["کامیکازه چیست؟","خلبان انتحاری ژاپنی|نوع بمب|نوع تانک|نوع کشتی",0],
+["نبرد نهایی WWII در اروپا کجا بود؟","برلین|وین|پرگ|مونیخ",0],
+["چه کسی ژاپن را در WWII رهبری می‌کرد؟","هیروهیتو|توجو|یاماموتو|نوبوناگا",0],
+["نام بمب‌افکن حامل بمب اتم چه بود؟","Enola Gay|B-17|Lancaster|Memphis Belle",0],
+["توافق مونیخ چه سالی بود؟","۱۹۳۸|۱۹۳۶|۱۹۳۹|۱۹۳۷",0],
+["کدام کشور در ۱۹۳۸ توسط آلمان ضمیمه شد؟","اتریش|چکسلواکی|لهستان|دانمارک",0],
+["فتح پاریس توسط آلمان چه سالی بود؟","۱۹۴۰|۱۹۳۹|۱۹۴۱|۱۹۴۲",0],
+["کدام رهبر فرانسه آزاد را رهبری می‌کرد؟","دوگل|پتن|رینو|بلوم",0],
+["ویشی کدام کشور بود؟","فرانسه|بلژیک|هلند|لوکزامبورگ",0],
+["عملیات بارباروسا چه تاریخی شروع شد؟","۲۲ ژوئن ۱۹۴۱|۱ سپتامبر ۱۹۳۹|۷ دسامبر ۱۹۴۱|۸ مه ۱۹۴۵",0],
+["کدام جزیره در اقیانوس آرام نبرد مهمی داشت؟","گوادالکانال|هاوایی|اوکیناوا|تایوان",0],
+["ارتش ژاپن در کدام شهر چین مرتکب جنایات جنگی شد؟","نانجینگ|شانگهای|پکن|ووهان",0],
+["صلیب سرخ در WWII چه کرد؟","کمک به اسرا|جنگید|جاسوسی|ساخت سلاح",0],
+["کدام کشور در WWII سلاح شیمیایی علیه چین استفاده کرد؟","ژاپن|آلمان|ایتالیا|شوروی",0],
+["نبرد آردن چه سالی بود؟","۱۹۴۴|۱۹۴۳|۱۹۴۵|۱۹۴۲",0],
+["چه کسی دبیرکل اول سازمان ملل بود؟","تریگوه لی|داگ هامرشولد|اوتانت|گالی",0],
+["کنفرانس پوتسدام بین چه رهبرانی بود؟","ترومن، چرچیل، استالین|روزولت، چرچیل، استالین|ترومن، دگول، استالین|آیزنهاور، چرچیل، استالین",0],
+["هیروشیما چه تاریخی بمباران شد؟","۶ اوت ۱۹۴۵|۹ اوت ۱۹۴۵|۱۵ اوت ۱۹۴۵|۲ سپتامبر ۱۹۴۵",0],
+["ناگازاکی چه تاریخی بمباران شد؟","۹ اوت ۱۹۴۵|۶ اوت ۱۹۴۵|۱۵ اوت ۱۹۴۵|۲ سپتامبر ۱۹۴۵",0],
+["کدام نبرد جنگ اقیانوس آرام را تغییر داد؟","میدوی|پرل هاربر|اوکیناوا|تاراوا",0],
+["چه کسی اتحاد شوروی را در جنگ رهبری کرد؟","استالین|مولوتوف|ژوکوف|خروشچف",0],
+["پیمان ضد کمینترن بین چه کشورهایی بود؟","آلمان و ژاپن|آلمان و ایتالیا|ژاپن و ایتالیا|همه محور",0],
+["چه کسی نبرد بریتانیا را رهبری کرد؟","چرچیل|چمبرلین|ادنه|اتلی",0],
+["کدام کشور در WWII بیشترین تلفات را داشت؟","شوروی|آلمان|ژاپن|چین",0],
+["ارتش سرخ چه زمانی برلین را فتح کرد؟","آوریل ۱۹۴۵|مه ۱۹۴۵|مارس ۱۹۴۵|ژوئن ۱۹۴۵",0],
+/* جنگ‌های مدرن (۶۰) */
+["جنگ سرد بین کدام دو ابرقدرت بود؟","آمریکا و شوروی|آمریکا و چین|بریتانیا و روسیه|چین و شوروی",0],
+["دیوار برلین چه سالی فرو ریخت؟","۱۹۸۹|۱۹۹۱|۱۹۸۷|۱۹۹۰",0],
+["جنگ ویتنام چه سالی پایان یافت؟","۱۹۷۵|۱۹۷۳|۱۹۷۰|۱۹۷۸",0],
+["جنگ شش‌روزه چه سالی بود؟","۱۹۶۷|۱۹۶۵|۱۹۷۳|۱۹۵۶",0],
+["رهبر انقلاب کوبا کی بود؟","فیدل کاسترو|چه گوارا|باتیستا|رائول کاسترو",0],
+["جنگ ایران و عراق چه سالی شروع شد؟","۱۹۸۰|۱۹۷۹|۱۹۸۱|۱۹۸۲",0],
+["عملیات طوفان صحرا چه سالی بود؟","۱۹۹۱|۱۹۹۰|۱۹۹۲|۱۹۸۹",0],
+["حمله آمریکا به عراق چه سالی بود؟","۲۰۰۳|۲۰۰۱|۱۹۹۸|۲۰۰۵",0],
+["طالبان در کدام کشور حاکم شد؟","افغانستان|پاکستان|عراق|سوریه",0],
+["اسامه بن لادن رهبر کدام گروه بود؟","القاعده|داعش|طالبان|حماس",0],
+["حمله ۱۱ سپتامبر چه سالی بود؟","۲۰۰۱|۲۰۰۰|۲۰۰۲|۱۹۹۹",0],
+["فروپاشی شوروی چه سالی بود؟","۱۹۹۱|۱۹۸۹|۱۹۹۰|۱۹۹۲",0],
+["بهار عربی از کدام کشور شروع شد؟","تونس|مصر|لیبی|سوریه",0],
+["جنگ یمن از چه سالی شروع شد؟","۲۰۱۴|۲۰۱۱|۲۰۱۵|۲۰۱۶",0],
+["الحاق کریمه به روسیه چه سالی بود؟","۲۰۱۴|۲۰۱۵|۲۰۱۳|۲۰۱۶",0],
+["جنگ روسیه و اوکراین چه سالی شروع شد؟","۲۰۲۲|۲۰۲۱|۲۰۲۳|۲۰۲۰",0],
+["ناتو چه سالی تأسیس شد؟","۱۹۴۹|۱۹۴۵|۱۹۵۵|۱۹۵۰",0],
+["پیمان ورشو چه سالی تأسیس شد؟","۱۹۵۵|۱۹۴۹|۱۹۵۰|۱۹۶۰",0],
+["دیوار برلین چه سالی ساخته شد؟","۱۹۶۱|۱۹۵۵|۱۹۶۰|۱۹۶۵",0],
+["جنگ کره چه سالی پایان یافت؟","۱۹۵۳|۱۹۵۰|۱۹۵۵|۱۹۵۸",0],
+["جنگ کره چه سالی شروع شد؟","۱۹۵۰|۱۹۵۳|۱۹۴۸|۱۹۵۵",0],
+["جنگ ویتنام چه سالی شروع شد؟","۱۹۵۵|۱۹۶۰|۱۹۵۴|۱۹۶۵",0],
+["کمونیست‌های ویتنام توسط چه کسی رهبری می‌شدند؟","هوشی مین|مائو|کیم|استالین",0],
+["جنگ الجزایر چه سالی پایان یافت؟","۱۹۶۲|۱۹۶۰|۱۹۶۵|۱۹۵۸",0],
+["جنگ شش روزه بین چه کشورهایی بود؟","اسرائیل و اعراب|آمریکا و شوروی|هند و پاکستان|چین و هند",0],
+["جنگ یوم کیپور چه سالی بود؟","۱۹۷۳|۱۹۶۷|۱۹۷۰|۱۹۷۵",0],
+["انقلاب ایران چه سالی بود؟","۱۹۷۹|۱۹۷۸|۱۹۸۰|۱۹۷۷",0],
+["جنگ فالکلند بین چه کشورهایی بود؟","بریتانیا و آرژانتین|آمریکا و کوبا|شیلی و آرژانتین|برزیل و آرژانتین",0],
+["صدام حسین چه سالی دستگیر شد؟","۲۰۰۳|۲۰۰۴|۲۰۰۵|۲۰۰۲",0],
+["صدام حسین چه سالی اعدام شد؟","۲۰۰۶|۲۰۰۵|۲۰۰۷|۲۰۰۴",0],
+["داعش چه سالی اعلام خلافت کرد؟","۲۰۱۴|۲۰۱۳|۲۰۱۵|۲۰۱۶",0],
+["قاسم سلیمانی چه سالی ترور شد؟","۲۰۲۰|۲۰۱۹|۲۰۲۱|۲۰۱۸",0],
+["حمله آمریکا به افغانستان چه سالی بود؟","۲۰۰۱|۲۰۰۲|۲۰۰۰|۲۰۰۳",0],
+["طالبان چه سالی سقوط کرد؟","۲۰۰۱|۲۰۰۲|۲۰۰۳|۲۰۰۰",0],
+["طالبان چه سالی بازگشت؟","۲۰۲۱|۲۰۲۰|۲۰۲۲|۲۰۱۹",0],
+["جنگ داخلی سوریه چه سالی شروع شد؟","۲۰۱۱|۲۰۱۰|۲۰۱۲|۲۰۱۳",0],
+["بشار اسد چه سالی سقوط کرد؟","۲۰۲۴|۲۰۲۳|۲۰۲۲|۲۰۲۵",0],
+["بهار عربی در مصر چه سالی بود؟","۲۰۱۱|۲۰۱۰|۲۰۱۲|۲۰۱۳",0],
+["حسنی مبارک چه سالی سقوط کرد؟","۲۰۱۱|۲۰۱۰|۲۰۱۲|۲۰۰۹",0],
+["قذافی چه سالی کشته شد؟","۲۰۱۱|۲۰۱۰|۲۰۱۲|۲۰۰۹",0],
+["ناتو در لیبی چه سالی مداخله کرد؟","۲۰۱۱|۲۰۱۰|۲۰۱۲|۲۰۰۹",0],
+["جنگ روسیه-گرجستان چه سالی بود؟","۲۰۰۸|۲۰۰۷|۲۰۰۹|۲۰۱۰",0],
+["انقلاب نارنجی در کدام کشور بود؟","اوکراین|گرجستان|قرقیزستان|ازبکستان",0],
+["واگنر چه گروهی است؟","شرکت نظامی خصوصی روسیه|ارتش رسمی|گروه شورشی سوریه|سازمان اطلاعاتی",0],
+["پریگوژین رهبر کدام گروه بود؟","واگنر|FBI|CIA|MI6",0],
+["پریگوژین چه سالی مرد؟","۲۰۲۳|۲۰۲۲|۲۰۲۴|۲۰۲۱",0],
+["حمله ۷ اکتبر چه سالی بود؟","۲۰۲۳|۲۰۲۲|۲۰۲۴|۲۰۲۱",0],
+["حماس در کدام منطقه است؟","غزه|کرانه باختری|لبنان|اردن",0],
+["حزب‌الله در کدام کشور است؟","لبنان|سوریه|عراق|ایران",0],
+["حوثی‌ها در کدام کشور هستند؟","یمن|عربستان|عمان|سودان",0],
+["جنگ داخلی لبنان چه سالی پایان یافت؟","۱۹۹۰|۱۹۸۵|۱۹۹۵|۱۹۸۸",0],
+["توافقنامه اسلو چه سالی بود؟","۱۹۹۳|۱۹۹۱|۱۹۹۵|۱۹۹۰",0],
+["رابین نخست‌وزیر کدام کشور بود؟","اسرائیل|لبنان|اردن|مصر",0],
+["کدام کشور کویت را در ۱۹۹۰ اشغال کرد؟","عراق|ایران|عربستان|ترکیه",0],
+["مبارک رهبر کدام کشور بود؟","مصر|لیبی|سوریه|تونس",0],
+["بن علی رهبر کدام کشور بود؟","تونس|مصر|لیبی|الجزایر",0],
+["جنگ داخلی یمن چه سالی شروع شد؟","۲۰۱۴|۲۰۱۵|۲۰۱۳|۲۰۱۶",0],
+["پیمان شانگهای شامل کدام کشورهاست؟","چین، روسیه، کشورهای آسیای مرکزی|آمریکا، انگلیس، فرانسه|ژاپن، کره، چین|هند، پاکستان، ایران",0],
+["کدام سازمان امنیت اروپا را تأمین می‌کند؟","OSCE|ناتو|اتحادیه اروپا|شورای اروپا",0],
+["گروه ۷ چه سالی تشکیل شد؟","۱۹۷۵|۱۹۷۰|۱۹۸۰|۱۹۸۵",0],
+["بریکس اولین اجلاس کجا بود؟","روسیه|چین|هند|برزیل",0],
+/* تسلیحات (۶۰) */
+["جنگنده F-22 ساخت کدام کشور است؟","آمریکا|روسیه|چین|فرانسه",0],
+["تانک آبرامز ساخت کدام کشور است؟","آمریکا|آلمان|بریتانیا|روسیه",0],
+["موشک اسکاد اصالتاً ساخت کدام کشور بود؟","شوروی|آمریکا|آلمان|چین",0],
+["ناو هواپیمابر نیمیتز ساخت کدام کشور است؟","آمریکا|روسیه|چین|هند",0],
+["تفنگ AK-47 ساخت کدام کشور است؟","شوروی|آمریکا|آلمان|چین",0],
+["هواپیمای B-2 ساخت کدام کشور است؟","آمریکا|روسیه|چین|بریتانیا",0],
+["موشک تاماهاوک چه نوع موشکی است؟","کروز|بالستیک|ضدهوایی|ضدتانک",0],
+["سامانه S-400 ساخت کدام کشور است؟","روسیه|آمریکا|چین|اسرائیل",0],
+["گنبد آهنین ساخت کدام کشور است؟","اسرائیل|آمریکا|روسیه|ترکیه",0],
+["جت سوخو Su-57 ساخت کدام کشور است؟","روسیه|آمریکا|چین|فرانسه",0],
+["تانک لئوپارد ساخت کدام کشور است؟","آلمان|آمریکا|روسیه|فرانسه",0],
+["موشک پاتریوت ساخت کدام کشور است؟","آمریکا|روسیه|اسرائیل|چین",0],
+["زیردریایی اوهایو ساخت کدام کشور است؟","آمریکا|روسیه|چین|فرانسه",0],
+["بمب‌افکن B-52 ساخت کدام کشور است؟","آمریکا|روسیه|چین|بریتانیا",0],
+["جنگنده میراژ ساخت کدام کشور است؟","فرانسه|آمریکا|آلمان|روسیه",0],
+["هلیکوپتر آپاچی ساخت کدام کشور است؟","آمریکا|روسیه|فرانسه|آلمان",0],
+["پهپاد بیرقدار ساخت کدام کشور است؟","ترکیه|آمریکا|اسرائیل|ایران",0],
+["سامانه تاد ساخت کدام کشور است؟","آمریکا|اسرائیل|روسیه|چین",0],
+["ICBM چه برد دارد؟","بیش از ۵۵۰۰ کیلومتر|۱۰۰۰ کیلومتر|۲۰۰۰ کیلومتر|۳۰۰۰ کیلومتر",0],
+["تفنگ M16 ساخت کدام کشور است؟","آمریکا|روسیه|آلمان|بلژیک",0],
+["جنگنده F-35 ساخت کدام شرکت است؟","لاکهید مارتین|بوئینگ|نورثروپ|جنرال داینامیکس",0],
+["تانک مرکاوا ساخت کدام کشور است؟","اسرائیل|آمریکا|آلمان|روسیه",0],
+["موشک ایزکندر ساخت کدام کشور است؟","روسیه|آمریکا|چین|اوکراین",0],
+["زیردریایی تایفون ساخت کدام کشور بود؟","شوروی|آمریکا|چین|فرانسه",0],
+["تفنگ G3 ساخت کدام کشور است؟","آلمان|آمریکا|بلژیک|فرانسه",0],
+["تفنگ AUG ساخت کدام کشور است؟","اتریش|آلمان|سوئیس|ایتالیا",0],
+["تفنگ FAMAS ساخت کدام کشور است؟","فرانسه|آلمان|بلژیک|ایتالیا",0],
+["تفنگ تavor ساخت کدام کشور است؟","اسرائیل|آمریکا|بلژیک|ترکیه",0],
+["مسلسل PKM ساخت کدام کشور است؟","شوروی|چین|آمریکا|آلمان",0],
+["RPG-7 ساخت کدام کشور است؟","شوروی|چین|آمریکا|آلمان",0],
+["موشک استینگر ساخت کدام کشور است؟","آمریکا|شوروی|انگلیس|آلمان",0],
+["موشک جاولین ساخت کدام کشور است؟","آمریکا|انگلیس|اسرائیل|آلمان",0],
+["موشک هلفایر ساخت کدام کشور است؟","آمریکا|انگلیس|اسرائیل|آلمان",0],
+["سامانه آرو ساخت کدام کشور است؟","اسرائیل|آمریکا|روسیه|چین",0],
+["سامانه داوید اسلینگ ساخت کدام کشور است؟","اسرائیل|آمریکا|روسیه|چین",0],
+["ناو جرالد فورد ساخت کدام کشور است؟","آمریکا|روسیه|چین|هند",0],
+["بمب‌افکن Tu-160 ساخت کدام کشور است؟","روسیه|آمریکا|چین|اوکراین",0],
+["جنگنده Eurofighter ساخت کدام کشورهاست؟","آلمان، انگلیس، ایتالیا، اسپانیا|فرانسه، آلمان، ایتالیا|انگلیس، فرانسه، سوئد|آلمان، سوئد، نروژ",0],
+["جنگنده رافال ساخت کدام کشور است؟","فرانسه|آلمان|انگلیس|سوئد",0],
+["جنگنده گریپن ساخت کدام کشور است؟","سوئد|فرانسه|آلمان|انگلیس",0],
+["جنگنده J-20 ساخت کدام کشور است؟","چین|روسیه|آمریکا|هند",0],
+["هلیکوپتر بلک‌هاوک ساخت کدام کشور است؟","آمریکا|روسیه|فرانسه|آلمان",0],
+["هلیکوپتر Ka-52 ساخت کدام کشور است؟","روسیه|آمریکا|فرانسه|چین",0],
+["تانک T-90 ساخت کدام کشور است؟","روسیه|چین|اوکراین|هند",0],
+["تانک چلنجر ۲ ساخت کدام کشور است؟","بریتانیا|آلمان|فرانسه|آمریکا",0],
+["تانک لکلرک ساخت کدام کشور است؟","فرانسه|آلمان|انگلیس|ایتالیا",0],
+["ناوشکن Arleigh Burke ساخت کدام کشور است؟","آمریکا|روسیه|چین|هند",0],
+["موشک SM-3 ساخت کدام کشور است؟","آمریکا|اسرائیل|روسیه|چین",0],
+["موشک کالیبر ساخت کدام کشور است؟","روسیه|آمریکا|چین|اوکراین",0],
+["موشک کینژال ساخت کدام کشور است؟","روسیه|چین|آمریکا|هند",0],
+["پهپاد MQ-9 Reaper ساخت کدام کشور است؟","آمریکا|اسرائیل|ترکیه|چین",0],
+["پهپاد شاهد ساخت کدام کشور است؟","ایران|ترکیه|اسرائیل|چین",0],
+["موشک فتاح ساخت کدام کشور است؟","ایران|روسیه|چین|پاکستان",0],
+["سامانه باور-۳۷۳ ساخت کدام کشور است؟","ایران|روسیه|چین|سوریه",0],
+["بمب MOAB ساخت کدام کشور است؟","آمریکا|روسیه|چین|اسرائیل",0],
+["موشک ATACMS ساخت کدام کشور است؟","آمریکا|روسیه|چین|اوکراین",0],
+["موشک استورم شادو ساخت کدام کشور است؟","بریتانیا|فرانسه|آمریکا|آلمان",0],
+["موشک اسکالپ ساخت کدام کشور است؟","فرانسه|انگلیس|آمریکا|آلمان",0],
+["کلت ام۱۹۱۱ ساخت کدام کشور است؟","آمریکا|آلمان|بلژیک|ایتالیا",0],
+/* عمومی (۶۰) */
+["تعداد اعضای دائم شورای امنیت؟","۵|۴|۶|۷",0],
+["کدام کشورها ویتو دارند؟","آمریکا، روسیه، چین، فرانسه، انگلیس|آمریکا، آلمان، چین، روسیه، ژاپن|آمریکا، روسیه، چین، هند، برزیل|آمریکا، فرانسه، آلمان، انگلیس، ایتالیا",0],
+["مقر سازمان ملل کجاست؟","نیویورک|ژنو|پاریس|لندن",0],
+["یورو واحد پول کدام اتحادیه است؟","اروپا|آسیا|آفریقا|آمریکا",0],
+["بزرگ‌ترین اقتصاد جهان کدام کشور است؟","آمریکا|چین|ژاپن|آلمان",0],
+["کدام کشور بیشترین ذخایر نفتی را دارد؟","ونزوئلا|عربستان|ایران|روسیه",0],
+["کدام کشور بزرگ‌ترین ارتش جهان را دارد؟","چین|آمریکا|هند|روسیه",0],
+["ناتو مخفف چیست؟","North Atlantic Treaty Organization|National Army Treaty Organization|North American Trade Organization|New Alliance Treaty Organization",0],
+["شهر ژنو در کدام کشور است؟","سوئیس|فرانسه|آلمان|اتریش",0],
+["کدام کشور بیشترین بودجه نظامی را دارد؟","آمریکا|چین|روسیه|هند",0],
+["پیمان آبراهام بین اسرائیل و چه کشورهایی بود؟","امارات و بحرین|مصر و اردن|عربستان و قطر|ترکیه و آذربایجان",0],
+["گروه بریکس شامل کدام کشورها است؟","برزیل، روسیه، هند، چین، آفریقای جنوبی|آمریکا، بریتانیا، فرانسه، آلمان، ایتالیا|چین، ژاپن، کره، هند، اندونزی|روسیه، آلمان، فرانسه، ایتالیا، اسپانیا",0],
+["اوپک مخفف چیست؟","Organization of Petroleum Exporting Countries|Oil Producing Economic Countries|Organization of Pacific Economic Countries|Oil Pacific Export Countries",0],
+["کدام کشور اولین بمب اتم را ساخت؟","آمریکا|شوروی|آلمان|بریتانیا",0],
+["کدام کشور بیشترین سلاح هسته‌ای را دارد؟","روسیه|آمریکا|چین|فرانسه",0],
+["ChatGPT ساخت کدام شرکت است؟","OpenAI|Google|Microsoft|Meta",0],
+["سازمان جهانی بهداشت مقرش کجاست؟","ژنو|نیویورک|پاریس|لندن",0],
+["یونسکو زیر نظر کدام سازمان است؟","سازمان ملل|ناتو|اتحادیه اروپا|اوپک",0],
+["میزبان جام جهانی ۲۰۲۲ کدام کشور بود؟","قطر|روسیه|برزیل|آفریقای جنوبی",0],
+["جام جهانی ۲۰۲۶ در کدام قاره برگزار می‌شود؟","آمریکای شمالی|اروپا|آسیا|آفریقا",0],
+["اتحادیه اروپا چند کشور دارد؟","۲۷|۲۵|۲۸|۳۰",0],
+["انگلیس چه سالی از اتحادیه اروپا خارج شد؟","۲۰۲۰|۲۰۱۹|۲۰۲۱|۲۰۱۸",0],
+["گروه ۷ شامل چه کشورهایی است؟","آمریکا، بریتانیا، فرانسه، آلمان، ایتالیا، ژاپن، کانادا|آمریکا، انگلیس، فرانسه، آلمان، ایتالیا، ژاپن، روسیه|آمریکا، چین، روسیه، ژاپن، آلمان، فرانسه، انگلیس|آمریکا، انگلیس، کانادا، استرالیا، نیوزیلند، ژاپن، کره",0],
+["صندوق بین‌المللی پول مقرش کجاست؟","واشینگتن|نیویورک|لندن|ژنو",0],
+["بانک جهانی مقرش کجاست؟","واشینگتن|نیویورک|لندن|ژنو",0],
+["WTO مخفف چیست؟","World Trade Organization|World Tax Organization|World Tourism Organization|War Treaty Organization",0],
+["آژانس بین‌المللی انرژی اتمی مقرش کجاست؟","وین|ژنو|نیویورک|پاریس",0],
+["یونیسف چه می‌کند؟","کمک به کودکان|کمک نظامی|کمک اقتصادی|تجارت",0],
+["یونسکو چه می‌کند؟","آموزش، علم و فرهنگ|نظامی|تجاری|کشاورزی",0],
+["فائو چه می‌کند؟","غذا و کشاورزی|تجارت|نظامی|فرهنگ",0],
+["WHO مخفف چیست؟","World Health Organization|World Help Organization|War Health Organization|World Housing Organization",0],
+["ناتو چند کشور دارد؟","۳۲|۳۰|۲۸|۳۵",0],
+["کدام کشور در ۲۰۲۳ به ناتو پیوست؟","فنلاند|سوئد|اوکراین|گرجستان",0],
+["کدام کشور در ۲۰۲۴ به ناتو پیوست؟","سوئد|فنلاند|اوکراین|گرجستان",0],
+["ترکیه چه سالی به ناتو پیوست؟","۱۹۵۲|۱۹۵۰|۱۹۵۵|۱۹۶۰",0],
+["دبیرکل سازمان ملل فعلی کیست؟","آنتونیو گوترش|بان کی‌مون|کوفی عنان|پترسون",0],
+["پاپ رهبر کدام مذهب است؟","کاتولیک|ارتدکس|پروتستان|اسلام",0],
+["کدام کشور اولین بار انسان به فضا فرستاد؟","شوروی|آمریکا|چین|فرانسه",0],
+["نیل آرمسترانگ چه سالی به ماه رفت؟","۱۹۶۹|۱۹۶۸|۱۹۷۰|۱۹۷۱",0],
+["ایستگاه فضایی بین‌المللی چه سالی ساخته شد؟","۱۹۹۸|۲۰۰۰|۱۹۹۵|۲۰۰۲",0],
+["کدام کشور اولین ماهواره را فرستاد؟","شوروی|آمریکا|چین|آلمان",0],
+["SpaceX توسط چه کسی تأسیس شد؟","ایلان ماسک|جف بزوس|بیل گیتس|مارک زاکربرگ",0],
+["کدام کشور بیشترین ذخایر طلا را دارد؟","آمریکا|آلمان|ایتالیا|فرانسه",0],
+["کدام کشور بیشترین ذخایر گاز را دارد؟","روسیه|ایران|قطر|آمریکا",0],
+["کدام کشور بزرگ‌ترین صادرکننده گندم است؟","روسیه|آمریکا|کانادا|استرالیا",0],
+["کدام کشور بزرگ‌ترین تولیدکننده برنج است؟","چین|هند|اندونزی|ویتنام",0],
+["کدام کشور بیشترین خودرو تولید می‌کند؟","چین|ژاپن|آلمان|آمریکا",0],
+["یورو چه سالی معرفی شد؟","۱۹۹۹|۲۰۰۰|۲۰۰۲|۱۹۹۸",0],
+["کدام کشور بیشترین بدهی خارجی را دارد؟","آمریکا|چین|ژاپن|آلمان",0],
+["مجمع عمومی سازمان ملل چند عضو دارد؟","۱۹۳|۱۹۰|۲۰۰|۱۸۰",0],
+["کدام روز به عنوان روز سازمان ملل شناخته می‌شود؟","۲۴ اکتبر|۱ ژانویه|۲۴ سپتامبر|۱ مه",0],
+["دیوان بین‌المللی دادگستری مقرش کجاست؟","لاهه|ژنو|نیویورک|پاریس",0],
+["دادگاه کیفری بین‌المللی مقرش کجاست؟","لاهه|ژنو|نیویورک|رم",0],
+["توافق پاریس درباره چیست؟","تغییرات اقلیمی|تجارت|نظامی|حقوق بشر",0],
+["پروتکل کیوتو درباره چیست؟","محیط زیست|تجارت|نظامی|بهداشت",0],
+["سازمان جهانی تجارت چه سالی تأسیس شد؟","۱۹۹۵|۱۹۹۰|۱۹۹۸|۲۰۰۰",0],
+["کدام کشور در ۲۰۰۱ به WTO پیوست؟","چین|روسیه|هند|برزیل",0],
+["روسیه چه سالی به WTO پیوست؟","۲۰۱۲|۲۰۱۰|۲۰۱۵|۲۰۰۸",0],
+["آمریکا چه سالی از توافق پاریس خارج شد؟","۲۰۱۷|۲۰۱۶|۲۰۱۸|۲۰۲۰",0],
+["آمریکا چه سالی به توافق پاریس بازگشت؟","۲۰۲۱|۲۰۲۰|۲۰۲۲|۲۰۱۹",0],
+["کدام کشور در ۲۰۲۲ رئیس دوره‌ای گروه ۲۰ بود؟","اندونزی|هند|برزیل|عربستان",0],
+["کدام کشور در ۲۰۲۳ رئیس دوره‌ای گروه ۲۰ بود؟","هند|اندونزی|برزیل|عربستان",0],
+["کدام کشور در ۲۰۲۴ رئیس دوره‌ای گروه ۲۰ بود؟","برزیل|هند|اندونزی|آفریقای جنوبی",0],
+];
+
+const ALL_QUESTIONS = RAW_QUESTIONS.map(([q, o, c]) => ({ q, opts: o.split("|"), correct: c }));
+const QUIZ_CONFIG = {
+  easy: { count: 8, timePerQ: 8, label: 'آسان', badgeClass: 'badge-easy' },
+  hard: { count: 12, timePerQ: 5, label: 'سخت', badgeClass: 'badge-hard' },
+};
+
+let quizQuestions = [], quizIdx = 0, quizScore = 0, quizActive = false;
+let quizTimerId = null, quizTimeLeft = 0, quizAnswers = [], quizConfig = QUIZ_CONFIG.easy;
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function initQuiz() {
+  quizConfig = QUIZ_CONFIG[currentDifficulty] || QUIZ_CONFIG.easy;
+  endQuiz();
+  quizAnswers = [];
+  quizQuestions = [];
+  quizIdx = 0;
+  const badge = document.getElementById('quizBadge');
+  badge.textContent = quizConfig.label;
+  badge.className = 'badge ' + quizConfig.badgeClass;
+  document.getElementById('quizSubtitle').textContent =
+    `War Quiz · ${toPersianDigits(quizConfig.count)} سؤال`;
+  document.getElementById('quizQuestion').textContent =
+    `بانک سؤال: ${toPersianDigits(ALL_QUESTIONS.length)} سؤال\nهر بار ${toPersianDigits(quizConfig.count)} سؤال تصادفی`;
+  document.getElementById('quizOptions').innerHTML = '';
+  document.getElementById('quizProgress').innerHTML = '';
+  document.getElementById('quizTimerRing').style.background =
+    'conic-gradient(var(--gn) 360deg, rgba(255,255,255,.1) 0deg)';
+  document.getElementById('quizTimerRing').classList.remove('warn');
+  document.getElementById('quizTimerText').textContent = toPersianDigits(quizConfig.timePerQ);
+  document.getElementById('quizStartBtn').style.display = 'block';
+  document.getElementById('quizStartBtn').textContent = '🎯 شروع کوییز';
+}
+
+function startQuiz() {
+  endQuiz();
+  const picked = shuffle(ALL_QUESTIONS).slice(0, quizConfig.count);
+  quizQuestions = picked.map(q => {
+    const indices = shuffle(q.opts.map((_, i) => i));
+    const newOpts = indices.map(i => q.opts[i]);
+    const newCorrect = indices.indexOf(q.correct);
+    return { q: q.q, opts: newOpts, correct: newCorrect };
+  });
+  quizIdx = 0; quizScore = 0; quizAnswers = []; quizActive = true;
+  document.getElementById('quizStartBtn').style.display = 'none';
+  buildQuizProgress();
+  showQuestion();
+}
+
+function buildQuizProgress() {
+  const box = document.getElementById('quizProgress');
+  box.innerHTML = '';
+  quizQuestions.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'q-dot';
+    if (i < quizAnswers.length) d.classList.add(quizAnswers[i] ? 'done' : 'failed');
+    else if (i === quizIdx) d.classList.add('active');
+    box.appendChild(d);
+  });
+}
+
+function showQuestion() {
+  if (!quizActive) return;
+  if (quizIdx >= quizQuestions.length) { finishQuiz(); return; }
+  const q = quizQuestions[quizIdx];
+  document.getElementById('quizQuestion').textContent = q.q;
+  const optsBox = document.getElementById('quizOptions');
+  optsBox.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'quiz-option';
+    b.textContent = opt;
+    b.onclick = () => answerQuiz(i);
+    optsBox.appendChild(b);
+  });
+  buildQuizProgress();
+  startQuizTimer();
+}
+
+function startQuizTimer() {
+  clearInterval(quizTimerId);
+  quizTimeLeft = quizConfig.timePerQ;
+  updateQuizTimer();
+  quizTimerId = setInterval(() => {
+    if (!quizActive) { clearInterval(quizTimerId); return; }
+    quizTimeLeft -= 0.1;
+    if (quizTimeLeft <= 0) {
+      quizTimeLeft = 0; updateQuizTimer();
+      clearInterval(quizTimerId); answerQuiz(-1); return;
     }
-    setState('error', {
-      icon: '📡',
-      title: 'اتصال برقرار نشد',
-      status: 'لطفاً VPN خود را روشن کنید و دوباره تلاش کنید.',
-      showSpinner: false,
-      showRetry: true,
-      showVpnHint: false,
-      showCloseHint: false,
-      showStages: false,
-      autoClose: false,
+    updateQuizTimer();
+  }, 100);
+}
+
+function updateQuizTimer() {
+  const pct = quizTimeLeft / quizConfig.timePerQ;
+  const deg = pct * 360;
+  const ring = document.getElementById('quizTimerRing');
+  ring.style.background = `conic-gradient(var(--gn) ${deg}deg, rgba(255,255,255,.1) ${deg}deg)`;
+  ring.classList.toggle('warn', quizTimeLeft <= 2);
+  document.getElementById('quizTimerText').textContent = toPersianDigits(Math.ceil(quizTimeLeft));
+}
+
+function answerQuiz(idx) {
+  if (!quizActive) return;
+  clearInterval(quizTimerId);
+  quizActive = false;
+  const q = quizQuestions[quizIdx];
+  const opts = document.querySelectorAll('.quiz-option');
+  opts.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correct) b.classList.add('correct');
+    else if (i === idx) b.classList.add('wrong');
+  });
+  const isCorrect = (idx === q.correct);
+  quizAnswers.push(isCorrect);
+  if (isCorrect) quizScore += 10;
+  buildQuizProgress();
+  setTimeout(() => { quizIdx++; quizActive = true; showQuestion(); }, 1100);
+}
+
+function endQuiz() { quizActive = false; clearInterval(quizTimerId); quizTimerId = null; }
+
+function finishQuiz() {
+  endQuiz();
+  document.getElementById('quizStartBtn').style.display = 'block';
+  document.getElementById('quizStartBtn').textContent = '🔄 دوباره بازی کن';
+  const maxScore = quizQuestions.length * 10;
+  const pctScore = Math.round((quizScore / maxScore) * 100);
+  state.score += quizScore;
+  state.gamesPlayed++;
+  saveMyStats();
+  const win = pctScore >= 50;
+  showModal({
+    win, icon: win ? '🏆' : '📚',
+    title: win ? 'آفرین!' : 'تلاش بیشتر',
+    body: `درجه: ${quizConfig.label}\nامتیاز: ${toPersianDigits(quizScore)} از ${toPersianDigits(maxScore)} (${toPersianDigits(pctScore)}٪)`,
+    reward: quizScore > 0 ? `+${toPersianDigits(quizScore)} امتیاز` : 'بدون امتیاز',
+    rewardZero: quizScore === 0,
+    primaryText: '🔄 دوباره', onPrimary: () => startQuiz(),
+    secondaryText: '🏠 منو', onSecondary: () => showScreen('hub'),
+  });
+}
+
+/* ================================================================
+   LEADERBOARD — فقط PENDING/APPROVED از سرور
+   ================================================================ */
+async function openLeaderboard() {
+  showScreen('leaderboard');
+  await refreshLeaderboard();
+}
+
+async function refreshLeaderboard() {
+  const box = document.getElementById('lbList');
+  box.innerHTML = '<div class="lb-empty">در حال بارگذاری...</div>';
+
+  let data = null;
+  try {
+    const res = await fetch(API_BASE + '/leaderboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ initData: tg?.initData || '' }),
     });
+    data = await res.json();
+  } catch (e) {
+    box.innerHTML = '<div class="lb-empty">❌ خطا در برقراری اتصال</div>';
+    return;
   }
 
-  /* ============================================================
-     EVENTS
-     ============================================================ */
-  retryBtn.addEventListener('click', tryVerify);
+  if (!data || !data.ok) {
+    box.innerHTML = '<div class="lb-empty">❌ خطا در دریافت اطلاعات</div>';
+    return;
+  }
 
-  window.addEventListener('online', () => {
-    if (retryBtn.style.display !== 'none') {
-      tryVerify();
-    }
+  const users = data.users || [];
+  const me = data.me;
+
+  if (!users.length && !me) {
+    box.innerHTML = '<div class="lb-empty">هنوز هیچ‌کس بازی نکرده</div>';
+    return;
+  }
+
+  box.innerHTML = '';
+
+  users.forEach((u, i) => {
+    const rank = i + 1;
+    const row = document.createElement('div');
+    row.className = 'lb-row' + (u.isMe ? ' me' : '');
+    let rankClass = 'lb-rank';
+    let rankText = toPersianDigits(rank);
+    if (rank === 1) { rankClass += ' top1'; rankText = '🥇'; }
+    else if (rank === 2) { rankClass += ' top2'; rankText = '🥈'; }
+    else if (rank === 3) { rankClass += ' top3'; rankText = '🥉'; }
+    row.innerHTML = `
+      <div class="${rankClass}">${rankText}</div>
+      <div class="lb-info">
+        <div class="lb-name">${escapeHtml(u.name)}${u.isMe ? ' (شما)' : ''}</div>
+        <div class="lb-sub"><span>🎮 ${toPersianDigits(u.games)} بازی</span></div>
+      </div>
+      <div class="lb-score">${toPersianDigits(u.score)}</div>
+    `;
+    box.appendChild(row);
   });
 
-  /* Boot */
+  // اگه کاربر تو Top 20 نیست، به‌عنوان ردیف جداشده اضافه بشه
+  if (me && !me.inTop) {
+    const sep = document.createElement('div');
+    sep.className = 'lb-sep';
+    sep.textContent = '···';
+    box.appendChild(sep);
+
+    const row = document.createElement('div');
+    row.className = 'lb-row me';
+    row.innerHTML = `
+      <div class="lb-rank">—</div>
+      <div class="lb-info">
+        <div class="lb-name">${escapeHtml(me.name)} (شما)</div>
+        <div class="lb-sub"><span>🎮 ${toPersianDigits(me.games)} بازی</span></div>
+      </div>
+      <div class="lb-score">${toPersianDigits(me.score)}</div>
+    `;
+    box.appendChild(row);
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+/* ================================================================
+   BOOT
+   ================================================================ */
+window.addEventListener('load', () => {
   tryVerify();
+});
 </script>
 </body>
 </html>
