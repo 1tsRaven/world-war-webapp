@@ -1727,7 +1727,7 @@ function cashOut() {
   crashState.phase = 'won';
   cancelAnimationFrame(crashState.rafId);
 
-  const win = Math.floor((crashState.betAmount * crashState.multiplier) / 10);
+  const win = Math.floor(crashState.betAmount * crashState.multiplier);
   state.score += win;
   state.gamesPlayed++;
   saveMyStats();
