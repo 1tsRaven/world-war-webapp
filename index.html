@@ -71,6 +71,13 @@
     .crash-action-btn { padding: 13px; }
     .plinko-stage { height: 290px; }
     .defense-area { height: 320px; }
+    .bomb-stage { padding: 10px 12px 10px; }
+    .bomb-sphere { width: 110px; height: 110px; }
+    .wire { height: 90px; }
+    .duel-stage { height: 200px; }
+    .supply-stage { height: 340px; }
+    .mine-grid { max-width: 300px; }
+    .heli-stage { height: 360px; }
   }
   @media (max-height: 600px) {
     .wrap { padding: 5px; padding-bottom: max(30px, env(safe-area-inset-bottom)); }
@@ -79,6 +86,11 @@
     .crash-stage { height: 200px; }
     .plinko-stage { height: 260px; }
     .defense-area { height: 280px; }
+    .bomb-sphere { width: 95px; height: 95px; }
+    .wire { height: 76px; }
+    .duel-stage { height: 180px; }
+    .supply-stage { height: 300px; }
+    .heli-stage { height: 320px; }
   }
 
   .box { padding: 26px 20px 22px;
@@ -164,31 +176,17 @@
   .gc-icon.leader { background: linear-gradient(135deg, #fbbf24, #d97706); }
   .gc-icon.crash { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
   .gc-icon.plinko { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+  .gc-icon.bomb { background: linear-gradient(135deg, #7f1d1d, #ef4444); }
+  .gc-icon.duel { background: linear-gradient(135deg, #b45309, #f59e0b); }
+  .gc-icon.supply { background: linear-gradient(135deg, #0369a1, #38bdf8); }
+  .gc-icon.mine { background: linear-gradient(135deg, #047857, #10b981); }
+  .gc-icon.heli { background: linear-gradient(135deg, #1e40af, #60a5fa); }
+  .gc-icon.games { background: linear-gradient(135deg, #dc2626, #f87171); }
+  .gc-icon.betgames { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
   .game-card .gc-info { flex: 1; min-width: 0; }
   .game-card .gc-title { font-size: 14.5px; font-weight: 800; margin-bottom: 3px; }
   .game-card .gc-desc { font-size: 11px; color: var(--muted); font-weight: 600; line-height: 1.4; }
   .game-card .gc-reward { font-size: 11px; color: var(--gold); margin-top: 4px; font-weight: 700; }
-
-  .diff-card { display: flex; align-items: center; gap: 14px; padding: 18px;
-    margin-bottom: 12px; border-radius: 16px; cursor: pointer;
-    transition: transform .15s, box-shadow .25s, border-color .25s;
-    text-align: right; border: 2px solid transparent; }
-  .diff-card:active { transform: scale(.98); }
-  .diff-card.easy { background: linear-gradient(135deg, rgba(34,197,94,.12), rgba(34,197,94,.04));
-    border-color: rgba(34,197,94,.3); }
-  .diff-card.easy:hover { box-shadow: 0 8px 24px -8px rgba(34,197,94,.5); border-color: var(--gn); }
-  .diff-card.hard { background: linear-gradient(135deg, rgba(239,68,68,.12), rgba(239,68,68,.04));
-    border-color: rgba(239,68,68,.3); }
-  .diff-card.hard:hover { box-shadow: 0 8px 24px -8px rgba(239,68,68,.5); border-color: var(--danger); }
-  .diff-card .dc-icon { width: 52px; height: 52px; border-radius: 14px;
-    display: grid; place-items: center; font-size: 26px; flex-shrink: 0; }
-  .diff-card.easy .dc-icon { background: linear-gradient(135deg, var(--gn), var(--gn-2)); }
-  .diff-card.hard .dc-icon { background: linear-gradient(135deg, var(--danger), #b91c1c); }
-  .diff-card .dc-info { flex: 1; }
-  .diff-card .dc-title { font-size: 16px; font-weight: 900; margin-bottom: 4px; }
-  .diff-card.easy .dc-title { color: var(--gn); }
-  .diff-card.hard .dc-title { color: var(--danger); }
-  .diff-card .dc-desc { font-size: 11.5px; color: var(--muted); font-weight: 600; line-height: 1.5; }
 
   .defense-area { position: relative; width: 100%; height: 380px;
     background: linear-gradient(180deg, #0a0d15 0%, #131822 100%);
@@ -490,6 +488,258 @@
     border: 1px solid rgba(239,68,68,.3); }
   .badge-medium { background: rgba(124,58,237,.15); color: var(--purple);
     border: 1px solid rgba(124,58,237,.3); }
+
+  /* ============ BOMB GAME ============ */
+  .bomb-stage {
+    position: relative; width: 100%;
+    background:
+      radial-gradient(ellipse at 50% 10%, rgba(239,68,68,.10), transparent 60%),
+      linear-gradient(180deg, #0a0d15, #131822);
+    border-radius: 16px; border: 1px solid rgba(239,68,68,.25);
+    padding: 14px 14px 12px; margin: 12px 0; overflow: hidden;
+    transition: box-shadow .3s;
+  }
+  .bomb-stage::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(90deg, rgba(239,68,68,.04) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(239,68,68,.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+    mask-image: radial-gradient(ellipse 70% 70% at 50% 30%, #000 30%, transparent 90%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 30%, #000 30%, transparent 90%);
+  }
+  .bomb-stage.danger {
+    box-shadow: 0 0 30px -5px rgba(239,68,68,.6), inset 0 0 30px rgba(239,68,68,.15);
+  }
+  .bomb-device {
+    display: flex; flex-direction: column; align-items: center;
+    position: relative; z-index: 2; padding-top: 14px;
+  }
+  .bomb-fuse { position: relative; width: 46px; height: 34px; margin-bottom: -6px; z-index: 1; }
+  .bomb-fuse-line {
+    position: absolute; left: 50%; bottom: 0;
+    width: 7px; height: 34px; margin-left: -3.5px;
+    background: linear-gradient(90deg, rgba(0,0,0,.35) 0%, #a08060 25%, #d0b088 50%, #a08060 75%, rgba(0,0,0,.35) 100%);
+    border-radius: 4px; transform: rotate(-18deg); transform-origin: bottom center;
+    box-shadow: inset -1px 0 0 rgba(0,0,0,.5), inset 1px 0 0 rgba(255,255,255,.2), 0 2px 4px rgba(0,0,0,.5);
+  }
+  .bomb-fuse-line::after {
+    content: ''; position: absolute; inset: 4px 2px;
+    background: repeating-linear-gradient(0deg, transparent 0, transparent 5px, rgba(0,0,0,.25) 5px, rgba(0,0,0,.25) 6px);
+    border-radius: 3px;
+  }
+  .bomb-spark {
+    position: absolute; top: -4px; left: 50%;
+    width: 16px; height: 16px; margin-left: -4px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, #fff8d0 0%, #fbbf24 35%, #ef4444 70%, rgba(239,68,68,0) 100%);
+    box-shadow: 0 0 10px #fbbf24, 0 0 22px #ef4444, 0 0 34px rgba(239,68,68,.55);
+    animation: sparkFlicker .3s infinite alternate; pointer-events: none;
+  }
+  @keyframes sparkFlicker { 0% { transform: scale(.82); opacity: .85; } 100% { transform: scale(1.22); opacity: 1; } }
+  .bomb-sphere {
+    width: 132px; height: 132px; border-radius: 50%;
+    background: radial-gradient(circle at 32% 26%, #55555e 0%, #2a2a32 28%, #15151a 62%, #050508 100%);
+    box-shadow: inset -12px -14px 26px rgba(0,0,0,.92), inset 12px 14px 24px rgba(255,255,255,.07),
+      0 14px 28px rgba(0,0,0,.75), 0 0 40px rgba(239,68,68,.14);
+    position: relative; margin-bottom: 0; z-index: 2;
+  }
+  .bomb-sphere::before {
+    content: ''; position: absolute; top: 14%; left: 22%;
+    width: 34%; height: 24%; border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 70%);
+    filter: blur(3px); pointer-events: none;
+  }
+  .bomb-strap {
+    position: absolute; top: 50%; left: -10px; right: -10px;
+    height: 42px; margin-top: -21px;
+    background: linear-gradient(180deg, #1c1c24 0%, #0e0e14 45%, #0e0e14 55%, #1c1c24 100%);
+    border-top: 1px solid rgba(255,255,255,.12); border-bottom: 1px solid rgba(0,0,0,.9);
+    display: grid; place-items: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,.65);
+  }
+  .bomb-timer-digits {
+    font-family: 'Courier New', 'Consolas', monospace;
+    font-size: 23px; font-weight: 900; color: #ff3b3b;
+    text-shadow: 0 0 6px #ef4444, 0 0 14px rgba(239,68,68,.75);
+    letter-spacing: 3px; font-variant-numeric: tabular-nums; line-height: 1;
+    padding: 3px 8px; background: #050505; border-radius: 4px;
+    box-shadow: inset 0 0 12px rgba(239,68,68,.45), 0 0 4px rgba(0,0,0,.85);
+    border: 1px solid #1a1a20; position: relative; z-index: 1;
+  }
+  .bomb-timer-digits.warn { animation: detBlink .45s steps(2) infinite; }
+  @keyframes detBlink { 0%, 100% { opacity: 1; } 50% { opacity: .22; } }
+  .wires {
+    display: flex; justify-content: space-around; align-items: flex-start;
+    gap: 8px; padding: 0 8px; margin-top: -12px;
+    position: relative; z-index: 1;
+  }
+  .wire {
+    position: relative; width: 32px; height: 108px;
+    cursor: pointer; display: flex; flex-direction: column; align-items: center;
+    transition: transform .15s; user-select: none;
+  }
+  .wire:active { transform: scale(.94); }
+  .wire-body {
+    width: 11px; flex: 1;
+    background: linear-gradient(90deg, rgba(0,0,0,.5) 0%, var(--wire-color) 22%, var(--wire-color) 55%, var(--wire-color) 78%, rgba(0,0,0,.5) 100%);
+    border-radius: 6px; position: relative;
+    box-shadow: 0 0 8px var(--wire-color), inset 0 0 4px rgba(255,255,255,.3);
+    transition: filter .15s, box-shadow .25s;
+  }
+  .wire-body::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 50%;
+    width: 3px; margin-left: -1.5px;
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.4) 50%, rgba(255,255,255,0) 100%);
+    border-radius: 6px; pointer-events: none;
+  }
+  .wire-plug {
+    width: 22px; height: 14px;
+    background: linear-gradient(180deg, #3a3a42, #1a1a20);
+    border: 1px solid #4a4a52; border-radius: 4px; margin-top: -2px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.15), inset 0 -2px 3px rgba(0,0,0,.6), 0 3px 6px rgba(0,0,0,.6);
+    position: relative;
+  }
+  .wire.flash .wire-body {
+    filter: brightness(2.5);
+    box-shadow: 0 0 28px var(--wire-color), 0 0 14px var(--wire-color), inset 0 0 4px rgba(255,255,255,.5);
+  }
+  .wire.correct .wire-body { animation: wireCorrect .35s; }
+  @keyframes wireCorrect {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(2.6); box-shadow: 0 0 30px #22c55e, 0 0 15px #22c55e; }
+  }
+  .wire.wrong { animation: wireWrong .4s; }
+  @keyframes wireWrong {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-9px); filter: brightness(1.6) saturate(2.5); }
+    40% { transform: translateX(9px); }
+    60% { transform: translateX(-7px); }
+    80% { transform: translateX(7px); }
+  }
+  .bomb-status { text-align: center; font-size: 12px; font-weight: 800;
+    color: var(--muted); padding: 8px; margin-top: 6px; min-height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    transition: color .3s; font-family: 'Courier New', Tahoma, monospace; letter-spacing: .5px; }
+  .bomb-status.watching { color: var(--gold); }
+  .bomb-status.active { color: var(--gn); }
+  .bomb-toast { position: absolute; top: 14px; left: 50%;
+    padding: 5px 12px; background: rgba(0,0,0,.9);
+    border: 1px solid rgba(34,197,94,.4); border-radius: 8px;
+    font-size: 12px; font-weight: 800; color: var(--gn);
+    pointer-events: none; z-index: 10;
+    animation: toastFloat 1s ease-out forwards; white-space: nowrap;
+    font-family: 'Courier New', Tahoma, monospace; }
+  @keyframes toastFloat {
+    0% { opacity: 0; transform: translate(-50%, -10px) scale(.8); }
+    20% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -20px) scale(1); }
+  }
+  .bomb-toast.bad { border-color: rgba(239,68,68,.4); color: var(--danger); }
+
+  /* ============ DUEL GAME ============ */
+  .duel-stage { position: relative; width: 100%; height: 240px;
+    background: linear-gradient(180deg, #1a0f0a 0%, #2a1810 40%, #1a0f0a 100%);
+    border-radius: 16px; border: 1px solid rgba(251,191,36,.2);
+    overflow: hidden; margin: 12px 0; cursor: pointer;
+    transition: box-shadow .2s, background .3s; }
+  .duel-stage::before { content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 30%, rgba(251,191,36,.10), transparent 55%);
+    pointer-events: none; }
+  .duel-stage.fire { background: linear-gradient(180deg, #3a1010 0%, #5a1818 40%, #2a0a0a 100%);
+    box-shadow: 0 0 40px -5px rgba(239,68,68,.7), inset 0 0 40px rgba(239,68,68,.2); }
+  .duel-stage.win { box-shadow: 0 0 40px -5px rgba(34,197,94,.7); }
+  .duel-stage.lose { box-shadow: 0 0 40px -5px rgba(239,68,68,.7); }
+  .duel-sky { position: absolute; top: 0; left: 0; right: 0; height: 45%;
+    background: radial-gradient(circle at 70% 40%, rgba(251,191,36,.25), transparent 50%);
+    pointer-events: none; }
+  .duel-ground { position: absolute; bottom: 0; left: 0; right: 0; height: 50px;
+    background: linear-gradient(180deg, rgba(120,53,15,.6), rgba(60,20,5,.9));
+    border-top: 1px solid rgba(251,191,36,.3); }
+  .duel-char { position: absolute; bottom: 56px; font-size: 38px; line-height: 1;
+    transition: transform .2s, filter .3s; }
+  .duel-char.left { left: 22px; transform: scaleX(-1); }
+  .duel-char.right { right: 22px; }
+  .duel-char.dead { filter: grayscale(1) brightness(.4); }
+  .duel-status { position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); font-size: 22px; font-weight: 900;
+    color: var(--muted); text-align: center; width: 90%;
+    text-shadow: 0 2px 8px rgba(0,0,0,.9);
+    transition: color .2s, transform .15s; pointer-events: none; }
+  .duel-status.waiting { color: var(--gold); }
+  .duel-status.fire { color: var(--danger); font-size: 38px; animation: firePulse .3s ease-out; }
+  .duel-status.win { color: var(--gn); font-size: 26px; }
+  .duel-status.lose { color: var(--danger); font-size: 26px; }
+  @keyframes firePulse {
+    0% { transform: translate(-50%, -50%) scale(.7); }
+    60% { transform: translate(-50%, -50%) scale(1.15); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+  }
+  .duel-last { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    background: rgba(0,0,0,.6); padding: 4px 12px; border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.08); white-space: nowrap; }
+
+  /* ============ SUPPLY GAME ============ */
+  .supply-stage { position: relative; width: 100%; height: 400px;
+    background: #0a0d15; border-radius: 16px;
+    border: 1px solid rgba(56,189,248,.2);
+    overflow: hidden; margin: 12px 0; touch-action: none; }
+  .supply-stage canvas { display: block; width: 100%; height: 100%; }
+  .supply-stage.shake { animation: shakeAnim .4s cubic-bezier(.36,.07,.19,.97); }
+
+  /* ============ MINE GAME ============ */
+  .mine-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    margin-bottom: 12px; padding: 4px; border-radius: 12px;
+    background: rgba(255,255,255,.04); }
+  .mine-mode-btn { padding: 10px; border-radius: 9px; text-align: center;
+    font-size: 12px; font-weight: 800; color: var(--muted); cursor: pointer;
+    transition: all .2s; font-family: inherit; border: none; background: transparent; }
+  .mine-mode-btn.active { background: linear-gradient(135deg, var(--gn), var(--gn-2));
+    color: #04210d; box-shadow: 0 4px 12px -4px var(--gn-glow); }
+  .mine-mode-btn.active.flag { background: linear-gradient(135deg, var(--gold), #d97706);
+    color: #2a1400; }
+  .mine-grid { display: grid; gap: 3px; padding: 8px;
+    background: rgba(255,255,255,.03); border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.06);
+    width: 100%; aspect-ratio: 1; max-width: 360px; margin: 0 auto 12px;
+    touch-action: manipulation; transition: box-shadow .2s; }
+  .mine-grid.shake { animation: shakeAnim .4s cubic-bezier(.36,.07,.19,.97);
+    box-shadow: 0 0 30px -5px rgba(239,68,68,.6), inset 0 0 30px rgba(239,68,68,.2); }
+  .mine-cell { aspect-ratio: 1; border-radius: 6px;
+    background: linear-gradient(180deg, #1e293b, #0f172a);
+    border: 1px solid rgba(255,255,255,.06);
+    display: grid; place-items: center;
+    font-size: 14px; font-weight: 900; color: var(--muted);
+    cursor: pointer; transition: transform .1s, background .2s;
+    font-family: inherit; user-select: none; }
+  .mine-cell:active { transform: scale(.92); }
+  .mine-cell.revealed { background: rgba(34,197,94,.06);
+    border-color: rgba(34,197,94,.15); cursor: default; }
+  .mine-cell.revealed:active { transform: none; }
+  .mine-cell.mine { background: rgba(239,68,68,.2);
+    border-color: rgba(239,68,68,.4); animation: mineBoom .4s; }
+  @keyframes mineBoom {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); box-shadow: 0 0 20px var(--danger); }
+  }
+  .mine-cell.flagged { background: rgba(251,191,36,.15);
+    border-color: rgba(251,191,36,.4); color: var(--gold); }
+  .mine-cell.n1 { color: #38bdf8; } .mine-cell.n2 { color: #22c55e; }
+  .mine-cell.n3 { color: #fbbf24; } .mine-cell.n4 { color: #f97316; }
+  .mine-cell.n5 { color: #ef4444; } .mine-cell.n6 { color: #dc2626; }
+  .mine-cell.n7 { color: #b91c1c; } .mine-cell.n8 { color: #7f1d1d; }
+
+  /* ============ HELI GAME ============ */
+  .heli-stage { position: relative; width: 100%; height: 440px;
+    background: linear-gradient(180deg, #0f1a2e 0%, #1a2a44 50%, #0f1a2e 100%);
+    border-radius: 16px; border: 1px solid rgba(96,165,250,.25);
+    overflow: hidden; margin: 12px 0; touch-action: none; cursor: pointer; }
+  .heli-stage canvas { display: block; width: 100%; height: 100%; }
+  .heli-stage.shake { animation: shakeAnim .4s; }
+  .hint-text { font-size: 11px; color: var(--muted); font-weight: 700;
+    text-align: center; padding: 8px 4px 4px; }
 </style>
 </head>
 <body>
@@ -536,7 +786,37 @@
         <div class="stat-card"><div class="s-val" id="hubScore">۰</div><div class="s-lbl">⭐ امتیاز</div></div>
         <div class="stat-card"><div class="s-val" id="hubGames">۰</div><div class="s-lbl">🎮 بازی</div></div>
       </div>
-      <div class="game-card" onclick="openDifficulty('defense')">
+      <div class="game-card" onclick="showScreen('games')">
+        <div class="gc-icon games">🎮</div>
+        <div class="gc-info">
+          <div class="gc-title">بازی‌ها</div>
+          <div class="gc-desc">همه بازی‌های امتیازی</div>
+        </div>
+      </div>
+      <div class="game-card" onclick="showScreen('betgames')">
+        <div class="gc-icon betgames">💰</div>
+        <div class="gc-info">
+          <div class="gc-title">بازی‌های بت</div>
+          <div class="gc-desc">با امتیاز شرط بذار</div>
+        </div>
+      </div>
+      <div class="game-card" onclick="openLeaderboard()">
+        <div class="gc-icon leader">🏆</div>
+        <div class="gc-info">
+          <div class="gc-title">لیدربرد</div>
+          <div class="gc-desc">ببین کی بهترینه</div>
+        </div>
+      </div>
+      <button class="btn secondary" onclick="backToVerify()">⬅️ بازگشت</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-games">
+    <div class="box">
+      <button class="back-btn" onclick="showScreen('hub')">⬅️ بازگشت</button>
+      <h2>🎮 بازی‌ها</h2>
+      <div class="subtitle">Games</div>
+      <div class="game-card" onclick="startGame('defense')">
         <div class="gc-icon defense">🚀</div>
         <div class="gc-info">
           <div class="gc-title">دفاع از پایتخت</div>
@@ -544,7 +824,7 @@
           <div class="gc-reward">⭐ ۱۰ امتیاز/موشک</div>
         </div>
       </div>
-      <div class="game-card" onclick="openDifficulty('quiz')">
+      <div class="game-card" onclick="startGame('quiz')">
         <div class="gc-icon quiz">🧠</div>
         <div class="gc-info">
           <div class="gc-title">کوییز جنگ</div>
@@ -552,7 +832,55 @@
           <div class="gc-reward">⭐ ۵ امتیاز/سؤال درست</div>
         </div>
       </div>
-      <div class="game-card" onclick="openGame('crash')">
+      <div class="game-card" onclick="startGame('bomb')">
+        <div class="gc-icon bomb">💣</div>
+        <div class="gc-info">
+          <div class="gc-title">خنثی‌سازی بمب</div>
+          <div class="gc-desc">الگوی سیم‌ها رو تکرار کن</div>
+          <div class="gc-reward">⭐ ۲۰ امتیاز/مرحله</div>
+        </div>
+      </div>
+      <div class="game-card" onclick="startGame('duel')">
+        <div class="gc-icon duel">🤠</div>
+        <div class="gc-info">
+          <div class="gc-title">دوئل غربی</div>
+          <div class="gc-desc">سریع‌تر از حریف شلیک کن</div>
+          <div class="gc-reward">⭐ ۳۰ امتیاز/برد</div>
+        </div>
+      </div>
+      <div class="game-card" onclick="startGame('supply')">
+        <div class="gc-icon supply">📦</div>
+        <div class="gc-info">
+          <div class="gc-title">تدارکات</div>
+          <div class="gc-desc">جعبه‌ها رو بگیر، بمب‌ها رو نگیر</div>
+          <div class="gc-reward">⭐ ۱۰ امتیاز/جعبه</div>
+        </div>
+      </div>
+      <div class="game-card" onclick="startGame('mine')">
+        <div class="gc-icon mine">💥</div>
+        <div class="gc-info">
+          <div class="gc-title">مینیاب</div>
+          <div class="gc-desc">میدان مین رو پاک‌سازی کن</div>
+          <div class="gc-reward">⭐ ۳ امتیاز/خانه</div>
+        </div>
+      </div>
+      <div class="game-card" onclick="startGame('heli')">
+        <div class="gc-icon heli">🚁</div>
+        <div class="gc-info">
+          <div class="gc-title">هلیکوپتر</div>
+          <div class="gc-desc">از غار باریک رد شو</div>
+          <div class="gc-reward">⭐ ۲۵ امتیاز/مانع</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-betgames">
+    <div class="box">
+      <button class="back-btn" onclick="showScreen('hub')">⬅️ بازگشت</button>
+      <h2>💰 بازی‌های بت</h2>
+      <div class="subtitle">Bet Games</div>
+      <div class="game-card" onclick="startGame('crash')">
         <div class="gc-icon crash">🚀</div>
         <div class="gc-info">
           <div class="gc-title">موشک پرنده</div>
@@ -560,7 +888,7 @@
           <div class="gc-reward">💰 شرط با امتیاز</div>
         </div>
       </div>
-      <div class="game-card" onclick="openGame('plinko')">
+      <div class="game-card" onclick="startGame('plinko')">
         <div class="gc-icon plinko">⚪</div>
         <div class="gc-info">
           <div class="gc-title">پلینکو</div>
@@ -568,43 +896,12 @@
           <div class="gc-reward">💰 شرط با امتیاز</div>
         </div>
       </div>
-      <div class="game-card" onclick="openLeaderboard()">
-        <div class="gc-icon leader">🏆</div>
-        <div class="gc-info">
-          <div class="gc-title">رتبه‌بندی</div>
-          <div class="gc-desc">ببین کی بهترینه</div>
-          <div class="gc-reward">🥇 ۲۰ نفر برتر</div>
-        </div>
-      </div>
-      <button class="btn secondary" onclick="backToVerify()">⬅️ بازگشت</button>
-    </div>
-  </div>
-
-  <div class="screen" id="screen-difficulty">
-    <div class="box">
-      <button class="back-btn" onclick="showScreen('hub')">⬅️ بازگشت</button>
-      <h2 id="diffTitle">درجه سختی</h2>
-      <div class="subtitle" id="diffSubtitle">Select Difficulty</div>
-      <div class="diff-card easy" onclick="selectDifficulty('easy')">
-        <div class="dc-icon">🌱</div>
-        <div class="dc-info">
-          <div class="dc-title">آسان</div>
-          <div class="dc-desc" id="diffEasyDesc">—</div>
-        </div>
-      </div>
-      <div class="diff-card hard" onclick="selectDifficulty('hard')">
-        <div class="dc-icon">🔥</div>
-        <div class="dc-info">
-          <div class="dc-title">سخت</div>
-          <div class="dc-desc" id="diffHardDesc">—</div>
-        </div>
-      </div>
     </div>
   </div>
 
   <div class="screen" id="screen-defense">
     <div class="box">
-      <button class="back-btn" onclick="endDefense();showScreen('hub')">⬅️ بازگشت</button>
+      <button class="back-btn" onclick="endDefense();showScreen('games')">⬅️ بازگشت</button>
       <h2>🚀 دفاع از پایتخت <span class="badge badge-easy" id="defBadge">آسان</span></h2>
       <div class="subtitle">Missile Defense</div>
       <div class="defense-hud">
@@ -622,7 +919,7 @@
 
   <div class="screen" id="screen-quiz">
     <div class="box">
-      <button class="back-btn" onclick="endQuiz();showScreen('hub')">⬅️ بازگشت</button>
+      <button class="back-btn" onclick="endQuiz();showScreen('games')">⬅️ بازگشت</button>
       <h2>🧠 کوییز جنگ <span class="badge badge-easy" id="quizBadge">آسان</span></h2>
       <div class="subtitle" id="quizSubtitle">War Quiz · ۸ سؤال</div>
       <div class="quiz-progress" id="quizProgress"></div>
@@ -635,9 +932,114 @@
     </div>
   </div>
 
+  <div class="screen" id="screen-bomb">
+    <div class="box">
+      <button class="back-btn" onclick="stopBomb();showScreen('games')">⬅️ بازگشت</button>
+      <h2>💣 خنثی‌سازی بمب <span class="badge badge-easy">آسان</span></h2>
+      <div class="subtitle">Bomb Defusal</div>
+      <div class="defense-hud" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div class="hud-item">⏱ <span class="hud-val" id="bombTime">۳۰</span></div>
+        <div class="hud-item">🎯 <span class="hud-val" id="bombRound">۰</span></div>
+        <div class="hud-item">⭐ <span class="hud-val" id="bombScore">۰</span></div>
+      </div>
+      <div class="bomb-stage" id="bombStage">
+        <div class="bomb-device">
+          <div class="bomb-fuse">
+            <div class="bomb-fuse-line"></div>
+            <div class="bomb-spark"></div>
+          </div>
+          <div class="bomb-sphere">
+            <div class="bomb-strap">
+              <span class="bomb-timer-digits" id="bombCoreTime">30.0</span>
+            </div>
+          </div>
+        </div>
+        <div class="wires" id="bombWires"></div>
+      </div>
+      <div class="bomb-status" id="bombStatus">آماده‌ای؟</div>
+      <button class="btn" id="bombStartBtn" onclick="startBomb()">🎯 شروع</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-duel">
+    <div class="box">
+      <button class="back-btn" onclick="stopDuel();showScreen('games')">⬅️ بازگشت</button>
+      <h2>🤠 دوئل غربی <span class="badge badge-easy" id="duelBadge">آسان</span></h2>
+      <div class="subtitle">Quick Draw Duel</div>
+      <div class="defense-hud" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div class="hud-item">🎯 <span class="hud-val" id="duelRound">۰/۵</span></div>
+        <div class="hud-item">🏆 <span class="hud-val combo" id="duelWins">۰</span></div>
+        <div class="hud-item">⭐ <span class="hud-val" id="duelScore">۰</span></div>
+      </div>
+      <div class="duel-stage" id="duelStage" onclick="playerDuelTap()">
+        <div class="duel-sky"></div>
+        <div class="duel-char left" id="duelAI">🤠</div>
+        <div class="duel-char right" id="duelPlayer">🤠</div>
+        <div class="duel-ground"></div>
+        <div class="duel-status" id="duelStatus">برای شروع دکمه رو بزن</div>
+        <div class="duel-last" id="duelLast" style="display:none"></div>
+      </div>
+      <button class="btn" id="duelStartBtn" onclick="startDuel()">🎯 شروع دوئل</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-supply">
+    <div class="box">
+      <button class="back-btn" onclick="stopSupply();showScreen('games')">⬅️ بازگشت</button>
+      <h2>📦 تدارکات <span class="badge badge-easy">آسان</span></h2>
+      <div class="subtitle">Supply Drop</div>
+      <div class="defense-hud" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div class="hud-item">⏱ <span class="hud-val" id="supplyTime">۳۰</span></div>
+        <div class="hud-item">⚡ <span class="hud-val combo" id="supplyCombo">۰</span></div>
+        <div class="hud-item">⭐ <span class="hud-val" id="supplyScore">۰</span></div>
+      </div>
+      <div class="supply-stage" id="supplyStage">
+        <canvas id="supplyCanvas"></canvas>
+      </div>
+      <button class="btn" id="supplyStartBtn" onclick="startSupply()">🎯 شروع</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-mine">
+    <div class="box">
+      <button class="back-btn" onclick="stopMine();showScreen('games')">⬅️ بازگشت</button>
+      <h2>💥 مینیاب <span class="badge badge-easy">آسان</span></h2>
+      <div class="subtitle">Minefield</div>
+      <div class="defense-hud" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div class="hud-item">💣 <span class="hud-val" id="mineCount">۵</span></div>
+        <div class="hud-item">❤️ <span class="hud-val" id="mineLives">۳</span></div>
+        <div class="hud-item">⭐ <span class="hud-val" id="mineScore">۰</span></div>
+      </div>
+      <div class="mine-mode">
+        <button class="mine-mode-btn active" id="mineDigBtn" onclick="setMineMode('dig')">⛏️ حفاری</button>
+        <button class="mine-mode-btn flag" id="mineFlagBtn" onclick="setMineMode('flag')">🚩 پرچم</button>
+      </div>
+      <div class="mine-grid" id="mineGrid"></div>
+      <button class="btn" id="mineStartBtn" onclick="startMine()">🎯 شروع</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-heli">
+    <div class="box">
+      <button class="back-btn" onclick="stopHeli();showScreen('games')">⬅️ بازگشت</button>
+      <h2>🚁 هلیکوپتر <span class="badge badge-easy">آسان</span></h2>
+      <div class="subtitle">Cave Flyer</div>
+      <div class="defense-hud" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div class="hud-item">🚧 <span class="hud-val combo" id="heliPassed">۰</span></div>
+        <div class="hud-item">❤️ <span class="hud-val" id="heliLives">۳</span></div>
+        <div class="hud-item">⭐ <span class="hud-val" id="heliScore">۰</span></div>
+      </div>
+      <div class="heli-stage" id="heliStage">
+        <canvas id="heliCanvas"></canvas>
+      </div>
+      <div class="hint-text">برای بالا رفتن، صفحه رو نگه دار</div>
+      <button class="btn" id="heliStartBtn" onclick="startHeli()">🎯 شروع</button>
+    </div>
+  </div>
+
   <div class="screen" id="screen-crash">
     <div class="box">
-      <button class="back-btn" onclick="stopCrash();showScreen('hub')">⬅️ بازگشت</button>
+      <button class="back-btn" onclick="stopCrash();showScreen('betgames')">⬅️ بازگشت</button>
       <h2>🚀 موشک پرنده</h2>
       <div class="subtitle">Crash</div>
       <div class="bet-warning">⚠️ باخت در این بازی امتیاز و رتبه‌ت رو پایین میاره!</div>
@@ -674,7 +1076,7 @@
 
   <div class="screen" id="screen-plinko">
     <div class="box">
-      <button class="back-btn" onclick="showScreen('hub')">⬅️ بازگشت</button>
+      <button class="back-btn" onclick="showScreen('betgames')">⬅️ بازگشت</button>
       <h2>⚪ پلینکو <span class="badge badge-medium" id="plinkoBadge">متوسط</span></h2>
       <div class="subtitle">Plinko</div>
       <div class="bet-warning">⚠️ باخت در این بازی امتیاز و رتبه‌ت رو پایین میاره!</div>
@@ -704,7 +1106,7 @@
     <div class="box">
       <button class="back-btn" onclick="showScreen('hub')">⬅️ بازگشت</button>
       <h2>🏆 رتبه‌بندی</h2>
-      <div class="subtitle">Top 20 Players</div>
+      <div class="subtitle">Top 20 Players · این هفته</div>
       <div class="lb-list" id="lbList">
         <div class="lb-empty">در حال بارگذاری...</div>
       </div>
@@ -953,29 +1355,20 @@ function updateHub() {
 enterGameBtn.addEventListener('click', () => showScreen('hub'));
 
 /* ================================================================
-   DIFFICULTY
+   GAME LAUNCHER
    ================================================================ */
-function openDifficulty(game) {
-  currentGame = game;
-  const conf = game === 'defense' ? {
-    title: '🚀 درجه سختی دفاع', sub: 'Missile Defense',
-    easy: '⏱ ۲۵ ثانیه · 🐢 موشک‌های کم و آرام',
-    hard: '⏱ ۳۰ ثانیه · 🔥 موشک‌های زیاد و سریع',
-  } : {
-    title: '🧠 درجه سختی کوییز', sub: 'War Quiz',
-    easy: '📝 ۸ سؤال · ⏱ ۸ ثانیه هر سؤال',
-    hard: '📝 ۱۲ سؤال · ⏱ ۵ ثانیه هر سؤال',
-  };
-  document.getElementById('diffTitle').textContent = conf.title;
-  document.getElementById('diffSubtitle').textContent = conf.sub;
-  document.getElementById('diffEasyDesc').textContent = conf.easy;
-  document.getElementById('diffHardDesc').textContent = conf.hard;
-  showScreen('difficulty');
-}
-function selectDifficulty(level) {
-  currentDifficulty = level;
-  if (currentGame === 'defense') { initDefense(); showScreen('defense'); }
-  else if (currentGame === 'quiz') { initQuiz(); showScreen('quiz'); }
+function startGame(gameId) {
+  currentDifficulty = 'easy';
+  currentGame = gameId;
+  if (gameId === 'defense') { initDefense(); showScreen('defense'); }
+  else if (gameId === 'quiz') { initQuiz(); showScreen('quiz'); }
+  else if (gameId === 'crash') { initCrash(); showScreen('crash'); }
+  else if (gameId === 'plinko') { initPlinko(); showScreen('plinko'); }
+  else if (gameId === 'bomb') { initBomb(); showScreen('bomb'); }
+  else if (gameId === 'duel') { initDuel(); showScreen('duel'); }
+  else if (gameId === 'supply') { initSupply(); showScreen('supply'); }
+  else if (gameId === 'mine') { initMine(); showScreen('mine'); }
+  else if (gameId === 'heli') { initHeli(); showScreen('heli'); }
 }
 
 /* ================================================================
@@ -1224,14 +1617,14 @@ function endDefenseWithResult() {
       body: `درجه: ${diffLabel}\nامتیاز این بازی: ${toPersianDigits(defScore)}`,
       reward: `+${toPersianDigits(defScore)} امتیاز`,
       primaryText: '🔄 دوباره', onPrimary: () => startDefense(),
-      secondaryText: '🏠 منو', onSecondary: () => showScreen('hub') });
+      secondaryText: '🏠 منو', onSecondary: () => showScreen('games') });
   } else {
     showModal({ win: false, icon: '💥', title: 'پایتخت سقوط کرد!',
       body: `درجه: ${diffLabel}\nامتیاز این بازی: ${toPersianDigits(defScore)}`,
       reward: defScore > 0 ? `+${toPersianDigits(defScore)} امتیاز` : 'بدون امتیاز',
       rewardZero: defScore === 0,
       primaryText: '🔄 تلاش مجدد', onPrimary: () => startDefense(),
-      secondaryText: '🏠 منو', onSecondary: () => showScreen('hub') });
+      secondaryText: '🏠 منو', onSecondary: () => showScreen('games') });
   }
 }
 
@@ -1594,7 +1987,7 @@ function finishQuiz() {
     reward: quizScore > 0 ? `+${toPersianDigits(quizScore)} امتیاز` : 'بدون امتیاز',
     rewardZero: quizScore === 0,
     primaryText: '🔄 دوباره', onPrimary: () => startQuiz(),
-    secondaryText: '🏠 منو', onSecondary: () => showScreen('hub'),
+    secondaryText: '🏠 منو', onSecondary: () => showScreen('games'),
   });
 }
 
@@ -1727,8 +2120,6 @@ function cashOut() {
   crashState.phase = 'won';
   cancelAnimationFrame(crashState.rafId);
 
-  // FIX: مقدار شرط و ضریب رو قبل از هر تغییر دیگه اسنپ‌شات می‌گیریم
-  // و صریحاً به عدد تبدیل می‌کنیم تا سود همیشه از bet * multiplier محاسبه بشه
   const bet = Number(crashState.betAmount) || 0;
   const mult = Number(crashState.multiplier) || 1;
   const win = Math.floor(bet * mult);
@@ -1761,7 +2152,7 @@ function cashOut() {
     primaryText: '🔄 دوباره',
     onPrimary: () => resetCrashUI(),
     secondaryText: '🏠 منو',
-    onSecondary: () => { resetCrashUI(); showScreen('hub'); },
+    onSecondary: () => { resetCrashUI(); showScreen('betgames'); },
   });
 }
 
@@ -1796,7 +2187,7 @@ function crash() {
     primaryText: '🔄 تلاش مجدد',
     onPrimary: () => resetCrashUI(),
     secondaryText: '🏠 منو',
-    onSecondary: () => { resetCrashUI(); showScreen('hub'); },
+    onSecondary: () => { resetCrashUI(); showScreen('betgames'); },
   });
 }
 
@@ -2120,7 +2511,7 @@ async function settleBall(slotIndex, bet, cfg) {
       primaryText: '🔄 دوباره',
       onPrimary: () => {},
       secondaryText: '🏠 منو',
-      onSecondary: () => showScreen('hub'),
+      onSecondary: () => showScreen('betgames'),
     });
   } else {
     showModal({
@@ -2132,19 +2523,1208 @@ async function settleBall(slotIndex, bet, cfg) {
       primaryText: '🔄 تلاش مجدد',
       onPrimary: () => {},
       secondaryText: '🏠 منو',
-      onSecondary: () => showScreen('hub'),
+      onSecondary: () => showScreen('betgames'),
     });
   }
 }
 
 /* ================================================================
-   GAME LAUNCHER
+   BOMB GAME
    ================================================================ */
-function openGame(gameId) {
-  if (gameId === 'crash') { showScreen('crash'); initCrash(); return; }
-  if (gameId === 'plinko') { showScreen('plinko'); initPlinko(); return; }
+const BOMB_CONFIG = {
+  easy: { wires: 4, startLen: 3, time: 30, penalty: 5, label: 'آسان', badgeClass: 'badge-easy' },
+};
+const WIRE_COLORS = [
+  { hex: '#ef4444' }, { hex: '#fbbf24' }, { hex: '#22c55e' },
+  { hex: '#38bdf8' }, { hex: '#a78bfa' }, { hex: '#f97316' },
+];
+const bomb = {
+  active: false, playing: false, waiting: false,
+  time: 30, round: 0, score: 0,
+  pattern: [], userIdx: 0,
+  timerId: null, cfg: null, roundStart: 0,
+};
+
+function initBomb() {
+  bomb.cfg = BOMB_CONFIG.easy;
+  stopBomb();
+  bomb.active = false; bomb.playing = false; bomb.waiting = false;
+  bomb.time = bomb.cfg.time; bomb.round = 0; bomb.score = 0;
+  bomb.pattern = []; bomb.userIdx = 0;
+  renderBombWires();
+  updateBombHUD();
+  document.getElementById('bombStatus').textContent = 'آماده‌ای؟';
+  document.getElementById('bombStatus').className = 'bomb-status';
+  document.getElementById('bombStartBtn').style.display = 'block';
+  document.getElementById('bombStartBtn').textContent = '🎯 شروع';
+  document.getElementById('bombStage').classList.remove('danger');
 }
 
+function renderBombWires() {
+  const box = document.getElementById('bombWires');
+  box.innerHTML = '';
+  const n = bomb.cfg.wires;
+  for (let i = 0; i < n; i++) {
+    const wire = document.createElement('div');
+    wire.className = 'wire';
+    wire.dataset.i = i;
+    wire.style.setProperty('--wire-color', WIRE_COLORS[i].hex);
+    wire.innerHTML = `<div class="wire-body"></div><div class="wire-plug"></div>`;
+    wire.addEventListener('click', () => onWireClick(i));
+    box.appendChild(wire);
+  }
+}
+
+function updateBombHUD() {
+  document.getElementById('bombTime').textContent = toPersianDigits(Math.ceil(bomb.time));
+  document.getElementById('bombRound').textContent = toPersianDigits(bomb.round);
+  document.getElementById('bombScore').textContent = toPersianDigits(bomb.score);
+  const coreTime = document.getElementById('bombCoreTime');
+  coreTime.textContent = bomb.time.toFixed(1);
+  const danger = bomb.time <= 10 && bomb.active;
+  coreTime.classList.toggle('warn', danger);
+  document.getElementById('bombStage').classList.toggle('danger', danger);
+}
+
+function onWireClick(i) {
+  if (!bomb.active || bomb.playing || bomb.waiting) return;
+  if (bomb.userIdx >= bomb.pattern.length) return;
+  const wire = document.querySelector(`.wire[data-i="${i}"]`);
+  if (!wire) return;
+  const expected = bomb.pattern[bomb.userIdx];
+  if (i === expected) {
+    wire.classList.add('correct');
+    setTimeout(() => wire.classList.remove('correct'), 350);
+    bomb.userIdx++;
+    if (bomb.userIdx >= bomb.pattern.length) onBombRoundComplete();
+  } else {
+    wire.classList.add('wrong');
+    setTimeout(() => wire.classList.remove('wrong'), 420);
+    bomb.time = Math.max(0, bomb.time - bomb.cfg.penalty);
+    updateBombHUD();
+    showBombToast(`❌ -${toPersianDigits(bomb.cfg.penalty)}s`, true);
+    if (bomb.time <= 0) { endBomb('boom'); return; }
+    bomb.waiting = true;
+    setTimeout(() => { bomb.waiting = false; replayBombPattern(); }, 700);
+  }
+}
+
+function onBombRoundComplete() {
+  const elapsed = (Date.now() - bomb.roundStart) / 1000;
+  const speedBonus = Math.max(0, Math.round(10 - elapsed));
+  const gained = 20 + speedBonus;
+  bomb.score += gained;
+  bomb.round++;
+  updateBombHUD();
+  showBombToast(`✅ +${toPersianDigits(gained)}`);
+  bomb.waiting = true;
+  setTimeout(() => { bomb.waiting = false; nextBombRound(); }, 800);
+}
+
+function showBombToast(text, bad) {
+  const stage = document.getElementById('bombStage');
+  const toast = document.createElement('div');
+  toast.className = 'bomb-toast' + (bad ? ' bad' : '');
+  toast.textContent = text;
+  stage.appendChild(toast);
+  setTimeout(() => toast.remove(), 1100);
+}
+
+function startBomb() {
+  stopBomb();
+  bomb.active = true;
+  bomb.playing = false; bomb.waiting = false;
+  bomb.time = bomb.cfg.time; bomb.round = 0; bomb.score = 0;
+  bomb.pattern = []; bomb.userIdx = 0;
+  updateBombHUD();
+  document.getElementById('bombStartBtn').style.display = 'none';
+  let lastTick = performance.now();
+  bomb.timerId = setInterval(() => {
+    if (!bomb.active) return;
+    const now = performance.now();
+    bomb.time = Math.max(0, bomb.time - (now - lastTick) / 1000);
+    lastTick = now;
+    updateBombHUD();
+    if (bomb.time <= 0) endBomb('boom');
+  }, 100);
+  nextBombRound();
+}
+
+function nextBombRound() {
+  if (!bomb.active) return;
+  const len = bomb.cfg.startLen + bomb.round;
+  bomb.pattern = [];
+  for (let i = 0; i < len; i++) bomb.pattern.push(Math.floor(Math.random() * bomb.cfg.wires));
+  bomb.userIdx = 0;
+  bomb.roundStart = Date.now();
+  playBombPattern();
+}
+
+async function playBombPattern() {
+  if (!bomb.active) return;
+  bomb.playing = true;
+  const status = document.getElementById('bombStatus');
+  status.textContent = '◉ ANALYZING PATTERN...';
+  status.className = 'bomb-status watching';
+  await sleep(500);
+  for (const i of bomb.pattern) {
+    if (!bomb.active) { bomb.playing = false; return; }
+    const wire = document.querySelector(`.wire[data-i="${i}"]`);
+    if (!wire) continue;
+    wire.classList.add('flash');
+    await sleep(340);
+    wire.classList.remove('flash');
+    await sleep(160);
+  }
+  await sleep(200);
+  if (!bomb.active) { bomb.playing = false; return; }
+  bomb.playing = false;
+  bomb.userIdx = 0;
+  status.textContent = '▶ REPLAY SEQUENCE';
+  status.className = 'bomb-status active';
+}
+
+function replayBombPattern() {
+  bomb.userIdx = 0;
+  playBombPattern();
+}
+
+function endBomb(reason) {
+  if (!bomb.active) return;
+  bomb.active = false;
+  if (bomb.timerId) { clearInterval(bomb.timerId); bomb.timerId = null; }
+  document.getElementById('bombStartBtn').style.display = 'block';
+  document.getElementById('bombStartBtn').textContent = '🔄 دوباره';
+  document.getElementById('bombStatus').textContent = '● OFFLINE';
+  document.getElementById('bombStatus').className = 'bomb-status';
+  document.getElementById('bombStage').classList.remove('danger');
+  state.score += bomb.score;
+  state.gamesPlayed++;
+  saveMyStats();
+  updateHub();
+  const win = bomb.round > 0;
+  showModal({
+    win,
+    icon: reason === 'boom' ? '💥' : '⏱',
+    title: reason === 'boom' ? 'بمب منفجر شد!' : 'زمان تموم شد',
+    body: `مراحل کامل: ${toPersianDigits(bomb.round)}\nامتیاز: ${toPersianDigits(bomb.score)}`,
+    reward: bomb.score > 0 ? `+${toPersianDigits(bomb.score)} امتیاز` : 'بدون امتیاز',
+    rewardZero: bomb.score === 0,
+    primaryText: '🔄 تلاش مجدد',
+    onPrimary: () => startBomb(),
+    secondaryText: '🏠 منو',
+    onSecondary: () => showScreen('games'),
+  });
+}
+
+function stopBomb() {
+  bomb.active = false;
+  bomb.playing = false; bomb.waiting = false;
+  if (bomb.timerId) { clearInterval(bomb.timerId); bomb.timerId = null; }
+}
+
+/* ================================================================
+   DUEL GAME
+   ================================================================ */
+const DUEL_CONFIG = {
+  easy: { rounds: 5, aiMin: 500, aiMax: 750, allowEarly: true, label: 'آسان', badgeClass: 'badge-easy' },
+};
+
+const duel = {
+  cfg: null, active: false, round: 0, wins: 0, score: 0,
+  phase: 'idle', fireTime: 0, aiShootTime: 0, playerShot: false, timeoutIds: [],
+};
+
+function initDuel() {
+  duel.cfg = DUEL_CONFIG.easy;
+  stopDuel();
+  duel.active = false; duel.round = 0; duel.wins = 0; duel.score = 0;
+  duel.phase = 'idle';
+  updateDuelHUD();
+  setDuelStatus('برای شروع دکمه رو بزن', '');
+  setDuelEmoji('ready');
+  document.getElementById('duelLast').style.display = 'none';
+  document.getElementById('duelStage').className = 'duel-stage';
+  document.getElementById('duelStartBtn').style.display = 'block';
+  document.getElementById('duelStartBtn').textContent = '🎯 شروع دوئل';
+}
+
+function updateDuelHUD() {
+  document.getElementById('duelRound').textContent =
+    toPersianDigits(duel.round) + '/' + toPersianDigits(duel.cfg.rounds);
+  document.getElementById('duelWins').textContent = toPersianDigits(duel.wins);
+  document.getElementById('duelScore').textContent = toPersianDigits(duel.score);
+}
+
+function setDuelStatus(text, cls) {
+  const el = document.getElementById('duelStatus');
+  el.textContent = text;
+  el.className = 'duel-status ' + cls;
+}
+
+function setDuelEmoji(state) {
+  const p = document.getElementById('duelPlayer');
+  const a = document.getElementById('duelAI');
+  p.classList.remove('dead'); a.classList.remove('dead');
+  if (state === 'ready') { p.textContent = '🤠'; a.textContent = '🤠'; }
+  else if (state === 'win') { p.textContent = '🤠'; a.textContent = '💀'; a.classList.add('dead'); }
+  else if (state === 'lose') { p.textContent = '💀'; a.textContent = '🤠'; p.classList.add('dead'); }
+}
+
+function startDuel() {
+  stopDuel();
+  duel.active = true;
+  duel.round = 0; duel.wins = 0; duel.score = 0;
+  document.getElementById('duelStartBtn').style.display = 'none';
+  updateDuelHUD();
+  nextDuelRound();
+}
+
+function nextDuelRound() {
+  if (!duel.active) return;
+  if (duel.round >= duel.cfg.rounds) { finishDuel(); return; }
+  duel.round++;
+  duel.phase = 'waiting';
+  duel.playerShot = false;
+  updateDuelHUD();
+  setDuelEmoji('ready');
+  setDuelStatus('🔴 دقت کن...', 'waiting');
+  document.getElementById('duelStage').className = 'duel-stage';
+  document.getElementById('duelLast').style.display = 'none';
+  const delay = 1500 + Math.random() * 2500;
+  duel.timeoutIds.push(setTimeout(() => {
+    if (!duel.active) return;
+    duel.phase = 'fire';
+    duel.fireTime = performance.now();
+    const aiDelay = duel.cfg.aiMin + Math.random() * (duel.cfg.aiMax - duel.cfg.aiMin);
+    duel.aiShootTime = duel.fireTime + aiDelay;
+    setDuelStatus('🔫 آتش!', 'fire');
+    document.getElementById('duelStage').className = 'duel-stage fire';
+    duel.timeoutIds.push(setTimeout(() => {
+      if (!duel.active) return;
+      if (duel.phase === 'fire') loseDuelRound('حریف سریع‌تر بود');
+    }, aiDelay));
+  }, delay));
+}
+
+function playerDuelTap() {
+  if (!duel.active) return;
+  if (duel.phase === 'waiting') {
+    if (!duel.cfg.allowEarly) loseDuelRound('زود شلیک کردی!');
+    else setDuelStatus('⏳ صبر کن...', 'waiting');
+    return;
+  }
+  if (duel.phase !== 'fire' || duel.playerShot) return;
+  duel.playerShot = true;
+  const now = performance.now();
+  const elapsed = now - duel.fireTime;
+  if (now < duel.aiShootTime) winDuelRound(elapsed);
+  else loseDuelRound('حریف سریع‌تر بود');
+}
+
+function winDuelRound(elapsed) {
+  duel.phase = 'resolved';
+  duel.wins++;
+  const gained = 30 + Math.max(0, Math.round((500 - elapsed) / 25));
+  duel.score += gained;
+  setDuelEmoji('win');
+  setDuelStatus(`✅ برد! +${toPersianDigits(gained)}`, 'win');
+  document.getElementById('duelStage').className = 'duel-stage win';
+  const last = document.getElementById('duelLast');
+  last.textContent = `⚡ ${toPersianDigits(Math.round(elapsed))}ms`;
+  last.style.display = 'block';
+  updateDuelHUD();
+  duel.timeoutIds.push(setTimeout(() => nextDuelRound(), 1600));
+}
+
+function loseDuelRound(reason) {
+  if (duel.phase === 'resolved') return;
+  duel.phase = 'resolved';
+  setDuelEmoji('lose');
+  setDuelStatus(`❌ ${reason}`, 'lose');
+  document.getElementById('duelStage').className = 'duel-stage lose';
+  updateDuelHUD();
+  duel.timeoutIds.push(setTimeout(() => nextDuelRound(), 1600));
+}
+
+function finishDuel() {
+  duel.active = false;
+  state.score += duel.score;
+  state.gamesPlayed++;
+  saveMyStats();
+  updateHub();
+  const won = duel.wins >= Math.ceil(duel.cfg.rounds / 2);
+  document.getElementById('duelStartBtn').style.display = 'block';
+  document.getElementById('duelStartBtn').textContent = '🔄 دوباره';
+  showModal({
+    win: won,
+    icon: won ? '🏆' : '💀',
+    title: won ? 'دوئل رو بردی!' : 'دوئل رو باختی',
+    body: `بردها: ${toPersianDigits(duel.wins)} از ${toPersianDigits(duel.cfg.rounds)}\nامتیاز: ${toPersianDigits(duel.score)}`,
+    reward: duel.score > 0 ? `+${toPersianDigits(duel.score)} امتیاز` : 'بدون امتیاز',
+    rewardZero: duel.score === 0,
+    primaryText: '🔄 دوباره',
+    onPrimary: () => startDuel(),
+    secondaryText: '🏠 منو',
+    onSecondary: () => showScreen('games'),
+  });
+}
+
+function stopDuel() {
+  duel.active = false;
+  duel.timeoutIds.forEach(id => clearTimeout(id));
+  duel.timeoutIds = [];
+}
+
+/* ================================================================
+   SUPPLY GAME
+   ================================================================ */
+const SUPPLY_CONFIG = {
+  easy: { time: 30, planeSpeed: 1.4, dropInterval: 950, bombChance: 0.16, truckW: 100, label: 'آسان', badgeClass: 'badge-easy' },
+};
+
+const supply = {
+  cfg: null, active: false, W: 0, H: 0,
+  plane: { x: 0, y: 34, vx: 0 },
+  truck: { x: 0, y: 0, w: 90, h: 40, targetX: 0 },
+  items: [], floats: [], score: 0, combo: 0,
+  timeLeft: 0, startTs: 0, lastDrop: 0, rafId: null, lastFrame: 0,
+  ctx: null, canvas: null, stage: null, dragging: false,
+};
+
+function initSupply() {
+  supply.cfg = SUPPLY_CONFIG.easy;
+  stopSupply();
+  supply.active = false;
+  supply.score = 0; supply.combo = 0;
+  supply.items = []; supply.floats = [];
+  document.getElementById('supplyTime').textContent = toPersianDigits(supply.cfg.time);
+  document.getElementById('supplyTime').classList.remove('warn');
+  document.getElementById('supplyCombo').textContent = '۰';
+  document.getElementById('supplyScore').textContent = '۰';
+  document.getElementById('supplyStartBtn').style.display = 'block';
+  document.getElementById('supplyStartBtn').textContent = '🎯 شروع';
+  supply.stage = document.getElementById('supplyStage');
+  supply.canvas = document.getElementById('supplyCanvas');
+  supply.ctx = supply.canvas.getContext('2d');
+  requestAnimationFrame(() => { resizeSupplyCanvas(); resetSupplyField(); drawSupply(); });
+  attachSupplyPointer();
+}
+
+function resizeSupplyCanvas() {
+  if (!supply.stage) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = supply.stage.getBoundingClientRect();
+  supply.canvas.width = Math.round(rect.width * dpr);
+  supply.canvas.height = Math.round(rect.height * dpr);
+  supply.canvas.style.width = rect.width + 'px';
+  supply.canvas.style.height = rect.height + 'px';
+  supply.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  supply.W = rect.width; supply.H = rect.height;
+}
+
+function resetSupplyField() {
+  supply.plane.x = 60; supply.plane.y = 34;
+  supply.plane.vx = supply.cfg.planeSpeed;
+  supply.truck.w = supply.cfg.truckW;
+  supply.truck.h = 40;
+  supply.truck.x = supply.W / 2;
+  supply.truck.targetX = supply.W / 2;
+  supply.truck.y = supply.H - 40;
+  supply.items = []; supply.floats = [];
+}
+
+function attachSupplyPointer() {
+  if (supply.stage._attached) return;
+  supply.stage._attached = true;
+  const updateTarget = (e) => {
+    if (!supply.active) return;
+    const rect = supply.stage.getBoundingClientRect();
+    supply.truck.targetX = e.clientX - rect.left;
+  };
+  supply.stage.addEventListener('pointerdown', (e) => {
+    if (!supply.active) return;
+    e.preventDefault();
+    supply.dragging = true;
+    try { supply.stage.setPointerCapture(e.pointerId); } catch (_) {}
+    updateTarget(e);
+  });
+  supply.stage.addEventListener('pointermove', (e) => {
+    if (!supply.dragging) return;
+    updateTarget(e);
+  });
+  const up = (e) => {
+    supply.dragging = false;
+    try { supply.stage.releasePointerCapture(e.pointerId); } catch (_) {}
+  };
+  supply.stage.addEventListener('pointerup', up);
+  supply.stage.addEventListener('pointercancel', up);
+}
+
+function startSupply() {
+  stopSupply();
+  supply.active = true;
+  supply.score = 0; supply.combo = 0;
+  supply.timeLeft = supply.cfg.time;
+  supply.startTs = performance.now();
+  supply.lastDrop = performance.now();
+  supply.lastFrame = performance.now();
+  resizeSupplyCanvas();
+  resetSupplyField();
+  document.getElementById('supplyStartBtn').style.display = 'none';
+  document.getElementById('supplyTime').classList.remove('warn');
+  document.getElementById('supplyCombo').textContent = '۰';
+  document.getElementById('supplyScore').textContent = '۰';
+  updateSupplyHUD();
+  supply.rafId = requestAnimationFrame(supplyLoop);
+}
+
+function updateSupplyHUD() {
+  document.getElementById('supplyTime').textContent = toPersianDigits(Math.ceil(supply.timeLeft));
+  document.getElementById('supplyTime').classList.toggle('warn', supply.timeLeft <= 8);
+  document.getElementById('supplyCombo').textContent = toPersianDigits(supply.combo);
+  document.getElementById('supplyScore').textContent = toPersianDigits(supply.score);
+}
+
+function supplyLoop(ts) {
+  if (!supply.active) return;
+  const dt = Math.min((ts - supply.lastFrame) / 16.67, 3);
+  supply.lastFrame = ts;
+  updateSupply(dt);
+  drawSupply();
+  if (supply.timeLeft <= 0) { endSupply(); return; }
+  supply.rafId = requestAnimationFrame(supplyLoop);
+}
+
+function updateSupply(dt) {
+  const s = supply;
+  const now = performance.now();
+  s.plane.x += s.plane.vx * dt * 1.2;
+  if (s.plane.x > s.W + 40) s.plane.x = -40;
+  if (s.plane.x < -40) s.plane.x = s.W + 40;
+  const dx = s.truck.targetX - s.truck.x;
+  s.truck.x += dx * 0.28 * dt;
+  const halfW = s.truck.w / 2;
+  s.truck.x = Math.max(halfW, Math.min(s.W - halfW, s.truck.x));
+  if (now - s.lastDrop > s.cfg.dropInterval) {
+    s.lastDrop = now;
+    const isBomb = Math.random() < s.cfg.bombChance;
+    s.items.push({
+      x: s.plane.x + (Math.random() - 0.5) * 20,
+      y: s.plane.y + 20, vy: 1.5,
+      type: isBomb ? 'bomb' : 'crate',
+      emoji: isBomb ? '💣' : '📦',
+      size: 24, rot: (Math.random() - 0.5) * 0.4,
+    });
+  }
+  const catchTop = s.truck.y - 30;
+  const catchBottom = s.truck.y + 20;
+  for (let i = s.items.length - 1; i >= 0; i--) {
+    const it = s.items[i];
+    it.vy += 0.18 * dt;
+    it.y += it.vy * dt;
+    if (it.y > catchTop && it.y < catchBottom) {
+      const halfTW = (s.truck.w / 2) + 6;
+      if (it.x > s.truck.x - halfTW && it.x < s.truck.x + halfTW) {
+        if (it.type === 'crate') {
+          s.combo++;
+          const gained = 10 + Math.min(20, s.combo * 2);
+          s.score += gained;
+          addSupplyFloat(it.x, it.y, '+' + toPersianDigits(gained), '#22c55e');
+        } else {
+          s.combo = 0;
+          s.timeLeft = Math.max(0, s.timeLeft - 3);
+          addSupplyFloat(it.x, it.y, '-۳s', '#ef4444');
+          shakeSupplyStage();
+        }
+        s.items.splice(i, 1);
+        updateSupplyHUD();
+        continue;
+      }
+    }
+    if (it.y > s.H + 40) {
+      if (it.type === 'crate') s.combo = 0;
+      s.items.splice(i, 1);
+    }
+  }
+  for (let i = s.floats.length - 1; i >= 0; i--) {
+    const f = s.floats[i];
+    f.y -= 0.8 * dt; f.life -= 0.016 * dt;
+    if (f.life <= 0) s.floats.splice(i, 1);
+  }
+  const elapsed = (performance.now() - s.startTs) / 1000;
+  s.timeLeft = Math.max(0, s.cfg.time - elapsed);
+  updateSupplyHUD();
+}
+
+function addSupplyFloat(x, y, text, color) {
+  supply.floats.push({ x, y, text, color, life: 1 });
+}
+
+function shakeSupplyStage() {
+  const st = supply.stage;
+  st.classList.remove('shake');
+  void st.offsetWidth;
+  st.classList.add('shake');
+  setTimeout(() => st.classList.remove('shake'), 420);
+}
+
+function drawSupply() {
+  const ctx = supply.ctx;
+  if (!ctx) return;
+  const W = supply.W, H = supply.H;
+  ctx.fillStyle = '#0a0d15';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(56,189,248,.05)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 30) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 30) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  const grad = ctx.createLinearGradient(0, H - 60, 0, H);
+  grad.addColorStop(0, 'rgba(56,189,248,0)');
+  grad.addColorStop(1, 'rgba(56,189,248,.15)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, H - 60, W, 60);
+  ctx.font = '36px Tahoma';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🛩️', supply.plane.x, supply.plane.y);
+  for (const it of supply.items) {
+    ctx.save();
+    ctx.translate(it.x, it.y);
+    ctx.rotate(it.rot);
+    ctx.font = it.size + 'px Tahoma';
+    ctx.fillText(it.emoji, 0, 0);
+    ctx.restore();
+  }
+  ctx.fillStyle = 'rgba(0,0,0,.5)';
+  ctx.beginPath();
+  ctx.ellipse(supply.truck.x, supply.truck.y + 22, supply.truck.w / 2, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.font = '40px Tahoma';
+  ctx.fillText('🚚', supply.truck.x, supply.truck.y);
+  ctx.strokeStyle = 'rgba(34,197,94,.3)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(supply.truck.x - supply.truck.w / 2, supply.truck.y - 30);
+  ctx.lineTo(supply.truck.x + supply.truck.w / 2, supply.truck.y - 30);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  for (const f of supply.floats) {
+    ctx.globalAlpha = Math.max(0, f.life);
+    ctx.fillStyle = f.color;
+    ctx.font = 'bold 15px Tahoma';
+    ctx.fillText(f.text, f.x, f.y);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function endSupply() {
+  if (!supply.active) return;
+  supply.active = false;
+  if (supply.rafId) { cancelAnimationFrame(supply.rafId); supply.rafId = null; }
+  state.score += supply.score;
+  state.gamesPlayed++;
+  saveMyStats();
+  updateHub();
+  document.getElementById('supplyStartBtn').style.display = 'block';
+  document.getElementById('supplyStartBtn').textContent = '🔄 دوباره';
+  const win = supply.score >= 100;
+  showModal({
+    win,
+    icon: win ? '📦' : '⏱',
+    title: 'زمان تموم شد!',
+    body: `امتیاز نهایی: ${toPersianDigits(supply.score)}\nبیشترین کمبو: ${toPersianDigits(supply.combo)}`,
+    reward: supply.score > 0 ? `+${toPersianDigits(supply.score)} امتیاز` : 'بدون امتیاز',
+    rewardZero: supply.score === 0,
+    primaryText: '🔄 دوباره',
+    onPrimary: () => startSupply(),
+    secondaryText: '🏠 منو',
+    onSecondary: () => showScreen('games'),
+  });
+}
+
+function stopSupply() {
+  supply.active = false;
+  if (supply.rafId) { cancelAnimationFrame(supply.rafId); supply.rafId = null; }
+}
+
+window.addEventListener('resize', () => {
+  if (supply.stage && document.getElementById('screen-supply').classList.contains('active')) {
+    resizeSupplyCanvas();
+  }
+});
+
+/* ================================================================
+   MINE GAME
+   ================================================================ */
+const MINE_CONFIG = {
+  easy: { cols: 6, rows: 6, mines: 5, lives: 3, label: 'آسان', badgeClass: 'badge-easy' },
+};
+
+const mine = {
+  cfg: null, active: false,
+  cols: 0, rows: 0, minesLeft: 0,
+  grid: [], lives: 0, score: 0,
+  revealedCount: 0, totalSafe: 0, mode: 'dig',
+};
+
+function initMine() {
+  mine.cfg = MINE_CONFIG.easy;
+  stopMine();
+  mine.active = false;
+  mine.cols = mine.cfg.cols; mine.rows = mine.cfg.rows;
+  mine.minesLeft = mine.cfg.mines; mine.lives = mine.cfg.lives;
+  mine.score = 0; mine.mode = 'dig';
+  mine.grid = [];
+  for (let y = 0; y < mine.rows; y++) {
+    const row = [];
+    for (let x = 0; x < mine.cols; x++) {
+      row.push({ mine: false, revealed: false, flagged: false, count: 0 });
+    }
+    mine.grid.push(row);
+  }
+  updateMineHUD();
+  setMineMode('dig');
+  renderMineGrid();
+  document.getElementById('mineStartBtn').style.display = 'block';
+  document.getElementById('mineStartBtn').textContent = '🎯 شروع';
+}
+
+function setMineMode(mode) {
+  mine.mode = mode;
+  document.getElementById('mineDigBtn').classList.toggle('active', mode === 'dig');
+  document.getElementById('mineFlagBtn').classList.toggle('active', mode === 'flag');
+}
+
+function updateMineHUD() {
+  document.getElementById('mineCount').textContent = toPersianDigits(mine.minesLeft);
+  document.getElementById('mineLives').textContent = toPersianDigits(mine.lives);
+  document.getElementById('mineLives').classList.toggle('warn', mine.lives <= 1);
+  document.getElementById('mineScore').textContent = toPersianDigits(mine.score);
+}
+
+function startMine() {
+  stopMine();
+  mine.active = true;
+  mine.minesLeft = mine.cfg.mines;
+  mine.lives = mine.cfg.lives;
+  mine.score = 0;
+  mine.revealedCount = 0;
+  mine.totalSafe = mine.cfg.cols * mine.cfg.rows - mine.cfg.mines;
+  mine.grid = [];
+  for (let y = 0; y < mine.rows; y++) {
+    const row = [];
+    for (let x = 0; x < mine.cols; x++) {
+      row.push({ mine: false, revealed: false, flagged: false, count: 0 });
+    }
+    mine.grid.push(row);
+  }
+  let placed = 0;
+  while (placed < mine.cfg.mines) {
+    const x = Math.floor(Math.random() * mine.cols);
+    const y = Math.floor(Math.random() * mine.rows);
+    if (!mine.grid[y][x].mine) { mine.grid[y][x].mine = true; placed++; }
+  }
+  for (let y = 0; y < mine.rows; y++) {
+    for (let x = 0; x < mine.cols; x++) {
+      if (mine.grid[y][x].mine) continue;
+      let c = 0;
+      forNeighbors(x, y, (nx, ny) => { if (mine.grid[ny][nx].mine) c++; });
+      mine.grid[y][x].count = c;
+    }
+  }
+  updateMineHUD();
+  renderMineGrid();
+  document.getElementById('mineStartBtn').style.display = 'none';
+}
+
+function forNeighbors(x, y, cb) {
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      const nx = x + dx, ny = y + dy;
+      if (nx >= 0 && nx < mine.cols && ny >= 0 && ny < mine.rows) cb(nx, ny);
+    }
+  }
+}
+
+function renderMineGrid() {
+  const grid = document.getElementById('mineGrid');
+  grid.style.gridTemplateColumns = `repeat(${mine.cols}, 1fr)`;
+  grid.style.aspectRatio = `${mine.cols} / ${mine.rows}`;
+  grid.innerHTML = '';
+  for (let y = 0; y < mine.rows; y++) {
+    for (let x = 0; x < mine.cols; x++) {
+      const cell = mine.grid[y][x];
+      const el = document.createElement('div');
+      el.className = 'mine-cell';
+      if (cell.revealed) {
+        el.classList.add('revealed');
+        if (cell.mine) { el.classList.add('mine'); el.textContent = '💥'; }
+        else if (cell.count > 0) {
+          el.textContent = toPersianDigits(cell.count);
+          el.classList.add('n' + cell.count);
+        }
+      } else if (cell.flagged) {
+        el.classList.add('flagged');
+        el.textContent = '🚩';
+      }
+      el.addEventListener('click', () => onMineCellClick(x, y));
+      grid.appendChild(el);
+    }
+  }
+}
+
+function onMineCellClick(x, y) {
+  if (!mine.active) return;
+  const cell = mine.grid[y][x];
+  if (cell.revealed) return;
+  if (mine.mode === 'dig') {
+    if (cell.flagged) return;
+    digCell(x, y);
+  } else {
+    cell.flagged = !cell.flagged;
+    if (cell.flagged) mine.minesLeft--; else mine.minesLeft++;
+    updateMineHUD();
+    renderMineGrid();
+  }
+}
+
+function digCell(x, y) {
+  const cell = mine.grid[y][x];
+  if (cell.revealed || cell.flagged) return;
+  if (cell.mine) {
+    cell.revealed = true;
+    mine.lives--;
+    updateMineHUD();
+    renderMineGrid();
+    shakeMineStage();
+    if (mine.lives <= 0) endMine('boom');
+    return;
+  }
+  floodReveal(x, y);
+  renderMineGrid();
+  updateMineHUD();
+  if (mine.revealedCount >= mine.totalSafe) endMine('win');
+}
+
+function floodReveal(sx, sy) {
+  const queue = [[sx, sy]];
+  while (queue.length) {
+    const [cx, cy] = queue.shift();
+    const c = mine.grid[cy][cx];
+    if (c.revealed || c.flagged || c.mine) continue;
+    c.revealed = true;
+    mine.revealedCount++;
+    mine.score += 3;
+    if (c.count === 0) {
+      forNeighbors(cx, cy, (nx, ny) => {
+        const nc = mine.grid[ny][nx];
+        if (!nc.revealed && !nc.flagged && !nc.mine) queue.push([nx, ny]);
+      });
+    }
+  }
+}
+
+function shakeMineStage() {
+  const grid = document.getElementById('mineGrid');
+  grid.classList.remove('shake');
+  void grid.offsetWidth;
+  grid.classList.add('shake');
+  setTimeout(() => grid.classList.remove('shake'), 420);
+}
+
+function endMine(reason) {
+  if (!mine.active) return;
+  mine.active = false;
+  for (let y = 0; y < mine.rows; y++) {
+    for (let x = 0; x < mine.cols; x++) {
+      const c = mine.grid[y][x];
+      if (c.mine && !c.revealed && !c.flagged) c.revealed = true;
+    }
+  }
+  renderMineGrid();
+  let bonus = 0;
+  if (reason === 'win') {
+    bonus = 150 + mine.lives * 20;
+    mine.score += bonus;
+  }
+  state.score += mine.score;
+  state.gamesPlayed++;
+  saveMyStats();
+  updateHub();
+  document.getElementById('mineStartBtn').style.display = 'block';
+  document.getElementById('mineStartBtn').textContent = '🔄 دوباره';
+  const win = reason === 'win';
+  showModal({
+    win,
+    icon: win ? '🏆' : '💥',
+    title: win ? 'میدان پاک‌سازی شد!' : 'مین منفجر شد!',
+    body: win
+      ? `همه خانه‌های امن پیدا شد\nجان باقی‌مونده: ${toPersianDigits(mine.lives)}\nپاداش: ${toPersianDigits(bonus)}`
+      : `امتیاز: ${toPersianDigits(mine.score)}`,
+    reward: mine.score > 0 ? `+${toPersianDigits(mine.score)} امتیاز` : 'بدون امتیاز',
+    rewardZero: mine.score === 0,
+    primaryText: '🔄 دوباره',
+    onPrimary: () => startMine(),
+    secondaryText: '🏠 منو',
+    onSecondary: () => showScreen('games'),
+  });
+}
+
+function stopMine() { mine.active = false; }
+
+/* ================================================================
+   HELI GAME
+   ================================================================ */
+const HELI_CONFIG = {
+  easy: { gravity: 0.28, jump: -5.2, speed: 1.9, gap: 150, gapSpacing: 240, lives: 3, label: 'آسان', badgeClass: 'badge-easy' },
+};
+const POINTS_PER_OBSTACLE = 25;
+
+const heli = {
+  cfg: null, active: false,
+  W: 0, H: 0,
+  x: 0, y: 0, vy: 0, r: 14,
+  obstacles: [], particles: [],
+  passed: 0, score: 0, lives: 0,
+  invulnUntil: 0,
+  lastSpawn: 0, holding: false,
+  rafId: null, lastFrame: 0,
+  ctx: null, canvas: null, stage: null,
+};
+
+function initHeli() {
+  heli.cfg = HELI_CONFIG.easy;
+  stopHeli();
+  heli.active = false;
+  heli.passed = 0; heli.score = 0; heli.lives = heli.cfg.lives;
+  heli.obstacles = []; heli.particles = [];
+  document.getElementById('heliPassed').textContent = '۰';
+  document.getElementById('heliLives').textContent = toPersianDigits(heli.lives);
+  document.getElementById('heliLives').classList.remove('warn');
+  document.getElementById('heliScore').textContent = '۰';
+  document.getElementById('heliStartBtn').style.display = 'block';
+  document.getElementById('heliStartBtn').textContent = '🎯 شروع';
+  heli.stage = document.getElementById('heliStage');
+  heli.canvas = document.getElementById('heliCanvas');
+  heli.ctx = heli.canvas.getContext('2d');
+  requestAnimationFrame(() => {
+    resizeHeliCanvas();
+    resetHeliField();
+    drawHeli();
+  });
+  attachHeliPointer();
+}
+
+function resizeHeliCanvas() {
+  if (!heli.stage) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = heli.stage.getBoundingClientRect();
+  heli.canvas.width = Math.round(rect.width * dpr);
+  heli.canvas.height = Math.round(rect.height * dpr);
+  heli.canvas.style.width = rect.width + 'px';
+  heli.canvas.style.height = rect.height + 'px';
+  heli.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  heli.W = rect.width; heli.H = rect.height;
+}
+
+function resetHeliField() {
+  heli.x = 70;
+  heli.y = heli.H / 2;
+  heli.vy = 0;
+  heli.obstacles = [];
+  heli.particles = [];
+  heli.lastSpawn = 0;
+}
+
+function attachHeliPointer() {
+  if (heli.stage._attached) return;
+  heli.stage._attached = true;
+  heli.stage.addEventListener('pointerdown', (e) => {
+    if (!heli.active) return;
+    e.preventDefault();
+    heli.holding = true;
+    try { heli.stage.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  const up = (e) => {
+    heli.holding = false;
+    try { heli.stage.releasePointerCapture(e.pointerId); } catch (_) {}
+  };
+  heli.stage.addEventListener('pointerup', up);
+  heli.stage.addEventListener('pointercancel', up);
+  heli.stage.addEventListener('pointerleave', () => { heli.holding = false; });
+}
+
+function startHeli() {
+  stopHeli();
+  heli.active = true;
+  heli.passed = 0; heli.score = 0;
+  heli.lives = heli.cfg.lives;
+  heli.invulnUntil = 0;
+  resizeHeliCanvas();
+  resetHeliField();
+  heli.lastFrame = performance.now();
+  document.getElementById('heliStartBtn').style.display = 'none';
+  document.getElementById('heliLives').textContent = toPersianDigits(heli.lives);
+  document.getElementById('heliLives').classList.remove('warn');
+  document.getElementById('heliPassed').textContent = '۰';
+  document.getElementById('heliScore').textContent = '۰';
+  heli.obstacles.push(makeHeliObstacle(heli.W + 100));
+  heli.lastSpawn = heli.W + 100;
+  heli.rafId = requestAnimationFrame(heliLoop);
+}
+
+function makeHeliObstacle(x) {
+  const minGapY = 60;
+  const maxGapY = heli.H - 60 - heli.cfg.gap;
+  const gapY = minGapY + Math.random() * Math.max(10, maxGapY - minGapY);
+  return { x, gapY, gapH: heli.cfg.gap, passed: false };
+}
+
+function heliLoop(ts) {
+  if (!heli.active) return;
+  const dt = Math.min((ts - heli.lastFrame) / 16.67, 3);
+  heli.lastFrame = ts;
+  updateHeli(dt);
+  drawHeli();
+  if (!heli.active) return;
+  heli.rafId = requestAnimationFrame(heliLoop);
+}
+
+function updateHeli(dt) {
+  const c = heli.cfg;
+  heli.vy += c.gravity * dt;
+  if (heli.holding) heli.vy += (c.jump * 0.5) * dt;
+  if (heli.holding && heli.vy > -1) heli.vy -= 0.5 * dt;
+  heli.vy = Math.max(-7, Math.min(7, heli.vy));
+  heli.y += heli.vy * dt;
+
+  if (heli.y - heli.r < 0) {
+    heli.y = heli.r;
+    heli.vy = 0;
+  }
+  if (heli.y + heli.r > heli.H) {
+    heli.y = heli.H - heli.r;
+    heli.vy = 0;
+    if (performance.now() > heli.invulnUntil) {
+      heliHit();
+      heli.vy = -3;
+    }
+  }
+
+  const dx = c.speed * dt;
+  for (const ob of heli.obstacles) ob.x -= dx;
+
+  const lastOb = heli.obstacles[heli.obstacles.length - 1];
+  if (!lastOb || lastOb.x < heli.W - c.gapSpacing) {
+    heli.obstacles.push(makeHeliObstacle(heli.W + 20));
+  }
+
+  for (let i = heli.obstacles.length - 1; i >= 0; i--) {
+    const ob = heli.obstacles[i];
+    if (!ob.passed && ob.x + 60 < heli.x - heli.r) {
+      ob.passed = true;
+      heli.passed++;
+      heli.score += POINTS_PER_OBSTACLE;
+      document.getElementById('heliPassed').textContent = toPersianDigits(heli.passed);
+      document.getElementById('heliScore').textContent = toPersianDigits(heli.score);
+      heli.particles.push({
+        x: heli.x, y: heli.y - 30,
+        vx: 0, vy: -0.8,
+        life: 1.3, color: '#fbbf24', text: '+۲۵', isText: true,
+      });
+    }
+    if (ob.x + 100 < -50) heli.obstacles.splice(i, 1);
+  }
+
+  if (performance.now() > heli.invulnUntil) {
+    const heliLeft = heli.x - heli.r + 2;
+    const heliRight = heli.x + heli.r - 2;
+    const heliTop = heli.y - heli.r + 2;
+    const heliBottom = heli.y + heli.r - 2;
+    for (const ob of heli.obstacles) {
+      const obLeft = ob.x;
+      const obRight = ob.x + 60;
+      if (heliRight > obLeft && heliLeft < obRight) {
+        if (heliTop < ob.gapY || heliBottom > ob.gapY + ob.gapH) {
+          heliHit();
+          heli.vy = -2;
+          break;
+        }
+      }
+    }
+  }
+
+  for (let i = heli.particles.length - 1; i >= 0; i--) {
+    const p = heli.particles[i];
+    p.x += (p.vx || 0) * dt;
+    p.y += (p.vy || 0) * dt;
+    if (!p.isText) p.vy += 0.15 * dt;
+    p.life -= 0.02 * dt;
+    if (p.life <= 0) heli.particles.splice(i, 1);
+  }
+}
+
+function heliHit() {
+  heli.lives--;
+  document.getElementById('heliLives').textContent = toPersianDigits(heli.lives);
+  document.getElementById('heliLives').classList.toggle('warn', heli.lives <= 1);
+  heli.invulnUntil = performance.now() + 1500;
+  for (let i = 0; i < 12; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp = 1 + Math.random() * 3;
+    heli.particles.push({
+      x: heli.x, y: heli.y,
+      vx: Math.cos(ang) * sp,
+      vy: Math.sin(ang) * sp,
+      life: 1,
+      color: ['#ef4444', '#fbbf24', '#f97316'][i % 3],
+    });
+  }
+  const st = heli.stage;
+  st.classList.remove('shake');
+  void st.offsetWidth;
+  st.classList.add('shake');
+  setTimeout(() => st.classList.remove('shake'), 420);
+  if (heli.lives <= 0) endHeli();
+}
+
+function drawHeli() {
+  const ctx = heli.ctx;
+  if (!ctx) return;
+  const W = heli.W, H = heli.H;
+
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#0a1424');
+  sky.addColorStop(0.5, '#1a2a44');
+  sky.addColorStop(1, '#050810');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
+
+  const t = performance.now() * 0.02;
+  ctx.fillStyle = 'rgba(148,163,184,.35)';
+  for (let i = 0; i < 20; i++) {
+    const sx = ((i * 173 - t) % W + W) % W;
+    const sy = (i * 47) % (H * 0.9);
+    ctx.fillRect(sx, sy, 2, 2);
+  }
+
+  for (const ob of heli.obstacles) {
+    const topGrad = ctx.createLinearGradient(0, 0, 0, ob.gapY);
+    topGrad.addColorStop(0, '#3a2a1a');
+    topGrad.addColorStop(1, '#1a1008');
+    ctx.fillStyle = topGrad;
+    ctx.fillRect(ob.x, 0, 60, ob.gapY);
+    ctx.fillStyle = '#2a1a0a';
+    ctx.fillRect(ob.x, ob.gapY - 4, 60, 4);
+    ctx.strokeStyle = 'rgba(251,191,36,.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(ob.x, ob.gapY);
+    ctx.lineTo(ob.x + 60, ob.gapY);
+    ctx.stroke();
+
+    const botY = ob.gapY + ob.gapH;
+    const botGrad = ctx.createLinearGradient(0, botY, 0, H);
+    botGrad.addColorStop(0, '#1a1008');
+    botGrad.addColorStop(1, '#3a2a1a');
+    ctx.fillStyle = botGrad;
+    ctx.fillRect(ob.x, botY, 60, H - botY);
+    ctx.fillStyle = '#2a1a0a';
+    ctx.fillRect(ob.x, botY, 60, 4);
+    ctx.strokeStyle = 'rgba(251,191,36,.4)';
+    ctx.beginPath();
+    ctx.moveTo(ob.x, botY);
+    ctx.lineTo(ob.x + 60, botY);
+    ctx.stroke();
+
+    if (ob.passed) {
+      ctx.strokeStyle = 'rgba(34,197,94,.25)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(ob.x + 60, 0);
+      ctx.lineTo(ob.x + 60, H);
+      ctx.stroke();
+    }
+  }
+
+  for (const p of heli.particles) {
+    ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
+    if (p.isText) {
+      ctx.fillStyle = p.color;
+      ctx.font = 'bold 18px Tahoma';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 12;
+      ctx.fillText(p.text, p.x, p.y);
+      ctx.shadowBlur = 0;
+    } else {
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3 * p.life, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  const invuln = performance.now() < heli.invulnUntil;
+  if (!invuln || Math.floor(performance.now() / 100) % 2 === 0) {
+    ctx.save();
+    ctx.translate(heli.x, heli.y);
+    ctx.rotate(Math.max(-0.4, Math.min(0.4, heli.vy * 0.08)));
+    ctx.font = '32px Tahoma';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.filter = 'drop-shadow(0 0 10px rgba(96,165,250,.7))';
+    ctx.fillText('🚁', 0, 0);
+    ctx.filter = 'none';
+    ctx.restore();
+  }
+}
+
+function endHeli() {
+  if (!heli.active) return;
+  heli.active = false;
+  if (heli.rafId) { cancelAnimationFrame(heli.rafId); heli.rafId = null; }
+  state.score += heli.score;
+  state.gamesPlayed++;
+  saveMyStats();
+  updateHub();
+  document.getElementById('heliStartBtn').style.display = 'block';
+  document.getElementById('heliStartBtn').textContent = '🔄 دوباره';
+  const win = heli.passed >= 5;
+  showModal({
+    win,
+    icon: win ? '🏆' : '💥',
+    title: win ? 'پرواز موفق!' : 'سقوط کردی',
+    body: `موانع رد شده: ${toPersianDigits(heli.passed)}\nامتیاز: ${toPersianDigits(heli.score)}`,
+    reward: heli.score > 0 ? `+${toPersianDigits(heli.score)} امتیاز` : 'بدون امتیاز',
+    rewardZero: heli.score === 0,
+    primaryText: '🔄 دوباره',
+    onPrimary: () => startHeli(),
+    secondaryText: '🏠 منو',
+    onSecondary: () => showScreen('games'),
+  });
+}
+
+function stopHeli() {
+  heli.active = false;
+  heli.holding = false;
+  if (heli.rafId) { cancelAnimationFrame(heli.rafId); heli.rafId = null; }
+}
+
+window.addEventListener('resize', () => {
+  if (heli.stage && document.getElementById('screen-heli').classList.contains('active')) {
+    resizeHeliCanvas();
+  }
+});
+
+/* ================================================================
+   BET HELPERS
+   ================================================================ */
 function setBet(game, val) {
   const input = document.getElementById(game + 'Bet');
   if (!input) return;
@@ -2186,7 +3766,7 @@ async function refreshLeaderboard() {
   const me = data.me;
 
   if (!users.length && !me) {
-    box.innerHTML = '<div class="lb-empty">هنوز هیچ‌کس بازی نکرده</div>';
+    box.innerHTML = '<div class="lb-empty">این هفته هنوز کسی بازی نکرده</div>';
     return;
   }
 
