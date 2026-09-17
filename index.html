@@ -740,6 +740,314 @@
   .heli-stage.shake { animation: shakeAnim .4s; }
   .hint-text { font-size: 11px; color: var(--muted); font-weight: 700;
     text-align: center; padding: 8px 4px 4px; }
+
+  /* ============ BOTTOM NAV ============ */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(5,6,10,0) 0%, rgba(5,6,10,.85) 30%, rgba(5,6,10,.98) 100%);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    display: none;
+  }
+  .bottom-nav.visible { display: block; }
+  .bottom-nav-inner {
+    max-width: 420px;
+    margin: 0 auto;
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(10,15,25,.92);
+    border: 1px solid rgba(34,197,94,.3);
+    border-radius: 99px;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0,0,0,.6);
+  }
+  .bottom-nav button {
+    flex: 1;
+    padding: 11px 12px;
+    border-radius: 99px;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 800;
+    background: transparent;
+    color: var(--muted);
+    transition: all .25s;
+  }
+  .bottom-nav button.active {
+    background: linear-gradient(135deg, var(--gn), var(--gn-2));
+    color: #04210d;
+    box-shadow: 0 4px 14px -4px var(--gn-glow);
+  }
+  .bottom-nav button:active { transform: scale(.95); }
+  body.has-bottom-nav .wrap {
+    padding-bottom: calc(max(40px, env(safe-area-inset-bottom)) + 82px);
+  }
+
+  /* ============ PROFILE SCREEN ============ */
+  .profile-card {
+    position: relative;
+    padding: 22px 16px 18px;
+    background: linear-gradient(160deg, rgba(20,24,33,.85), rgba(15,18,25,.75));
+    border: 1px solid rgba(34,197,94,.25);
+    border-radius: 18px;
+    text-align: center;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .profile-card::before {
+    content: '';
+    position: absolute;
+    top: -40%; left: -20%; right: -20%; height: 80%;
+    background: radial-gradient(ellipse at 50% 50%, rgba(34,197,94,.18), transparent 65%);
+    pointer-events: none;
+  }
+  .profile-avatar {
+    width: 82px; height: 82px;
+    margin: 0 auto 12px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, var(--gn), var(--gn-2));
+    display: grid; place-items: center;
+    font-size: 42px;
+    box-shadow: 0 0 30px var(--gn-glow), inset 0 1px 0 rgba(255,255,255,.3);
+    position: relative; z-index: 1;
+    animation: iconBreath 3s ease-in-out infinite;
+  }
+  .profile-name {
+    font-size: 18px; font-weight: 900;
+    margin-bottom: 6px;
+    position: relative; z-index: 1;
+  }
+  .profile-rank {
+    display: inline-block;
+    font-size: 12px; font-weight: 800;
+    color: var(--gold);
+    padding: 3px 12px;
+    background: rgba(251,191,36,.12);
+    border: 1px solid rgba(251,191,36,.3);
+    border-radius: 99px;
+    margin-bottom: 12px;
+    position: relative; z-index: 1;
+  }
+  .profile-level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    background: rgba(34,197,94,.12);
+    border: 1px solid rgba(34,197,94,.3);
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--gn);
+    margin-bottom: 14px;
+    position: relative; z-index: 1;
+  }
+  .xp-bar-wrap { position: relative; z-index: 1; }
+  .xp-bar {
+    height: 10px;
+    background: rgba(255,255,255,.06);
+    border-radius: 99px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.05);
+  }
+  .xp-bar > i {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--gn-2), var(--gn), var(--sky));
+    border-radius: 99px;
+    box-shadow: 0 0 12px var(--gn-glow);
+    transition: width .6s cubic-bezier(.22,.9,.32,1);
+  }
+  .xp-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10.5px;
+    color: var(--muted);
+    font-weight: 700;
+    margin-top: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+  .profile-section {
+    padding: 14px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    text-align: right;
+  }
+  .profile-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+  .profile-section-title .count {
+    margin-right: auto;
+    font-size: 10.5px;
+    padding: 3px 9px;
+    background: rgba(34,197,94,.15);
+    border-radius: 99px;
+    color: var(--gn);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+  }
+  .mission-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    background: rgba(255,255,255,.03);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    border: 1px solid rgba(255,255,255,.04);
+    transition: background .3s, border-color .3s;
+  }
+  .mission-row:last-child { margin-bottom: 0; }
+  .mission-row.done {
+    background: rgba(34,197,94,.1);
+    border-color: rgba(34,197,94,.3);
+  }
+  .mission-check {
+    width: 24px; height: 24px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.1);
+    display: grid; place-items: center;
+    font-size: 12px; font-weight: 900;
+    flex-shrink: 0;
+    color: transparent;
+  }
+  .mission-row.done .mission-check {
+    background: var(--gn);
+    border-color: var(--gn);
+    color: #04210d;
+  }
+  .mission-text {
+    flex: 1; min-width: 0;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .mission-progress {
+    height: 3px;
+    background: rgba(255,255,255,.06);
+    border-radius: 99px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .mission-progress > i {
+    display: block;
+    height: 100%;
+    background: var(--gn);
+    border-radius: 99px;
+    transition: width .5s;
+  }
+  .mission-xp {
+    font-size: 11px;
+    font-weight: 900;
+    color: var(--sky);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .recent-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    background: rgba(255,255,255,.03);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    border: 1px solid rgba(255,255,255,.04);
+  }
+  .recent-row:last-child { margin-bottom: 0; }
+  .recent-icon {
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    background: rgba(255,255,255,.05);
+    display: grid; place-items: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .recent-info { flex: 1; min-width: 0; }
+  .recent-name {
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .recent-time {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .recent-score {
+    font-size: 12.5px;
+    font-weight: 900;
+    color: var(--gn);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+  }
+  .recent-score.neg { color: var(--danger); }
+  .ach-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    background: rgba(255,255,255,.02);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    border: 1px solid rgba(255,255,255,.04);
+    opacity: .45;
+    transition: opacity .3s, background .3s, border-color .3s;
+  }
+  .ach-row:last-child { margin-bottom: 0; }
+  .ach-row.unlocked {
+    opacity: 1;
+    background: rgba(34,197,94,.08);
+    border-color: rgba(34,197,94,.25);
+  }
+  .ach-icon {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.08);
+    display: grid; place-items: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .ach-row.unlocked .ach-icon {
+    background: rgba(34,197,94,.15);
+    border-color: rgba(34,197,94,.35);
+    box-shadow: 0 0 15px -4px var(--gn-glow);
+  }
+  .ach-info { flex: 1; min-width: 0; }
+  .ach-title {
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .ach-desc {
+    font-size: 10.5px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .ach-lock {
+    font-size: 14px;
+    flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -1114,6 +1422,61 @@
     </div>
   </div>
 
+  <div class="screen" id="screen-profile">
+    <div class="box">
+      <button class="back-btn" onclick="showScreen('hub')">⬅️ بازگشت</button>
+      <h2>👤 پروفایل</h2>
+      <div class="subtitle">Profile</div>
+
+      <div class="profile-card">
+        <div class="profile-avatar">🪖</div>
+        <div class="profile-name" id="pfName">COMMANDER</div>
+        <div class="profile-rank" id="pfRank">سرباز</div>
+        <div class="profile-level-badge">
+          <span>⚡</span>
+          <span>سطح <span id="pfLevel">۱</span></span>
+        </div>
+        <div class="xp-bar-wrap">
+          <div class="xp-bar"><i id="pfXpBar" style="width:0%"></i></div>
+          <div class="xp-labels">
+            <span id="pfXpText">۰ / ۱۰۰ XP</span>
+            <span id="pfXpNext">تا سطح بعدی: ۱۰۰ XP</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">
+          <span>🎯</span><span>ماموریت‌های امروز</span>
+          <span class="count" id="pfMissCount">۰/۳</span>
+        </div>
+        <div id="pfMissions"></div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">
+          <span>🕹️</span><span>بازی‌های اخیر</span>
+        </div>
+        <div id="pfRecent"></div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">
+          <span>🏅</span><span>دستاوردها</span>
+          <span class="count" id="pfAchCount">۰/۱۰</span>
+        </div>
+        <div id="pfAch"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="bottom-nav" id="bottomNav">
+  <div class="bottom-nav-inner">
+    <button data-screen="hub" onclick="showScreen('hub')">🏠 منو</button>
+    <button data-screen="profile" onclick="showScreen('profile')">👤 پروفایل</button>
+  </div>
 </div>
 
 <div class="modal" id="modal">
@@ -2265,7 +2628,11 @@ const PW = 400;
 const PH = 340;
 const P_TOP_PAD = 40;
 const P_BOTTOM_PAD = 60;
-const BALL_R = 8;
+const BALL_R_MEDIUM = 8;
+const BALL_R_HARD = 6;
+function getPlinkoBallR() {
+  return plinkoDiff === 'hard' ? BALL_R_HARD : BALL_R_MEDIUM;
+}
 const PEG_R = 3.5;
 
 function initPlinko() {
@@ -2315,7 +2682,7 @@ function drawPlinkoBoard() {
   svg.dataset.spacing = spacing;
   svg.dataset.rowHeight = rowHeight;
 
-  html += `<circle id="plinkoBall" class="plinko-ball" cx="${PW/2}" cy="${P_TOP_PAD - 25}" r="${BALL_R}" style="display:none"/>`;
+  html += `<circle id="plinkoBall" class="plinko-ball" cx="${PW/2}" cy="${P_TOP_PAD - 25}" r="${getPlinkoBallR()}" style="display:none"/>`;
 
   const slots = cfg.multipliers.length;
   const slotWidth = PW / slots;
@@ -2393,6 +2760,8 @@ async function dropBall() {
   const cfg = PLINKO_CONFIG[plinkoDiff];
   const ball = document.getElementById('plinkoBall');
   ball.style.display = '';
+
+  const BALL_R = getPlinkoBallR();
 
   let ballPos = { x: PW / 2, y: P_TOP_PAD - 25 };
   let vel = { x: (Math.random() - 0.5) * 1.2, y: 0 };
@@ -3817,6 +4186,341 @@ function escapeHtml(s) {
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
   ));
 }
+
+/* ================================================================
+   PROFILE SYSTEM
+   ================================================================ */
+const PROFILE_KEY = 'ww_profile_v1';
+
+const GAME_META = {
+  defense: { name: 'دفاع از پایتخت', icon: '🚀' },
+  quiz: { name: 'کوییز جنگ', icon: '🧠' },
+  bomb: { name: 'خنثی‌سازی بمب', icon: '💣' },
+  duel: { name: 'دوئل غربی', icon: '🤠' },
+  supply: { name: 'تدارکات', icon: '📦' },
+  mine: { name: 'مین‌یاب', icon: '💥' },
+  heli: { name: 'هلیکوپتر', icon: '🚁' },
+  crash: { name: 'موشک پرنده', icon: '🚀' },
+  plinko: { name: 'پلینکو', icon: '⚪' }
+};
+
+const PF_RANKS = [
+  { min: 90, name: 'ژنرال پنج ستاره' },
+  { min: 75, name: 'ژنرال' },
+  { min: 60, name: 'سپهبد' },
+  { min: 45, name: 'سرلشکر' },
+  { min: 30, name: 'سرتیپ' },
+  { min: 20, name: 'سرهنگ' },
+  { min: 12, name: 'سرگرد' },
+  { min: 7, name: 'سروان' },
+  { min: 4, name: 'ستوان' },
+  { min: 2, name: 'گروهبان' },
+  { min: 1, name: 'سرباز' }
+];
+
+const PF_ACHIEVEMENTS = [
+  { id: 'first_game', icon: '🎖️', title: 'اولین قدم', desc: 'اولین بازی خود را انجام بده', check: () => state.gamesPlayed >= 1 },
+  { id: 'games_10', icon: '🎮', title: 'بازی‌باز', desc: '۱۰ بازی انجام بده', check: () => state.gamesPlayed >= 10 },
+  { id: 'games_50', icon: '🕹️', title: 'حرفه‌ای', desc: '۵۰ بازی انجام بده', check: () => state.gamesPlayed >= 50 },
+  { id: 'score_1000', icon: '💯', title: 'صدتایی', desc: '۱۰۰۰ امتیاز جمع کن', check: () => state.score >= 1000 },
+  { id: 'score_5000', icon: '🌟', title: 'پنج‌هزاری', desc: '۵۰۰۰ امتیاز جمع کن', check: () => state.score >= 5000 },
+  { id: 'score_10000', icon: '💎', title: 'ده‌هزاری', desc: '۱۰۰۰۰ امتیاز جمع کن', check: () => state.score >= 10000 },
+  { id: 'unique_5', icon: '🎯', title: 'چندکاره', desc: '۵ بازی مختلف انجام بده', check: p => p.playedGames.length >= 5 },
+  { id: 'all_games', icon: '🏆', title: 'استاد', desc: 'همه ۹ بازی را انجام بده', check: p => p.playedGames.length >= 9 },
+  { id: 'level_5', icon: '⚡', title: 'سطح ۵', desc: 'به سطح ۵ برس', check: p => pfLevelFromXp(p.xp) >= 5 },
+  { id: 'level_10', icon: '🔥', title: 'سطح ۱۰', desc: 'به سطح ۱۰ برس', check: p => pfLevelFromXp(p.xp) >= 10 }
+];
+
+const PF_MISSION_TEMPLATES = [
+  { id: 'play3', text: '۳ بازی انجام بده', type: 'games', target: 3, xp: 50 },
+  { id: 'play5', text: '۵ بازی انجام بده', type: 'games', target: 5, xp: 80 },
+  { id: 'score200', text: '۲۰۰ امتیاز جمع کن', type: 'score', target: 200, xp: 60 },
+  { id: 'score500', text: '۵۰۰ امتیاز جمع کن', type: 'score', target: 500, xp: 100 },
+  { id: 'unique2', text: '۲ بازی مختلف انجام بده', type: 'unique', target: 2, xp: 70 },
+  { id: 'unique3', text: '۳ بازی مختلف انجام بده', type: 'unique', target: 3, xp: 100 }
+];
+
+let profileData = {
+  xp: 0,
+  recentGames: [],
+  playedGames: [],
+  missions: { date: '', items: [] },
+  unlockedAchievements: []
+};
+
+function pfLoadProfile() {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data && typeof data === 'object') {
+        profileData = Object.assign(profileData, data);
+      }
+    }
+  } catch (e) {}
+  if (!profileData.missions || typeof profileData.missions !== 'object') {
+    profileData.missions = { date: '', items: [] };
+  }
+  if (!Array.isArray(profileData.recentGames)) profileData.recentGames = [];
+  if (!Array.isArray(profileData.playedGames)) profileData.playedGames = [];
+  if (!Array.isArray(profileData.unlockedAchievements)) profileData.unlockedAchievements = [];
+  if (typeof profileData.xp !== 'number' || !isFinite(profileData.xp)) profileData.xp = 0;
+}
+
+function pfSaveProfile() {
+  try { localStorage.setItem(PROFILE_KEY, JSON.stringify(profileData)); } catch (e) {}
+}
+
+function pfTodayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+}
+
+function pfEnsureDailyMissions() {
+  const today = pfTodayKey();
+  if (profileData.missions.date === today && profileData.missions.items.length === 3) return;
+  const shuffled = shuffle(PF_MISSION_TEMPLATES.slice());
+  const picked = shuffled.slice(0, 3).map(m => ({
+    id: m.id, text: m.text, type: m.type, target: m.target, xp: m.xp,
+    progress: 0, done: false, uniqueSet: []
+  }));
+  profileData.missions = { date: today, items: picked };
+  pfSaveProfile();
+}
+
+function pfXpForLevel(lvl) {
+  if (lvl <= 1) return 0;
+  return 50 * (lvl - 1) * lvl;
+}
+
+function pfLevelFromXp(xp) {
+  let l = 1;
+  while (l < 100 && pfXpForLevel(l + 1) <= xp) l++;
+  return l;
+}
+
+function pfRankName(level) {
+  for (const r of PF_RANKS) if (level >= r.min) return r.name;
+  return 'سرباز';
+}
+
+function pfRecordGamePlay(gameId, scoreDelta) {
+  const gainedXp = Math.max(0, scoreDelta);
+  profileData.xp += gainedXp;
+
+  const meta = GAME_META[gameId] || { name: gameId, icon: '🎮' };
+  profileData.recentGames.unshift({
+    id: gameId, name: meta.name, icon: meta.icon,
+    score: scoreDelta, time: Date.now()
+  });
+  if (profileData.recentGames.length > 8) profileData.recentGames.length = 8;
+
+  if (profileData.playedGames.indexOf(gameId) === -1) {
+    profileData.playedGames.push(gameId);
+  }
+
+  pfEnsureDailyMissions();
+  profileData.missions.items.forEach(m => {
+    if (m.done) return;
+    if (m.type === 'games') m.progress = Math.min(m.target, m.progress + 1);
+    else if (m.type === 'score') m.progress = Math.min(m.target, m.progress + gainedXp);
+    else if (m.type === 'unique') {
+      if (m.uniqueSet.indexOf(gameId) === -1) m.uniqueSet.push(gameId);
+      m.progress = m.uniqueSet.length;
+    }
+    if (m.progress >= m.target) {
+      m.done = true;
+      profileData.xp += m.xp;
+    }
+  });
+
+  pfCheckAchievements();
+  pfSaveProfile();
+}
+
+function pfCheckAchievements() {
+  const newly = [];
+  const unlocked = profileData.unlockedAchievements;
+  PF_ACHIEVEMENTS.forEach(a => {
+    if (unlocked.indexOf(a.id) === -1) {
+      let ok = false;
+      try { ok = a.check(profileData); } catch (e) { ok = false; }
+      if (ok) {
+        unlocked.push(a.id);
+        newly.push(a);
+      }
+    }
+  });
+  if (newly.length) {
+    pfSaveProfile();
+    newly.forEach((a, i) => setTimeout(() => pfShowAchievementToast(a), 700 + i * 800));
+  }
+  return newly;
+}
+
+function pfShowAchievementToast(ach) {
+  const toast = document.createElement('div');
+  toast.style.cssText = [
+    'position:fixed', 'top:20px', 'left:50%',
+    'transform:translateX(-50%) translateY(-100px)',
+    'padding:12px 18px',
+    'background:linear-gradient(135deg,rgba(34,197,94,.97),rgba(22,163,74,.97))',
+    'border-radius:14px', 'color:#fff', 'font-size:13px', 'font-weight:800',
+    'display:flex', 'align-items:center', 'gap:10px',
+    'box-shadow:0 10px 40px rgba(34,197,94,.5)',
+    'z-index:9999', 'opacity:0', 'pointer-events:none',
+    'max-width:min(90%,360px)', 'font-family:Tahoma,sans-serif',
+    'transition:transform .55s cubic-bezier(.22,.9,.32,1.4), opacity .5s',
+    'direction:rtl'
+  ].join(';');
+  toast.innerHTML =
+    '<span style="font-size:26px">' + ach.icon + '</span>' +
+    '<div style="text-align:right;line-height:1.5">' +
+      '<div>🏅 دستاورد جدید!</div>' +
+      '<div style="font-size:11px;opacity:.92;margin-top:2px">' + ach.title + ' — ' + ach.desc + '</div>' +
+    '</div>';
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => {
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    toast.style.opacity = '1';
+  });
+  setTimeout(() => {
+    toast.style.transform = 'translateX(-50%) translateY(-100px)';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 550);
+  }, 3600);
+}
+
+function pfFormatTimeAgo(timestamp) {
+  const diff = Date.now() - timestamp;
+  const sec = Math.floor(diff / 1000);
+  if (sec < 60) return 'همین الان';
+  const min = Math.floor(sec / 60);
+  if (min < 60) return toPersianDigits(min) + ' دقیقه پیش';
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return toPersianDigits(hr) + ' ساعت پیش';
+  const day = Math.floor(hr / 24);
+  if (day < 7) return toPersianDigits(day) + ' روز پیش';
+  return toPersianDigits(Math.floor(day / 7)) + ' هفته پیش';
+}
+
+function pfRenderProfile() {
+  const level = pfLevelFromXp(profileData.xp);
+  const currentLevelXp = pfXpForLevel(level);
+  const nextLevelXp = pfXpForLevel(level + 1);
+  const xpInLevel = profileData.xp - currentLevelXp;
+  const xpNeeded = nextLevelXp - currentLevelXp;
+  const pct = Math.min(100, (xpInLevel / xpNeeded) * 100);
+
+  document.getElementById('pfName').textContent = 'COMMANDER';
+  document.getElementById('pfRank').textContent = pfRankName(level);
+  document.getElementById('pfLevel').textContent = toPersianDigits(level);
+  document.getElementById('pfXpBar').style.width = pct + '%';
+  document.getElementById('pfXpText').textContent =
+    toPersianDigits(xpInLevel) + ' / ' + toPersianDigits(xpNeeded) + ' XP';
+  document.getElementById('pfXpNext').textContent =
+    'تا سطح بعدی: ' + toPersianDigits(Math.max(0, xpNeeded - xpInLevel)) + ' XP';
+
+  const missBox = document.getElementById('pfMissions');
+  const doneCount = profileData.missions.items.filter(m => m.done).length;
+  document.getElementById('pfMissCount').textContent =
+    toPersianDigits(doneCount) + '/' + toPersianDigits(profileData.missions.items.length);
+  if (!profileData.missions.items.length) {
+    missBox.innerHTML = '<div style="text-align:center;padding:18px;color:var(--muted);font-size:12px">ماموریتی موجود نیست</div>';
+  } else {
+    missBox.innerHTML = profileData.missions.items.map(m => {
+      const pctM = Math.min(100, (m.progress / m.target) * 100);
+      return '<div class="mission-row ' + (m.done ? 'done' : '') + '">' +
+        '<div class="mission-check">✓</div>' +
+        '<div class="mission-text">' + m.text +
+          '<div class="mission-progress"><i style="width:' + pctM + '%"></i></div>' +
+        '</div>' +
+        '<div class="mission-xp">+' + toPersianDigits(m.xp) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  const recBox = document.getElementById('pfRecent');
+  if (!profileData.recentGames.length) {
+    recBox.innerHTML = '<div style="text-align:center;padding:18px;color:var(--muted);font-size:12px;line-height:1.7">هنوز بازی‌ای انجام نداده‌ای<br>اولین بازی خود را شروع کن!</div>';
+  } else {
+    recBox.innerHTML = profileData.recentGames.slice(0, 6).map(g => {
+      const timeAgo = pfFormatTimeAgo(g.time);
+      const isNeg = g.score < 0;
+      const scoreText = (g.score >= 0 ? '+' : '−') + toPersianDigits(Math.abs(g.score));
+      return '<div class="recent-row">' +
+        '<div class="recent-icon">' + g.icon + '</div>' +
+        '<div class="recent-info">' +
+          '<div class="recent-name">' + g.name + '</div>' +
+          '<div class="recent-time">' + timeAgo + '</div>' +
+        '</div>' +
+        '<div class="recent-score ' + (isNeg ? 'neg' : '') + '">' + scoreText + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  const achBox = document.getElementById('pfAch');
+  const unlockedCount = profileData.unlockedAchievements.length;
+  document.getElementById('pfAchCount').textContent =
+    toPersianDigits(unlockedCount) + '/' + toPersianDigits(PF_ACHIEVEMENTS.length);
+  achBox.innerHTML = PF_ACHIEVEMENTS.map(a => {
+    const unlocked = profileData.unlockedAchievements.indexOf(a.id) !== -1;
+    return '<div class="ach-row ' + (unlocked ? 'unlocked' : '') + '">' +
+      '<div class="ach-icon">' + a.icon + '</div>' +
+      '<div class="ach-info">' +
+        '<div class="ach-title">' + a.title + '</div>' +
+        '<div class="ach-desc">' + a.desc + '</div>' +
+      '</div>' +
+      '<div class="ach-lock">' + (unlocked ? '✅' : '🔒') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function pfUpdateBottomNav(screenId) {
+  const nav = document.getElementById('bottomNav');
+  if (!nav) return;
+  const show = (screenId === 'hub' || screenId === 'profile');
+  nav.classList.toggle('visible', show);
+  document.body.classList.toggle('has-bottom-nav', show);
+  nav.querySelectorAll('button').forEach(b => {
+    b.classList.toggle('active', b.dataset.screen === screenId);
+  });
+}
+
+/* Hook into showScreen */
+const _pfOrigShowScreen = window.showScreen;
+window.showScreen = function(id) {
+  _pfOrigShowScreen(id);
+  pfUpdateBottomNav(id);
+  if (id === 'profile') pfRenderProfile();
+};
+
+/* Hook into startGame */
+const _pfOrigStartGame = window.startGame;
+let _pfLastGameId = null;
+let _pfScoreAtStart = 0;
+window.startGame = function(gameId) {
+  _pfLastGameId = gameId;
+  _pfScoreAtStart = state.score;
+  return _pfOrigStartGame(gameId);
+};
+
+/* Hook into saveMyStats */
+const _pfOrigSaveMyStats = window.saveMyStats;
+window.saveMyStats = function() {
+  if (_pfLastGameId !== null) {
+    const delta = state.score - _pfScoreAtStart;
+    try { pfRecordGamePlay(_pfLastGameId, delta); } catch (e) { console.error('profile', e); }
+    _pfLastGameId = null;
+  }
+  return _pfOrigSaveMyStats.apply(this, arguments);
+};
+
+/* Init */
+pfLoadProfile();
+pfEnsureDailyMissions();
 
 /* ================================================================
    BOOT
