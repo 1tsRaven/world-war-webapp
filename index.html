@@ -4776,17 +4776,52 @@ function hitBtn(x, y) {
 }
 cv.addEventListener('pointerdown', e => {
   e.preventDefault(); Sound.init(); Sound.resume(); cv.focus();
-  if (e.pointerType === 'touch' || e.pointerType === 'pen') showTouch = true;
+
+  const isTouchLike = e.pointerType === 'touch' || e.pointerType === 'pen';
+  if (isTouchLike) showTouch = true;
+
   layoutBtns();
-  const x = e.clientX * V.dpr / V.U, y = e.clientY * V.dpr / V.U;
+
+  // ✅ اصلاح: مختصات رو نسبت به خود بوم حساب کن، نه صفحه
+  const rect = cv.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * V.dpr / V.U;
+  const y = (e.clientY - rect.top)  * V.dpr / V.U;
+
   if (state === 'menu') { startGame(); return; }
   if (state === 'over') { if (overT > 0.7) startGame(); return; }
   if (state === 'paused') { setPause(false); return; }
-  if (Math.hypot(x - btn.pause.x, y - btn.pause.y) < btn.pause.r + 10) { setPause(true); return; }
+
+  // دکمه‌ی مکث همیشه اول چک بشه
+  if (Math.hypot(x - btn.pause.x, y - btn.pause.y) < btn.pause.r + 10) {
+    setPause(true); return;
+  }
+
   let a = showTouch ? hitBtn(x, y) : null;
-  if (!a) a = 'jump';
-  ptrs.set(e.pointerId, a); touch[a] = true; if (a === 'jump') queueJump();
-  try { cv.setPointerCapture(e.pointerId); } catch (err) { }
+
+  // ✅ روی موبایل، لمس خارج از دکمه‌ها نباید پرش بشه
+  if (!a) {
+    if (showTouch) return;   // روی تاچ، فقط دکمه‌ها فعالن
+    a = 'jump';              // روی دسکتاپ با ماوس، کلیک آزاد = پرش
+  }
+
+  ptrs.set(e.pointerId, a);
+  touch[a] = true;
+  if (a === 'jump') queueJump();
+  try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+});
+cv.addEventListener('pointermove', e => {
+  if (!ptrs.has(e.pointerId)) return;
+  const rect = cv.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * V.dpr / V.U;
+  const y = (e.clientY - rect.top)  * V.dpr / V.U;
+  const oldA = ptrs.get(e.pointerId);
+  const newA = hitBtn(x, y) || (showTouch ? oldA : 'jump');
+  if (newA !== oldA) {
+    touch[oldA] = false;
+    ptrs.set(e.pointerId, newA);
+    touch[newA] = true;
+    if (newA === 'jump') queueJump();
+  }
 });
 const relPtr = e => { const a = ptrs.get(e.pointerId); if (a) { touch[a] = false; ptrs.delete(e.pointerId); } };
 cv.addEventListener('pointerup', relPtr); cv.addEventListener('pointercancel', relPtr);
