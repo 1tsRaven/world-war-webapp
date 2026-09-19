@@ -78,6 +78,7 @@
     .supply-stage { height: 340px; }
     .mine-grid { max-width: 300px; }
     .heli-stage { height: 360px; }
+    .storm-stage { height: 380px; }
   }
   @media (max-height: 600px) {
     .wrap { padding: 5px; padding-bottom: max(30px, env(safe-area-inset-bottom)); }
@@ -91,6 +92,7 @@
     .duel-stage { height: 180px; }
     .supply-stage { height: 300px; }
     .heli-stage { height: 320px; }
+    .storm-stage { height: 340px; }
   }
 
   .box { padding: 26px 20px 22px;
@@ -741,6 +743,23 @@
   .hint-text { font-size: 11px; color: var(--muted); font-weight: 700;
     text-align: center; padding: 8px 4px 4px; }
 
+  /* ============ STORM RUNNER (FEATURED) ============ */
+  .storm-card { position: relative; border: 1px solid rgba(168,85,247,.45);
+    box-shadow: 0 0 24px -8px rgba(168,85,247,.65); overflow: hidden; }
+  .storm-card::before { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(135deg, rgba(168,85,247,.12), transparent 60%); }
+  .storm-card:hover { border-color: rgba(168,85,247,.7); box-shadow: 0 6px 24px -8px rgba(168,85,247,.6); }
+  .gc-icon.storm { background: linear-gradient(135deg, #5b21b6, #a855f7); }
+  .featured-tag { display: inline-block; margin-right: 6px; font-size: 9px; font-weight: 900;
+    color: #fff; background: linear-gradient(135deg, #7c3aed, #c084fc); padding: 2px 7px;
+    border-radius: 6px; vertical-align: middle; box-shadow: 0 0 10px rgba(168,85,247,.55);
+    letter-spacing: .3px; }
+  .badge-featured { background: rgba(168,85,247,.18); color: #c084fc; }
+  .storm-stage { position: relative; width: 100%; height: 480px;
+    background: #050814; border-radius: 16px; border: 1px solid rgba(168,85,247,.3);
+    overflow: hidden; margin: 12px 0; touch-action: none; }
+  .storm-stage canvas { display: block; width: 100%; height: 100%; outline: none; touch-action: none; }
+
   /* ============ BOTTOM NAV ============ */
   .bottom-nav {
     position: fixed;
@@ -1124,6 +1143,14 @@
       <button class="back-btn" onclick="showScreen('hub')">⬅️ بازگشت</button>
       <h2>🎮 بازی‌ها</h2>
       <div class="subtitle">Games</div>
+      <div class="game-card storm-card" onclick="startGame('storm')">
+        <div class="gc-icon storm">🌪️</div>
+        <div class="gc-info">
+          <div class="gc-title">فرار از طوفان <span class="featured-tag">ویژه</span></div>
+          <div class="gc-desc">پلتفرمر کامل؛ سکه جمع کن، از طوفان فرار کن</div>
+          <div class="gc-reward">⭐ امتیاز بر اساس سکه، دشمن و مسافت</div>
+        </div>
+      </div>
       <div class="game-card" onclick="startGame('defense')">
         <div class="gc-icon defense">🚀</div>
         <div class="gc-info">
@@ -1342,6 +1369,18 @@
       </div>
       <div class="hint-text">برای بالا رفتن، صفحه رو نگه دار</div>
       <button class="btn" id="heliStartBtn" onclick="startHeli()">🎯 شروع</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-storm">
+    <div class="box">
+      <button class="back-btn" onclick="stormRunnerBack()">⬅️ بازگشت</button>
+      <h2>🌪️ فرار از طوفان <span class="badge badge-featured">ویژه</span></h2>
+      <div class="subtitle">Storm Runner</div>
+      <div class="storm-stage" id="stormStage">
+        <canvas id="stormCanvas" tabindex="0"></canvas>
+      </div>
+      <div class="hint-text">حرکت: چپ/راست یا کیبورد | پرش: لمس یا Space | مکث: دکمه گوشه‌ی بازی</div>
     </div>
   </div>
 
@@ -1732,6 +1771,20 @@ function startGame(gameId) {
   else if (gameId === 'supply') { initSupply(); showScreen('supply'); }
   else if (gameId === 'mine') { initMine(); showScreen('mine'); }
   else if (gameId === 'heli') { initHeli(); showScreen('heli'); }
+  else if (gameId === 'storm') { showScreen('storm'); requestAnimationFrame(() => { window.stormRunnerResize && window.stormRunnerResize(); }); }
+}
+
+/* Storm Runner integration bridge (see bottom of page for the game script) */
+function stormRunnerBack() {
+  if (window.stormRunnerPause) window.stormRunnerPause();
+  showScreen('games');
+}
+function stormRunnerOnGameOver(finalScore) {
+  const s = Math.max(0, Math.round(Number(finalScore) || 0));
+  state.score += s;
+  state.gamesPlayed++;
+  saveMyStats();
+  updateHub();
 }
 
 /* ================================================================
@@ -4530,5 +4583,1070 @@ window.addEventListener('load', () => {
   tryVerify();
 });
 </script>
+
+<!-- ===================== STORM RUNNER (فرار از طوفان) — ادغام‌شده، فایل مستقل، بدون تغییر در منطق بازی ===================== -->
+<script>
+(() => {
+'use strict';
+/* =====================================================================
+   فرار از طوفان — پلتفرمر دو بعدی تک‌فایلی
+   Canvas 2D | fixed timestep | interpolation | particle pool | WebAudio
+   ===================================================================== */
+
+/* ---------- ابزارهای ریاضی ---------- */
+const TAU = Math.PI * 2;
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const lerp = (a, b, t) => a + (b - a) * t;
+const rnd = (a, b) => a + Math.random() * (b - a);
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+const approach = (v, t, d) => v < t ? Math.min(v + d, t) : Math.max(v - d, t);
+const mod = (a, b) => ((a % b) + b) % b;
+const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+const rgb = (c, a) => a === undefined ? `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})` : `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
+const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+const easeOutBack = t => { const c = 1.70158; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+const easeOutElastic = t => t <= 0 ? 0 : t >= 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * (TAU / 3)) + 1;
+function rr(c, x, y, w, h, r) { // مستطیل گرد
+  r = Math.min(r, w / 2, h / 2);
+  c.beginPath(); c.moveTo(x + r, y); c.lineTo(x + w - r, y); c.quadraticCurveTo(x + w, y, x + w, y + r);
+  c.lineTo(x + w, y + h - r); c.quadraticCurveTo(x + w, y + h, x + w - r, y + h); c.lineTo(x + r, y + h);
+  c.quadraticCurveTo(x, y + h, x, y + h - r); c.lineTo(x, y + r); c.quadraticCurveTo(x, y, x + r, y); c.closePath();
+}
+
+/* ---------- ثابت‌ها ---------- */
+const STEP = 1 / 120;          // گام ثابت فیزیک
+const GRAV = 1800, MAXV = 300, JUMPV = 640, WATER_Y = 540, DAY_LEN = 170;
+const FONT = "'Vazirmatn','Segoe UI',Tahoma,'Noto Sans Arabic',sans-serif";
+const KEY = 'stormRunner.best.v1';
+
+/* ---------- بوم و اندازه ---------- */
+const cv = document.getElementById('stormCanvas'), ctx = cv.getContext('2d');
+const stormScreenEl = document.getElementById('screen-storm');
+const stormStageEl = document.getElementById('stormStage');
+function stormIsActive() { return !!(stormScreenEl && stormScreenEl.classList.contains('active')); }
+const V = { W: 0, H: 0, dpr: 1, scale: 1, w: 640, h: 540, U: 1, hw: 500, hh: 500 };
+const lightCv = document.createElement('canvas'), lctx = lightCv.getContext('2d');
+let vignette = null;
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  V.dpr = dpr;
+  const rect = stormStageEl ? stormStageEl.getBoundingClientRect() : { width: innerWidth, height: innerHeight };
+  V.W = cv.width = Math.max(320, Math.floor(rect.width * dpr));
+  V.H = cv.height = Math.max(240, Math.floor(rect.height * dpr));
+  V.scale = Math.min(V.H / 540, V.W / 640);
+  V.w = V.W / V.scale; V.h = V.H / V.scale;
+  V.U = Math.min(V.W, V.H) / 500; V.hw = V.W / V.U; V.hh = V.H / V.U;
+  lightCv.width = Math.ceil(V.W / 3); lightCv.height = Math.ceil(V.H / 3);
+  const g = ctx.createRadialGradient(V.W / 2, V.H / 2, Math.min(V.W, V.H) * 0.35, V.W / 2, V.H / 2, Math.hypot(V.W, V.H) * 0.55);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.5)');
+  vignette = g;
+}
+addEventListener('resize', () => { if (stormIsActive()) resize(); });
+
+/* ---------- وضعیت کلی ---------- */
+let state = 'menu';            // menu | play | paused | over
+let time = 0, acc = 0, lastT = 0, hitstop = 0, trauma = 0, fade = 1, menuT = 0, overT = 0;
+let best = 0; try { best = +localStorage.getItem(KEY) || 0; } catch (e) { }
+let newRecord = false, showTouch = false, stormReported = false;
+let bonusScoreVal = 0;
+let score = 0, dispScore = 0, popV = 0, coinsGot = 0, kills = 0, maxX = 0, combo = 0, comboT = 0, mult = 1;
+let deathCause = '';
+
+/* =====================================================================
+   صدا (Web Audio) — همه‌چیز سنتز می‌شود
+   ===================================================================== */
+const Sound = {
+  ctx: null, master: null, noiseBuf: null, muted: false, rainG: null, windG: null,
+  nextBeat: 0, beat: 0,
+  init() {
+    if (this.ctx) return;
+    try {
+      const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+      const a = this.ctx = new C();
+      const comp = a.createDynamicsCompressor();
+      this.master = a.createGain(); this.master.gain.value = this.muted ? 0 : 0.55;
+      this.master.connect(comp); comp.connect(a.destination);
+      const n = a.sampleRate * 2, b = a.createBuffer(1, n, a.sampleRate), d = b.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+      this.noiseBuf = b;
+      // باران و باد
+      const mk = (type, f) => {
+        const s = a.createBufferSource(); s.buffer = b; s.loop = true;
+        const fl = a.createBiquadFilter(); fl.type = type; fl.frequency.value = f;
+        const g = a.createGain(); g.gain.value = 0; s.connect(fl); fl.connect(g); g.connect(this.master); s.start(); return g;
+      };
+      this.rainG = mk('highpass', 1800); this.windG = mk('lowpass', 500);
+      this.nextBeat = a.currentTime + 0.1;
+    } catch (e) { this.ctx = null; }
+  },
+  resume() { if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); },
+  toggleMute() { this.muted = !this.muted; if (this.master) this.master.gain.setTargetAtTime(this.muted ? 0 : 0.55, this.ctx.currentTime, 0.05); },
+  tone(f, d, type = 'square', v = 0.12, slide = 0, delay = 0) {
+    if (!this.ctx) return; const a = this.ctx, t = a.currentTime + delay;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(20, slide), t + d);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t + d + 0.05);
+  },
+  noise(d, v, f, type = 'lowpass', delay = 0) {
+    if (!this.ctx) return; const a = this.ctx, t = a.currentTime + delay;
+    const s = a.createBufferSource(); s.buffer = this.noiseBuf;
+    const fl = a.createBiquadFilter(); fl.type = type; fl.frequency.value = f;
+    const g = a.createGain(); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    s.connect(fl); fl.connect(g); g.connect(this.master); s.start(t, Math.random()); s.stop(t + d + 0.05);
+  },
+  jump() { this.tone(300, 0.16, 'square', 0.07, 700); },
+  land(v) { this.noise(0.09, 0.18 * v, 700); this.tone(100, 0.1, 'sine', 0.18 * v, 50); },
+  coin(n) { const f = 880 * Math.pow(1.06, n % 9); this.tone(f, 0.09, 'triangle', 0.14); this.tone(f * 1.5, 0.2, 'triangle', 0.11, 0, 0.07); },
+  stomp() { this.tone(220, 0.16, 'square', 0.1, 60); this.noise(0.12, 0.2, 1400); },
+  hurt() { this.tone(420, 0.4, 'sawtooth', 0.12, 80); this.noise(0.25, 0.22, 900); },
+  bounce() { this.tone(180, 0.32, 'sine', 0.2, 950); },
+  splash() { this.noise(0.6, 0.3, 1600, 'bandpass'); },
+  die() { [330, 262, 196, 131].forEach((f, i) => this.tone(f, 0.3, 'sawtooth', 0.1, f * 0.7, i * 0.16)); },
+  thunder() { this.noise(1.8, 0.45, 260, 'lowpass', 0.25); },
+  ui() { this.tone(640, 0.07, 'triangle', 0.1, 900); },
+  // موسیقی تولیدی: آکورد Am-F-C-G
+  music(dt, danger, daylight, active) {
+    const a = this.ctx; if (!a) return;
+    const now = a.currentTime;
+    const rain = env.rain;
+    this.rainG.gain.setTargetAtTime(active ? rain * 0.13 : 0, now, 0.4);
+    this.windG.gain.setTargetAtTime(active ? 0.02 + env.wind * 0.03 + rain * 0.03 : 0, now, 0.4);
+    if (!active) { this.nextBeat = Math.max(this.nextBeat, now + 0.05); return; }
+    const len = 0.44 - danger * 0.1;
+    while (this.nextBeat < now + 0.15) {
+      const t = this.nextBeat, b = this.beat++;
+      const roots = [110, 87.3, 130.8, 98], root = roots[(b >> 3) % 4];
+      if (b % 8 === 0) { // پد
+        [1, 1.5, 2].forEach(m => {
+          const o = a.createOscillator(), g = a.createGain(); o.type = 'sine'; o.frequency.value = root * m;
+          g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.045, t + 1.2); g.gain.exponentialRampToValueAtTime(0.0001, t + len * 8);
+          o.connect(g); g.connect(this.master); o.start(t); o.stop(t + len * 8 + 0.1);
+        });
+      }
+      const ar = [2, 3, 4, 3, 5, 3, 4, 3][b % 8];
+      const o = a.createOscillator(), g = a.createGain(); o.type = 'triangle'; o.frequency.value = root * ar * (daylight < 0.3 ? 1 : 1.5) / (ar > 3 ? 1 : 1);
+      const vv = 0.05 + (daylight > 0.5 ? 0.01 : 0);
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vv, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + len * 0.9);
+      o.connect(g); g.connect(this.master); o.start(t); o.stop(t + len);
+      if (b % 4 === 0) { // بیس
+        const o2 = a.createOscillator(), g2 = a.createGain(); o2.type = 'sine'; o2.frequency.value = root;
+        g2.gain.setValueAtTime(0.0001, t); g2.gain.linearRampToValueAtTime(0.13, t + 0.02); g2.gain.exponentialRampToValueAtTime(0.0001, t + len * 2);
+        o2.connect(g2); g2.connect(this.master); o2.start(t); o2.stop(t + len * 2 + 0.05);
+      }
+      if (danger > 0.35) { // ضربان خطر
+        const o3 = a.createOscillator(), g3 = a.createGain(); o3.type = 'sine'; o3.frequency.setValueAtTime(90, t); o3.frequency.exponentialRampToValueAtTime(40, t + 0.15);
+        g3.gain.setValueAtTime(danger * 0.22, t); g3.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+        o3.connect(g3); g3.connect(this.master); o3.start(t); o3.stop(t + 0.2);
+      }
+      this.nextBeat += len;
+    }
+  }
+};
+
+/* =====================================================================
+   ورودی: کیبورد، ماوس، لمس
+   ===================================================================== */
+const keys = {}, touch = { left: false, right: false, jump: false }, ptrs = new Map();
+const JUMP_KEYS = ['Space', 'ArrowUp', 'KeyW'];
+addEventListener('keydown', e => {
+  if (!stormIsActive()) return;
+  if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(e.code)) e.preventDefault();
+  if (e.repeat) return;
+  keys[e.code] = true; Sound.init(); Sound.resume();
+  if (e.code === 'KeyM') { Sound.toggleMute(); return; }
+  if (state === 'menu') { if (e.code === 'Enter' || e.code === 'Space') startGame(); return; }
+  if (state === 'over') { if ((e.code === 'Enter' || e.code === 'Space') && overT > 0.7) startGame(); return; }
+  if (e.code === 'KeyP' || e.code === 'Escape') { setPause(state === 'play'); return; }
+  if (state === 'paused') { if (e.code === 'Enter') setPause(false); return; }
+  if (state === 'play' && JUMP_KEYS.includes(e.code)) queueJump();
+});
+addEventListener('keyup', e => { keys[e.code] = false; });
+addEventListener('blur', () => { if (state === 'play') setPause(true); for (const k in keys) keys[k] = false; });
+document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play') setPause(true); });
+
+const btn = { left: { x: 75, y: 0, r: 46 }, right: { x: 180, y: 0, r: 46 }, jump: { x: 0, y: 0, r: 60 }, pause: { x: 0, y: 34, r: 24 } };
+function layoutBtns() { btn.left.y = btn.right.y = V.hh - 75; btn.jump.x = V.hw - 85; btn.jump.y = V.hh - 85; btn.pause.x = V.hw - 36; }
+function hitBtn(x, y) {
+  for (const k of ['jump', 'left', 'right']) { const b = btn[k]; if (Math.hypot(x - b.x, y - b.y) < b.r + 14) return k; }
+  return null;
+}
+cv.addEventListener('pointerdown', e => {
+  e.preventDefault(); Sound.init(); Sound.resume(); cv.focus();
+  if (e.pointerType === 'touch' || e.pointerType === 'pen') showTouch = true;
+  layoutBtns();
+  const x = e.clientX * V.dpr / V.U, y = e.clientY * V.dpr / V.U;
+  if (state === 'menu') { startGame(); return; }
+  if (state === 'over') { if (overT > 0.7) startGame(); return; }
+  if (state === 'paused') { setPause(false); return; }
+  if (Math.hypot(x - btn.pause.x, y - btn.pause.y) < btn.pause.r + 10) { setPause(true); return; }
+  let a = showTouch ? hitBtn(x, y) : null;
+  if (!a) a = 'jump';
+  ptrs.set(e.pointerId, a); touch[a] = true; if (a === 'jump') queueJump();
+  try { cv.setPointerCapture(e.pointerId); } catch (err) { }
+});
+const relPtr = e => { const a = ptrs.get(e.pointerId); if (a) { touch[a] = false; ptrs.delete(e.pointerId); } };
+cv.addEventListener('pointerup', relPtr); cv.addEventListener('pointercancel', relPtr);
+cv.addEventListener('contextmenu', e => e.preventDefault());
+
+const inp = { left: false, right: false, jump: false };
+function pollInput() {
+  inp.left = !!(keys.ArrowLeft || keys.KeyA || touch.left);
+  inp.right = !!(keys.ArrowRight || keys.KeyD || touch.right);
+  inp.jump = !!(keys.Space || keys.ArrowUp || keys.KeyW || touch.jump);
+}
+function queueJump() { if (P) P.jumpBuf = 0.13; }
+
+/* =====================================================================
+   سیستم ذرات با Object Pool
+   ===================================================================== */
+const PN = 1000, parts = [];
+for (let i = 0; i < PN; i++) parts.push({ a: false, x: 0, y: 0, vx: 0, vy: 0, g: 0, drag: 0, life: 0, max: 1, z0: 1, z1: 0, c: '#fff', t: 0, rest: 0, col: false, rot: 0, vr: 0 });
+let pIdx = 0;
+// نوع ذره: 0 دایره، 1 آتش(additive)، 2 دود، 3 جرقه(additive)، 4 خرده‌ی چرخان، 5 درخشش(additive)
+function emit(x, y, n, o) {
+  for (let i = 0; i < n; i++) {
+    pIdx = (pIdx + 1) % PN; const p = parts[pIdx]; p.a = true;
+    const a = o.ang !== undefined ? o.ang + (Math.random() - 0.5) * 2 * (o.spr || 0) : Math.random() * TAU;
+    const s = rnd(o.s0 || 20, o.s1 || 90);
+    p.x = x + rnd(-(o.jx || 0), o.jx || 0); p.y = y + rnd(-(o.jy || 0), o.jy || 0);
+    p.vx = Math.cos(a) * s + (o.vx || 0); p.vy = Math.sin(a) * s + (o.vy || 0);
+    p.g = o.g || 0; p.drag = o.drag || 0; p.max = p.life = rnd(o.l0 || 0.4, o.l1 || 0.8);
+    p.z0 = o.z0 || 3; p.z1 = o.z1 === undefined ? 0 : o.z1; p.c = o.c || '#fff'; p.t = o.t || 0;
+    p.rest = o.rest || 0; p.col = !!o.col; p.rot = Math.random() * TAU; p.vr = rnd(-9, 9);
+  }
+}
+function groundAt(x, y) { // بالای سطح برخورد برای ذرات
+  for (const pl of plats) if (x >= pl.x && x <= pl.x + pl.w && y >= pl.y && y <= pl.y + 26) return pl.y;
+  return null;
+}
+function updateParticles(dt) {
+  for (let i = 0; i < PN; i++) {
+    const p = parts[i]; if (!p.a) continue;
+    p.life -= dt; if (p.life <= 0) { p.a = false; continue; }
+    if (p.drag) { const k = Math.max(0, 1 - p.drag * dt); p.vx *= k; p.vy *= k; }
+    p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+    if (p.col && p.vy > 0) {
+      const gy = groundAt(p.x, p.y);
+      if (gy !== null) { p.y = gy - 0.5; p.vy *= -p.rest; p.vx *= 0.75; if (Math.abs(p.vy) < 35) p.vy = 0; p.vr *= 0.6; }
+    }
+  }
+}
+function drawParticles(additive) {
+  for (let i = 0; i < PN; i++) {
+    const p = parts[i]; if (!p.a) continue;
+    const add = p.t === 1 || p.t === 3 || p.t === 5; if (add !== additive) continue;
+    const r = p.life / p.max, sz = lerp(p.z1, p.z0, r);
+    if (p.t === 1) {
+      ctx.globalAlpha = clamp(r * 1.4, 0, 1);
+      ctx.fillStyle = r > 0.7 ? '#fff2b0' : r > 0.4 ? '#ffb23c' : r > 0.15 ? '#ff5a1c' : '#a02010';
+      ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, TAU); ctx.fill();
+    } else if (p.t === 2) {
+      ctx.globalAlpha = r * 0.38; ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, TAU); ctx.fill();
+    } else if (p.t === 3) {
+      ctx.globalAlpha = r; ctx.strokeStyle = p.c; ctx.lineWidth = Math.max(1, sz * 0.5);
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.vx * 0.04, p.y - p.vy * 0.04); ctx.stroke();
+    } else if (p.t === 4) {
+      ctx.globalAlpha = clamp(r * 2, 0, 1); ctx.fillStyle = p.c;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillRect(-sz, -sz * 0.6, sz * 2, sz * 1.2); ctx.restore();
+    } else if (p.t === 5) {
+      ctx.globalAlpha = r * 0.5; ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, TAU); ctx.fill();
+    } else {
+      ctx.globalAlpha = clamp(r * 1.5, 0, 1); ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, TAU); ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+const popups = [];
+function popup(x, y, txt, c) { if (popups.length > 24) popups.shift(); popups.push({ x, y, vy: -60, t: 0, txt, c: c || '#fff' }); }
+
+/* =====================================================================
+   جهان: سکو، سکه، دشمن، تله، فنر، آتش
+   ===================================================================== */
+let plats = [], coins = [], enemies = [], spikes = [], pads = [], fires = [];
+const gen = { x: 0, y: 400 };
+let P = null;
+const cam = { x: 0, y: 0, px: 0, py: 0, zoom: 1, zv: 0 };
+const chaser = { x: -700, px: -700, speed: 105 };
+const R = { cx: 0, cy: 0, zoom: 1, sx: 0, sy: 0 };   // دوربین رندر (پس از interpolation)
+
+function resetWorld() {
+  plats = []; coins = []; enemies = []; spikes = []; pads = []; fires = [];
+  gen.x = -260; gen.y = 400; genSegment(true);
+}
+function genSegment(first) {
+  const diff = clamp(maxX / 7000, 0, 1);
+  const w = first ? 1100 : rnd(300, 620) + rnd(0, 160);
+  const pl = { x: gen.x, y: gen.y, w, h: 900, oneway: false }; plats.push(pl);
+  if (!first) {
+    const i0 = pl.x + 70, i1 = pl.x + w - 70;
+    if (Math.random() < 0.24 && w > 380) { // فنر + سکوی بلند
+      const px = rnd(i0, i0 + (w - 140) / 3);
+      pads.push({ x: px, y: pl.y - 10, w: 44, h: 10, comp: 0 });
+      const fy = pl.y - rnd(245, 265);
+      plats.push({ x: px - 30, y: fy, w: 130, h: 14, oneway: true });
+      for (let i = 0; i < 5; i++) coins.push({ x: px - 10 + i * 24, y: fy - 26, ph: rnd(0, 6), got: false });
+    } else if (Math.random() < 0.5) {
+      const fw = rnd(90, 150), fx = rnd(i0, Math.max(i0 + 1, i1 - fw)), fy = pl.y - rnd(92, 108);
+      plats.push({ x: fx, y: fy, w: fw, h: 14, oneway: true });
+      const n = Math.floor(fw / 26); for (let i = 0; i < n; i++) coins.push({ x: fx + 16 + i * 26, y: fy - 24, ph: rnd(0, 6), got: false });
+    }
+    if (w > 380 && Math.random() < 0.45 + diff * 0.3) {
+      const minX = pl.x + w * 0.15, maxXe = pl.x + w * 0.6;
+      enemies.push(mkEnemy(rnd(minX, maxXe), pl.y, minX, maxXe));
+    }
+    if (w > 420 && Math.random() < 0.25 + diff * 0.25) spikes.push({ x: rnd(pl.x + w * 0.68, i1 - 30), y: pl.y - 16, w: 34, h: 16 });
+    if (Math.random() < 0.3) fires.push({ x: pl.x + w * rnd(0.42, 0.55), y: pl.y, ph: rnd(0, 6) });
+    if (Math.random() < 0.5) { const n = 3 + (Math.random() * 3 | 0), sx = pl.x + rnd(80, w - 200); for (let i = 0; i < n; i++) coins.push({ x: sx + i * 26, y: pl.y - 28, ph: rnd(0, 6), got: false }); }
+  }
+  const gap = first ? 110 : rnd(95, 125) + diff * 55;
+  const ny = clamp(gen.y + rnd(-55, 45), 330, 450);
+  if (!first) for (let i = 1; i <= 5; i++) { // کمان سکه روی شکاف
+    const t = i / 6; coins.push({ x: gen.x + w + gap * t, y: lerp(gen.y, ny, t) - 4 * t * (1 - t) * 90 - 36, ph: rnd(0, 6), got: false });
+  }
+  gen.x += w + gap; gen.y = ny;
+}
+function mkEnemy(x, gy, minX, maxX) {
+  return { x, y: gy - 22, px: x, py: gy - 22, w: 30, h: 22, vx: 0, vy: 0, dir: Math.random() < 0.5 ? -1 : 1, timer: rnd(0.3, 1.4), gy, minX, maxX, sx: 1, svx: 0, grounded: true, dead: false, deadT: 0 };
+}
+function pruneWorld() {
+  const lim = cam.x - 800;
+  plats = plats.filter(p => p.x + p.w > lim); coins = coins.filter(c => !c.got && c.x > lim);
+  enemies = enemies.filter(e => !(e.dead && e.deadT > 0.4) && e.x > lim); spikes = spikes.filter(s => s.x > lim);
+  pads = pads.filter(p => p.x > lim); fires = fires.filter(f => f.x > lim);
+}
+
+/* ---------- بازیکن ---------- */
+function newPlayer() {
+  const p = { x: 60, y: 300, px: 60, py: 300, w: 26, h: 36, vx: 0, vy: 0, face: 1, onGround: false, plat: null, coyote: 0, jumpBuf: 0, jumping: false,
+    sx: 1, svx: 0, run: 0, lives: 3, inv: 0, flash: 0, dead: false, deadT: 0, dustT: 0, blink: 3, blinkT: 0, padCd: 0, blocked: false,
+    lastSafe: { x: 60, y: 300 }, scarf: [] };
+  for (let i = 0; i < 8; i++) p.scarf.push({ x: 60, y: 300, px: 60, py: 300 });
+  return p;
+}
+function startGame() {
+  Sound.init(); Sound.resume(); Sound.ui();
+  score = 0; bonusScoreVal = 0; dispScore = 0; coinsGot = 0; kills = 0; maxX = 0; combo = 0; comboT = 0; mult = 1; newRecord = false; deathCause = ''; stormReported = false;
+  P = newPlayer(); resetWorld(); P.y = 400 - P.h; P.py = P.y; P.lastSafe = { x: 60, y: P.y };
+  cam.x = -100; cam.y = 60; cam.px = cam.x; cam.py = cam.y; cam.zoom = 1; cam.zv = 0;
+  chaser.x = chaser.px = -720; chaser.speed = 105;
+  for (let i = 0; i < PN; i++) parts[i].a = false;
+  popups.length = 0; hitstop = 0; trauma = 0; fade = 1; state = 'play';
+}
+function startMenu() {
+  P = newPlayer(); resetWorld(); P.y = 400 - P.h; P.py = P.y;
+  cam.x = -100; cam.y = 60; cam.px = cam.x; cam.py = cam.y; state = 'menu'; maxX = 0;
+}
+function setPause(on) {
+  if (on && state === 'play') { state = 'paused'; Sound.ui(); }
+  else if (!on && state === 'paused') { state = 'play'; Sound.ui(); lastT = performance.now(); acc = 0; }
+}
+
+/* ---------- برخورد ---------- */
+function overlap(a, b) { return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y; }
+function groundTopAt(x, y) { // ارتفاع زمین جلوتر (برای حالت دمو)
+  for (const pl of plats) if (x >= pl.x && x <= pl.x + pl.w && pl.y >= y - 80) return pl.y;
+  return null;
+}
+function movePlayer(dt) {
+  const p = P; p.blocked = false; const was = p.onGround; p.onGround = false;
+  // محور X
+  p.x += p.vx * dt;
+  for (const pl of plats) {
+    if (pl.oneway) continue;
+    if (p.x + p.w > pl.x && p.x < pl.x + pl.w && p.y + p.h > pl.y + 0.5 && p.y < pl.y + pl.h) {
+      if (p.x + p.w / 2 < pl.x + pl.w / 2) p.x = pl.x - p.w; else p.x = pl.x + pl.w;
+      p.vx = 0; p.blocked = true;
+    }
+  }
+  // محور Y
+  const oy = p.y; p.y += p.vy * dt; let impact = 0;
+  for (const pl of plats) {
+    if (!(p.x + p.w > pl.x && p.x < pl.x + pl.w && p.y + p.h > pl.y && p.y < pl.y + pl.h)) continue;
+    if (pl.oneway) {
+      if (p.vy >= 0 && oy + p.h <= pl.y + 2) { impact = Math.max(impact, p.vy); p.y = pl.y - p.h; p.vy = 0; p.onGround = true; p.plat = pl; }
+    } else if (oy + p.h <= pl.y + 2 || p.vy > 0) {
+      impact = Math.max(impact, p.vy); p.y = pl.y - p.h; p.vy = 0; p.onGround = true; p.plat = pl;
+    } else if (p.vy < 0) { p.y = pl.y + pl.h; p.vy = 0; }
+  }
+  if (p.onGround && !was && impact > 180) landFX(impact);
+}
+function landFX(v) {
+  const k = clamp(v / 900, 0.1, 1);
+  P.sx = 1 + 0.4 * k; P.svx = 0;
+  Sound.land(k);
+  emit(P.x + P.w / 2, P.y + P.h, 4 + (k * 8 | 0), { ang: -Math.PI / 2, spr: 1.5, s0: 30, s1: 90 + k * 90, g: 200, drag: 2, l0: 0.25, l1: 0.55, z0: 3.5, z1: 0.5, c: 'rgba(200,190,170,0.9)' });
+  if (v > 800) trauma = Math.max(trauma, 0.25);
+}
+
+/* ---------- آسیب و مرگ ---------- */
+function hurt(dir) {
+  if (P.inv > 0 || P.dead) return;
+  P.lives--; P.inv = 1.6; P.flash = 0.16; hitstop = 0.09; trauma = Math.max(trauma, 0.65);
+  P.vx = -dir * 280; P.vy = -400; P.onGround = false; P.sx = 0.7;
+  Sound.hurt();
+  emit(P.x + P.w / 2, P.y + P.h / 2, 14, { s0: 100, s1: 320, g: 500, l0: 0.25, l1: 0.6, z0: 2.5, t: 3, c: '#ffd166' });
+  emit(P.x + P.w / 2, P.y + P.h / 2, 10, { s0: 60, s1: 200, g: 600, l0: 0.5, l1: 1, z0: 3, z1: 1, t: 4, c: '#ff6f91', col: true, rest: 0.5 });
+  combo = 0; mult = 1;
+  if (P.lives <= 0) die('hurt');
+}
+function die(cause) {
+  if (P.dead) return; P.dead = true; P.deadT = 0; deathCause = cause; P.lives = Math.max(0, P.lives);
+  hitstop = 0.16; trauma = 1; Sound.die();
+  emit(P.x + P.w / 2, P.y + P.h / 2, 40, { s0: 120, s1: 480, g: 700, l0: 0.7, l1: 1.6, z0: 4, z1: 1, t: 4, c: '#ff6f91', col: true, rest: 0.55 });
+  emit(P.x + P.w / 2, P.y + P.h / 2, 20, { s0: 150, s1: 500, g: 300, l0: 0.3, l1: 0.8, z0: 3, t: 3, c: '#fff3b0' });
+}
+function gameOver() {
+  state = 'over'; overT = 0;
+  if (score > best) { best = score; newRecord = true; try { localStorage.setItem(KEY, String(best)); } catch (e) { } }
+  if (!stormReported) {
+    stormReported = true;
+    if (window.stormRunnerOnGameOver) { try { window.stormRunnerOnGameOver(score); } catch (e) { } }
+  }
+}
+function respawnFromWater() {
+  Sound.splash();
+  emit(P.x + P.w / 2, WATER_Y, 26, { ang: -Math.PI / 2, spr: 0.8, s0: 150, s1: 460, g: 900, l0: 0.5, l1: 1, z0: 3.5, z1: 1, c: 'rgba(160,215,255,0.9)' });
+  trauma = Math.max(trauma, 0.4);
+  if (state === 'menu') { P.x = P.lastSafe.x; P.y = P.lastSafe.y - 4; P.vx = 0; P.vy = 0; return; }
+  P.lives--; combo = 0; mult = 1;
+  if (P.lives <= 0) { P.y = WATER_Y - 10; die('water'); return; }
+  P.x = P.lastSafe.x; P.y = P.lastSafe.y - 6; P.vx = 0; P.vy = 0; P.inv = 2; P.sx = 0.7;
+  chaser.x = Math.min(chaser.x, P.x - 380);
+  emit(P.x + P.w / 2, P.y + P.h / 2, 16, { s0: 60, s1: 200, g: -60, l0: 0.5, l1: 1, z0: 3, t: 5, c: '#9be7ff' });
+}
+
+/* ---------- به‌روزرسانی بازیکن ---------- */
+function updatePlayer(dt) {
+  const p = P, demo = state === 'menu';
+  if (p.dead) { p.deadT += dt; if (p.deadT > 1.4 && state === 'play') gameOver(); return; }
+  pollInput();
+  let left = inp.left, right = inp.right, jumpHeld = inp.jump, maxv = MAXV;
+  if (demo) { // خودکار در منو
+    left = false; right = true; maxv = 190; jumpHeld = false;
+    const ahead = groundTopAt(p.x + p.w + 36, p.y + p.h);
+    if (p.onGround && (ahead === null || p.blocked)) p.jumpBuf = 0.1;
+    jumpHeld = !p.onGround && p.vy < 0;
+  } else if (state !== 'play') { left = right = jumpHeld = false; }
+  const dir = (right ? 1 : 0) - (left ? 1 : 0), g = p.onGround;
+  // حرکت افقی با شتاب/اصطکاک
+  if (dir !== 0) {
+    let acc = g ? 2400 : 1500; if (g && Math.sign(p.vx) === -dir) acc *= 1.7;
+    p.vx = approach(p.vx, dir * maxv, acc * dt); p.face = dir;
+  } else p.vx = approach(p.vx, 0, (g ? 1900 : 380) * dt);
+  // پرش: coyote time + jump buffer + ارتفاع متغیر
+  p.coyote = g ? 0.1 : p.coyote - dt; p.jumpBuf -= dt; p.padCd -= dt;
+  if (p.jumpBuf > 0 && p.coyote > 0) {
+    p.vy = -JUMPV; p.jumping = true; p.coyote = 0; p.jumpBuf = 0; p.onGround = false; p.sx = 0.68; p.svx = 0;
+    Sound.jump();
+    emit(p.x + p.w / 2, p.y + p.h, 6, { ang: -Math.PI / 2, spr: 1.3, s0: 30, s1: 110, g: 200, drag: 2, l0: 0.2, l1: 0.5, z0: 3, z1: 0.5, c: 'rgba(210,200,180,0.9)' });
+  }
+  if (!jumpHeld && p.jumping && p.vy < -250) { p.vy *= 0.5; p.jumping = false; }
+  if (p.vy >= 0) p.jumping = false;
+  let gr = GRAV; if (Math.abs(p.vy) < 90 && jumpHeld && !g) gr *= 0.6;     // hang time در اوج
+  p.vy = Math.min(p.vy + gr * dt, 1100);
+  movePlayer(dt);
+  // فنر اسکواش
+  p.svx += ((1 - p.sx) * 430 - p.svx * 14) * dt; p.sx = clamp(p.sx + p.svx * dt, 0.55, 1.6);
+  // انیمیشن پا و پلک
+  if (p.onGround) p.run += Math.abs(p.vx) * dt * 0.055; else p.run += dt * 4;
+  p.blinkT -= dt; if (p.blinkT < -0.12) p.blinkT = rnd(2, 4.5);
+  if (p.onGround && Math.abs(p.vx) > 130) { p.dustT -= dt; if (p.dustT <= 0) { p.dustT = 0.07; emit(p.x + p.w / 2 - p.face * 8, p.y + p.h - 1, 1, { ang: -Math.PI / 2 - p.face * 0.6, spr: 0.5, s0: 15, s1: 50, g: 60, drag: 2, l0: 0.3, l1: 0.5, z0: 2.5, z1: 0.5, c: 'rgba(200,190,170,0.7)' }); } }
+  p.inv = Math.max(0, p.inv - dt); p.flash = Math.max(0, p.flash - dt);
+  // آخرین نقطه‌ی امن
+  if (p.onGround && p.plat && p.x > p.plat.x + 30 && p.x + p.w < p.plat.x + p.plat.w - 30) { p.lastSafe.x = p.x; p.lastSafe.y = p.y; }
+  // شال (Verlet)
+  const nx = p.x + p.w / 2 - p.face * 4, ny = p.y + 12, sc = p.scarf;
+  sc[0].px = sc[0].x; sc[0].py = sc[0].y; sc[0].x = nx; sc[0].y = ny;
+  for (let i = 1; i < sc.length; i++) {
+    const s = sc[i], vx = (s.x - s.px) * 0.96, vy = (s.y - s.py) * 0.96;
+    s.px = s.x; s.py = s.y; s.x += vx - env.wind * 26 * dt * dt * 60 * 0.02 - p.face * 0; s.y += vy + 620 * dt * dt * 0.5;
+  }
+  for (let it = 0; it < 2; it++) for (let i = 1; i < sc.length; i++) {
+    const a = sc[i - 1], b = sc[i], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1, k = (d - 6.5) / d;
+    b.x -= dx * k; b.y -= dy * k;
+  }
+  // مرزها: افتادن در آب
+  if (p.y > WATER_Y - 10) respawnFromWater();
+  // فنرها
+  for (const pd of pads) {
+    if (p.vy >= 0 && p.padCd <= 0 && p.x + p.w > pd.x && p.x < pd.x + pd.w && p.y + p.h >= pd.y && p.y + p.h <= pd.y + pd.h + 14) {
+      p.vy = -1050; p.padCd = 0.25; p.sx = 0.6; p.jumping = false; pd.comp = 1; p.onGround = false; Sound.bounce(); trauma = Math.max(trauma, 0.15);
+      emit(pd.x + pd.w / 2, pd.y, 12, { ang: -Math.PI / 2, spr: 0.9, s0: 80, s1: 260, g: 500, l0: 0.3, l1: 0.6, z0: 2.5, t: 3, c: '#9bffb0' });
+    }
+  }
+  // تله‌ها
+  if (!demo) {
+    for (const s of spikes) {
+      if (overlap({ x: p.x + 3, y: p.y + 3, w: p.w - 6, h: p.h - 3 }, { x: s.x + 5, y: s.y + 6, w: s.w - 10, h: s.h - 6 })) hurt(Math.sign(s.x + s.w / 2 - (p.x + p.w / 2)) || 1);
+    }
+  }
+  if (p.x > maxX) maxX = p.x;
+}
+
+/* ---------- دشمنان ---------- */
+function updateEnemies(dt) {
+  const p = P;
+  for (const e of enemies) {
+    if (e.dead) { e.deadT += dt; continue; }
+    if (e.x > cam.x + V.w + 200 || e.x < cam.x - 300) continue;      // فقط دشمنان نزدیک
+    e.vy += 1500 * dt; e.x += e.vx * dt; e.y += e.vy * dt;
+    if (e.y >= e.gy - e.h) { if (!e.grounded && e.vy > 60) { e.sx = 1.4; e.svx = 0; } e.y = e.gy - e.h; e.vy = 0; e.vx = 0; e.grounded = true; }
+    e.timer -= dt;
+    if (e.grounded && e.timer <= 0) { e.vx = e.dir * rnd(70, 110); e.vy = -rnd(260, 340); e.timer = rnd(0.9, 1.6); e.grounded = false; e.sx = 0.7; e.svx = 0; }
+    if (e.x < e.minX) { e.x = e.minX; e.dir = 1; e.vx = Math.abs(e.vx); } else if (e.x > e.maxX) { e.x = e.maxX; e.dir = -1; e.vx = -Math.abs(e.vx); }
+    e.svx += ((1 - e.sx) * 380 - e.svx * 13) * dt; e.sx = clamp(e.sx + e.svx * dt, 0.5, 1.6);
+    if (state === 'menu' || p.dead) continue;
+    if (overlap({ x: p.x + 2, y: p.y + 2, w: p.w - 4, h: p.h - 2 }, { x: e.x + 3, y: e.y + 2, w: e.w - 6, h: e.h - 2 })) {
+      if (p.vy > 0 && p.py + p.h <= e.y + 10) stomp(e); else hurt(Math.sign(e.x - p.x) || 1);
+    }
+  }
+}
+function stomp(e) {
+  e.dead = true; e.deadT = 0; kills++; addCombo();
+  P.vy = inp.jump ? -600 : -430; P.jumping = inp.jump; P.sx = 0.72; P.svx = 0;
+  hitstop = 0.06; trauma = Math.max(trauma, 0.35); cam.zv += 1.1; Sound.stomp();
+  const v = 25 * mult; addScore(v); popup(e.x + e.w / 2, e.y - 6, '+' + v, '#9dff9d');
+  emit(e.x + e.w / 2, e.y + e.h / 2, 18, { s0: 80, s1: 300, g: 800, l0: 0.5, l1: 1.1, z0: 3.5, z1: 1, c: '#5fd35f', col: true, rest: 0.45, t: 0 });
+  emit(e.x + e.w / 2, e.y + e.h / 2, 8, { s0: 120, s1: 360, g: 400, l0: 0.2, l1: 0.45, z0: 2, t: 3, c: '#eaffc0' });
+}
+function addCombo() { combo++; comboT = 2.2; mult = 1 + Math.min(4, Math.floor(combo / 5)); }
+function addScore(v) { bonusScoreVal += v; popV = 6; }
+
+/* ---------- سکه‌ها ---------- */
+function updateCoins(dt) {
+  const p = P; if (p.dead) return;
+  const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
+  for (const c of coins) {
+    if (c.got || c.x > cam.x + V.w + 100 || c.x < cam.x - 100) continue;
+    const dx = cx - c.x, dy = cy - c.y, d = Math.hypot(dx, dy);
+    if (d < 95) { const k = (1 - d / 95) * 420 * dt; c.x += dx / d * k; c.y += dy / d * k; } // آهن‌ربا
+    if (d < 22) {
+      c.got = true; coinsGot++; addCombo(); Sound.coin(combo);
+      const v = 10 * mult; addScore(v); popup(c.x, c.y - 10, '+' + v, '#ffe27a');
+      emit(c.x, c.y, 8, { s0: 60, s1: 200, g: 200, drag: 1.5, l0: 0.3, l1: 0.6, z0: 2.5, t: 3, c: '#fff1a8' });
+      emit(c.x, c.y, 1, { s0: 0, s1: 1, l0: 0.3, l1: 0.3, z0: 14, z1: 2, t: 5, c: '#ffd34d' });
+    }
+  }
+  if (comboT > 0) { comboT -= dt; if (comboT <= 0) { combo = 0; mult = 1; } }
+}
+
+/* ---------- طوفان تعقیب‌کننده ---------- */
+function updateChaser(dt) {
+  if (state !== 'play') return;
+  chaser.speed = Math.min(255, 105 + maxX * 0.012);
+  chaser.x += chaser.speed * dt;
+  if (Math.random() < 0.5) emit(chaser.x + rnd(-30, 50), rnd(cam.y, cam.y + V.h), 1, { s0: 10, s1: 40, vx: 40, l0: 0.9, l1: 1.6, z0: 26, z1: 60, t: 2, c: '#2a1740' });
+  if (Math.random() < 0.04) emit(chaser.x + rnd(-10, 40), rnd(cam.y, cam.y + V.h * 0.6), 5, { s0: 80, s1: 300, vx: 90, l0: 0.15, l1: 0.35, z0: 2, t: 3, c: '#d7b8ff' });
+  if (!P.dead && P.x + P.w < chaser.x) { P.lives = 0; trauma = 1; die('storm'); }
+}
+
+/* ---------- دوربین ---------- */
+function updateCamera(dt) {
+  const p = P;
+  const tx = p.x + p.w / 2 - V.w * 0.38 + (p.dead ? 0 : p.vx * 0.2);
+  const ty = clamp(p.y + p.h / 2 - V.h * 0.55, -900, 150);
+  const kx = 1 - Math.exp(-5.5 * dt), ky = 1 - Math.exp(-(p.onGround ? 4 : 2.6) * dt);
+  cam.x += (tx - cam.x) * kx; cam.y += (ty - cam.y) * ky;
+  cam.zv += ((1 - cam.zoom) * 90 - cam.zv * 9) * dt; cam.zoom += cam.zv * dt * 0.03;  // ضربه‌ی زوم (فنر)
+  cam.zoom = clamp(cam.zoom, 0.94, 1.08);
+  if (p.dead) { cam.zoom += (1.03 - cam.zoom) * 0.02; }
+}
+
+/* =====================================================================
+   محیط: روز/شب، آب‌وهوا، ابر، کرم شب‌تاب، آتش
+   ===================================================================== */
+const NIGHT_T = [18, 26, 74], NIGHT_B = [52, 70, 130], DAY_T = [66, 148, 232], DAY_B = [188, 228, 255], TW_T = [124, 74, 140], TW_B = [255, 156, 96];
+const env = { daylight: 1, sunH: 1, tw: 0, skyT: DAY_T, skyB: DAY_B, rain: 0, rainT: 0, wind: 0, flash: 0, dark: 0, wTimer: 30, lt: 6, tod: 0.38 };
+const clouds = [], stars = [], flies = [], drops = [], mist = [];
+for (let i = 0; i < 9; i++) clouds.push({ x: Math.random() * 1400, y: rnd(30, 200), s: rnd(0.7, 1.7), sp: rnd(4, 14) });
+for (let i = 0; i < 130; i++) stars.push({ x: Math.random(), y: Math.random() * 0.6, r: rnd(0.5, 1.6), ph: rnd(0, 6) });
+for (let i = 0; i < 40; i++) flies.push({ x: Math.random(), y: Math.random(), ph: rnd(0, 6), sp: rnd(0.4, 1.1) });
+for (let i = 0; i < 280; i++) drops.push({ x: Math.random(), y: Math.random(), v: rnd(1.1, 1.9), l: rnd(10, 22) });
+for (let i = 0; i < 7; i++) mist.push({ x: Math.random() * 1600, y: rnd(20, 90), w: rnd(220, 420), sp: rnd(6, 18) });
+
+function computeSky() {
+  const sh = Math.sin(TAU * (env.tod - 0.25));
+  env.sunH = sh; env.daylight = smooth(-0.12, 0.32, sh); env.tw = Math.exp(-(sh / 0.2) * (sh / 0.2));
+  let t = mix(NIGHT_T, DAY_T, env.daylight), b = mix(NIGHT_B, DAY_B, env.daylight);
+  t = mix(t, TW_T, env.tw * 0.6); b = mix(b, TW_B, env.tw * 0.75);
+  const grey = mix([34, 40, 58], [118, 126, 140], env.daylight), k = env.rain * 0.6;
+  env.skyT = mix(t, grey, k); env.skyB = mix(b, mix(grey, [150, 158, 170], 0.4), k);
+  env.dark = (1 - env.daylight) * 0.6 + env.rain * 0.12;
+}
+function updateEnv(dt) {
+  env.tod = (env.tod + dt / DAY_LEN) % 1;
+  env.wTimer -= dt;
+  if (env.wTimer <= 0) { env.rainT = env.rainT > 0 ? 0 : (Math.random() < 0.6 ? 1 : 0); env.wTimer = rnd(28, 55); }
+  env.rain += (env.rainT - env.rain) * (1 - Math.exp(-0.45 * dt));
+  env.wind = (Math.sin(time * 0.35) * 0.5 + 0.5) * 0.8 + env.rain * 0.6;
+  if (env.rain > 0.6) { env.lt -= dt; if (env.lt <= 0) { env.flash = 1; env.lt = rnd(5, 13); Sound.thunder(); } }
+  env.flash = Math.max(0, env.flash - dt * 2.6);
+  computeSky();
+  for (const c of clouds) c.x += c.sp * dt;
+  for (let i = 0; i < drops.length; i++) { const d = drops[i]; d.y += d.v * dt * 1.4; if (d.y > 1) { d.y -= 1.05; d.x = Math.random(); } }
+  // آتش‌ها
+  for (const f of fires) {
+    if (f.x < cam.x - 120 || f.x > cam.x + V.w + 120) continue;
+    if (Math.random() < 0.7) emit(f.x + rnd(-6, 6), f.y - 10, 1, { ang: -Math.PI / 2, spr: 0.25, s0: 40, s1: 90, g: -40, l0: 0.35, l1: 0.7, z0: 8, z1: 1, t: 1 });
+    if (Math.random() < 0.14) emit(f.x + rnd(-6, 6), f.y - 24, 1, { ang: -Math.PI / 2, spr: 0.4, s0: 20, s1: 40, vx: env.wind * 20, g: -30, l0: 1.4, l1: 2.4, z0: 6, z1: 20, t: 2, c: '#666' });
+    if (Math.random() < 0.05) emit(f.x + rnd(-6, 6), f.y - 20, 1, { ang: -Math.PI / 2, spr: 0.6, s0: 60, s1: 120, g: -20, l0: 0.8, l1: 1.5, z0: 1.6, t: 3, c: '#ffb454' });
+  }
+  for (const pd of pads) pd.comp = Math.max(0, pd.comp - dt * 3.2);
+  for (let i = popups.length - 1; i >= 0; i--) { const q = popups[i]; q.t += dt; q.y += q.vy * dt; q.vy *= 0.94; if (q.t > 1) popups.splice(i, 1); }
+  updateParticles(dt);
+  trauma = Math.max(0, trauma - dt * 1.5);
+}
+
+/* =====================================================================
+   حلقه‌ی به‌روزرسانی (منطق) — جدا از رندر
+   ===================================================================== */
+function savePrev() {
+  if (!P) return;
+  P.px = P.x; P.py = P.y; cam.px = cam.x; cam.py = cam.y; chaser.px = chaser.x;
+  for (const e of enemies) { e.px = e.x; e.py = e.y; }
+}
+let pruneT = 0;
+function update(dt) {
+  savePrev();
+  if (hitstop > 0) { hitstop -= dt; return; }            // Hit stop: زمان لحظه‌ای منجمد می‌شود
+  time += dt;
+  updateEnv(dt);
+  updatePlayer(dt); updateEnemies(dt); updateCoins(dt);
+  if (state === 'play') updateChaser(dt);
+  updateCamera(dt);
+  // تولید بی‌پایان‌ی مرحله
+  let guard = 0; while (gen.x < cam.x + V.w + 1600 && guard++ < 8) genSegment(false);
+  pruneT += dt; if (pruneT > 1) { pruneT = 0; pruneWorld(); }
+  // امتیاز
+  if (state === 'play') score = Math.max(score, (maxX / 10 | 0) + bonusScoreVal);
+  dispScore += (score - dispScore) * (1 - Math.exp(-10 * dt)); if (Math.abs(score - dispScore) < 0.6) dispScore = score;
+  popV *= Math.pow(0.001, dt * 0.9);
+  if (state === 'over') overT += dt;
+  fade = Math.max(0, fade - dt * 1.3);
+}
+
+/* =====================================================================
+   رندر
+   ===================================================================== */
+function w2s(wx, wy) { // مختصات جهان → پیکسل صفحه
+  return { x: (V.w / 2 + (wx - R.cx - V.w / 2) * R.zoom) * V.scale, y: (V.h / 2 + (wy - R.cy - V.h / 2) * R.zoom) * V.scale };
+}
+function drawSky() {
+  const hor = V.h * 0.6;
+  const g = ctx.createLinearGradient(0, 0, 0, hor + 60);
+  g.addColorStop(0, rgb(env.skyT)); g.addColorStop(1, rgb(env.skyB));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, V.w, V.h);
+  // ستاره‌ها
+  const sa = clamp(1 - env.daylight * 1.6, 0, 1) * (1 - env.rain * 0.8);
+  if (sa > 0.02) {
+    ctx.fillStyle = '#fff';
+    for (const s of stars) { ctx.globalAlpha = sa * (0.5 + 0.5 * Math.sin(time * 2 + s.ph)); ctx.fillRect(s.x * V.w, s.y * V.h * 0.9, s.r, s.r); }
+    ctx.globalAlpha = 1;
+  }
+  // خورشید و ماه
+  const body = (pp, kind) => {
+    const h = Math.sin(TAU * (pp - 0.25)); if (h < -0.12) return;
+    const u = mod(pp - 0.25, 1) / 0.5, x = V.w * (0.08 + 0.84 * (u > 1.2 ? u - 2 : u)), y = hor - h * V.h * 0.5 + 20;
+    const vis = clamp((h + 0.12) * 4, 0, 1) * (1 - env.rain * 0.85);
+    ctx.globalAlpha = vis;
+    const r = kind ? 26 : 34, gg = ctx.createRadialGradient(x, y, 0, x, y, r * 4);
+    gg.addColorStop(0, kind ? 'rgba(200,220,255,0.5)' : 'rgba(255,230,150,0.6)'); gg.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(x, y, r * 4, 0, TAU); ctx.fill();
+    ctx.fillStyle = kind ? '#e8eeff' : (env.tw > 0.3 ? '#ffb56a' : '#fff4c2'); ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+    if (kind) { ctx.fillStyle = 'rgba(150,165,210,0.5)'; ctx.beginPath(); ctx.arc(x - 8, y - 5, 6, 0, TAU); ctx.arc(x + 9, y + 8, 4, 0, TAU); ctx.fill(); }
+    ctx.globalAlpha = 1;
+  };
+  body(env.tod, false); body(mod(env.tod + 0.5, 1), true);
+  // ابرها
+  const cc = mix(mix([70, 80, 130], [255, 255, 255], env.daylight), [255, 170, 150], env.tw * 0.5), rc = mix(cc, [110, 115, 130], env.rain * 0.7);
+  for (const c of clouds) {
+    const x = mod(c.x - R.cx * 0.06, V.w + 500) - 250, y = c.y - R.cy * 0.03, s = c.s;
+    ctx.fillStyle = rgb(rc, 0.85);
+    ctx.beginPath(); ctx.arc(x, y, 22 * s, 0, TAU); ctx.arc(x + 26 * s, y - 10 * s, 28 * s, 0, TAU); ctx.arc(x + 56 * s, y, 22 * s, 0, TAU); ctx.arc(x + 28 * s, y + 8 * s, 24 * s, 0, TAU); ctx.fill();
+  }
+}
+function mountainLayer(f, fy, baseOff, amp, col, seed, freq) {
+  const off = R.cx * f, step = 12, base = 400 - R.cy * fy + baseOff, A = amp * clamp(V.h / 540, 1, 2);
+  ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(0, V.h + 4);
+  for (let x = 0; x <= V.w + step; x += step) {
+    const wx = x + off;
+    const n = (Math.sin(wx * freq + seed) + Math.sin(wx * freq * 2.3 + seed * 1.7) * 0.5 + Math.sin(wx * freq * 5.1 + seed * 3) * 0.25) / 1.75 * 0.5 + 0.5;
+    ctx.lineTo(x, base - n * A);
+  }
+  ctx.lineTo(V.w + step, V.h + 4); ctx.closePath(); ctx.fill();
+}
+function drawTrees(f, col) {
+  const off = R.cx * f, base = 412 - R.cy * 0.95, sp = 44;
+  ctx.fillStyle = col; ctx.beginPath();
+  const k0 = Math.floor(off / sp) - 1, k1 = Math.floor((off + V.w) / sp) + 1;
+  for (let k = k0; k <= k1; k++) {
+    const h = hash(k), x = k * sp - off, th = 46 + h * 62, w = 16 + h * 10;
+    ctx.moveTo(x - w, base); ctx.lineTo(x, base - th); ctx.lineTo(x + w, base);
+    ctx.moveTo(x - w * 0.8, base - th * 0.35); ctx.lineTo(x, base - th * 1.12); ctx.lineTo(x + w * 0.8, base - th * 0.35);
+  }
+  ctx.fill(); ctx.fillRect(0, base - 1, V.w, V.h);
+}
+function drawBackground() {
+  drawSky();
+  const dayBase = [52, 86, 112], nightBase = [10, 14, 34];
+  let base = mix(nightBase, dayBase, env.daylight); base = mix(base, [96, 54, 88], env.tw * 0.5); base = mix(base, [70, 76, 90], env.rain * 0.3);
+  const fog = env.skyB;
+  mountainLayer(0.10, 0.30, -34, 210, rgb(mix(fog, base, 0.25)), 1.3, 0.0042);
+  mountainLayer(0.18, 0.45, -10, 150, rgb(mix(fog, base, 0.45)), 4.2, 0.0058);
+  mountainLayer(0.30, 0.65, 14, 105, rgb(mix(fog, base, 0.68)), 8.9, 0.0075);
+  drawTrees(0.5, rgb(mix(fog, base, 0.9)));
+  // مه افق
+  const fg = ctx.createLinearGradient(0, V.h * 0.42, 0, V.h);
+  fg.addColorStop(0, rgb(fog, 0)); fg.addColorStop(1, rgb(fog, 0.22 + env.rain * 0.3)); ctx.fillStyle = fg; ctx.fillRect(0, V.h * 0.42, V.w, V.h * 0.58);
+  // کرم شب‌تاب / گرده
+  const night = 1 - env.daylight;
+  ctx.globalCompositeOperation = 'lighter';
+  for (const f of flies) {
+    const x = mod(f.x * V.w * 1.5 - R.cx * 0.55 + Math.sin(time * f.sp + f.ph) * 22, V.w * 1.5) - V.w * 0.25, y = V.h * 0.38 + f.y * V.h * 0.5 + Math.cos(time * f.sp * 1.3 + f.ph) * 14;
+    const a = (night > 0.15 ? night : 0.25 * env.daylight) * (0.5 + 0.5 * Math.sin(time * 3 + f.ph)) * (1 - env.rain);
+    if (a < 0.03) continue;
+    ctx.fillStyle = night > 0.15 ? `rgba(190,255,120,${a * 0.18})` : `rgba(255,255,255,${a * 0.2})`; ctx.beginPath(); ctx.arc(x, y, 7, 0, TAU); ctx.fill();
+    ctx.fillStyle = night > 0.15 ? `rgba(230,255,170,${a})` : `rgba(255,255,255,${a})`; ctx.beginPath(); ctx.arc(x, y, 1.6, 0, TAU); ctx.fill();
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+/* ---------- عناصر جهان ---------- */
+function drawGround(pl, dg) {
+  ctx.fillStyle = dg; ctx.fillRect(pl.x, pl.y, pl.w, pl.h);
+  ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fillRect(pl.x, pl.y, 3, 400);
+  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(pl.x + pl.w - 4, pl.y, 4, 400);
+  // سنگ‌ریزه‌ها
+  ctx.fillStyle = 'rgba(0,0,0,0.16)';
+  const k0 = Math.max(0, Math.floor((Math.max(pl.x, R.cx - 40) - pl.x) / 38)), k1 = Math.floor((Math.min(pl.x + pl.w, R.cx + V.w + 40) - pl.x) / 38);
+  for (let k = k0; k <= k1; k++) { const h = hash(pl.x * 0.01 + k); ctx.beginPath(); ctx.ellipse(pl.x + k * 38 + h * 30, pl.y + 26 + hash(k + pl.x) * 260, 3 + h * 5, 2 + h * 3, 0, 0, TAU); ctx.fill(); }
+  ctx.fillStyle = '#4db65a'; ctx.fillRect(pl.x, pl.y - 1, pl.w, 11);
+  ctx.fillStyle = '#2f8040'; ctx.fillRect(pl.x, pl.y + 8, pl.w, 3);
+  ctx.fillStyle = '#6fd67a'; ctx.fillRect(pl.x, pl.y - 1, pl.w, 2);
+}
+function drawFloat(pl) {
+  ctx.fillStyle = 'rgba(0,0,0,0.2)'; rr(ctx, pl.x + 2, pl.y + 6, pl.w, pl.h, 6); ctx.fill();
+  ctx.fillStyle = '#7d5a3d'; rr(ctx, pl.x, pl.y, pl.w, pl.h, 6); ctx.fill();
+  ctx.fillStyle = '#5a3f2a'; ctx.fillRect(pl.x + 4, pl.y + 9, pl.w - 8, 3);
+  ctx.fillStyle = '#4db65a'; rr(ctx, pl.x - 2, pl.y - 3, pl.w + 4, 8, 4); ctx.fill();
+  ctx.fillStyle = '#6fd67a'; ctx.fillRect(pl.x + 2, pl.y - 3, pl.w - 4, 2);
+  ctx.strokeStyle = '#3f9a4a'; ctx.lineWidth = 2; ctx.beginPath();
+  for (let x = pl.x + 10; x < pl.x + pl.w - 6; x += 22) { const l = 6 + hash(x) * 14; ctx.moveTo(x, pl.y + 12); ctx.quadraticCurveTo(x + Math.sin(time * 2 + x) * 2, pl.y + 12 + l * 0.6, x, pl.y + 12 + l); }
+  ctx.stroke();
+}
+function drawGrass(pl) { // چمن متحرک با باد و واکنش به بازیکن
+  const x0 = Math.max(pl.x, R.cx - 20), x1 = Math.min(pl.x + pl.w, R.cx + V.w + 20), sp = 7;
+  const k0 = Math.floor(x0 / sp), k1 = Math.floor(x1 / sp);
+  const px = P.x + P.w / 2, near = Math.abs(P.y + P.h - pl.y) < 22;
+  for (let pass = 0; pass < 2; pass++) {
+    ctx.strokeStyle = pass ? '#58c866' : '#3c9c4c'; ctx.beginPath();
+    for (let k = k0; k <= k1; k++) {
+      if ((k & 1) !== pass) continue;
+      const bx = k * sp; if (bx < pl.x || bx > pl.x + pl.w) continue;
+      const h = 7 + hash(k) * 10, sw = Math.sin(time * 2.2 + k * 0.35) * (2 + env.wind * 4);
+      let push = 0; const dx = bx - px; if (near && Math.abs(dx) < 28) push = Math.sign(dx) * (28 - Math.abs(dx)) * 0.35;
+      ctx.moveTo(bx, pl.y + 1); ctx.quadraticCurveTo(bx + (sw + push) * 0.4, pl.y - h * 0.6, bx + sw + push, pl.y - h);
+    }
+    ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.stroke();
+  }
+}
+function drawSpike(s) {
+  ctx.fillStyle = '#3b4356'; ctx.fillRect(s.x, s.y + s.h - 4, s.w, 4);
+  for (let i = 0; i < 3; i++) {
+    const bx = s.x + i * (s.w / 3), tw = s.w / 3;
+    ctx.fillStyle = '#b9c4dd'; ctx.beginPath(); ctx.moveTo(bx, s.y + s.h - 3); ctx.lineTo(bx + tw / 2, s.y); ctx.lineTo(bx + tw, s.y + s.h - 3); ctx.fill();
+    ctx.fillStyle = '#7f8ba8'; ctx.beginPath(); ctx.moveTo(bx + tw / 2, s.y); ctx.lineTo(bx + tw, s.y + s.h - 3); ctx.lineTo(bx + tw / 2, s.y + s.h - 3); ctx.fill();
+  }
+}
+function drawPad(pd) {
+  const c = pd.comp, ph = 10 - c * 5;
+  ctx.fillStyle = '#3b4356'; ctx.fillRect(pd.x + 4, pd.y + 6, pd.w - 8, 4);
+  ctx.strokeStyle = '#cfd6e6'; ctx.lineWidth = 2; ctx.beginPath();
+  for (let i = 0; i < 4; i++) { const y = pd.y + 10 - (ph - 2) * (i / 4); ctx.moveTo(pd.x + 9, y); ctx.lineTo(pd.x + pd.w - 9, y - 2); }
+  ctx.stroke();
+  ctx.fillStyle = '#ff9f45'; rr(ctx, pd.x, pd.y + 10 - ph - 3, pd.w, 5, 2.5); ctx.fill();
+  ctx.fillStyle = '#ffd08a'; ctx.fillRect(pd.x + 3, pd.y + 10 - ph - 3, pd.w - 6, 1.5);
+}
+function drawFire(f) {
+  ctx.fillStyle = '#4a3020'; ctx.save(); ctx.translate(f.x, f.y - 4); ctx.rotate(0.35); rr(ctx, -14, -3, 28, 6, 3); ctx.fill(); ctx.rotate(-0.7); rr(ctx, -14, -3, 28, 6, 3); ctx.fill(); ctx.restore();
+  ctx.fillStyle = '#7b7f8a'; for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.arc(f.x + i * 8, f.y - 1, 4.5, Math.PI, 0); ctx.fill(); }
+}
+function drawCoin(c) {
+  const bob = Math.sin(time * 3 + c.ph) * 3, w = Math.cos(time * 4 + c.ph), aw = Math.abs(w) * 8 + 1.2;
+  ctx.fillStyle = '#e0a72a'; ctx.beginPath(); ctx.ellipse(c.x, c.y + bob, aw + 1.2, 9.5, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#ffd34d'; ctx.beginPath(); ctx.ellipse(c.x, c.y + bob, aw, 8.3, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#fff0a0'; ctx.beginPath(); ctx.ellipse(c.x - aw * 0.25, c.y + bob - 2.5, Math.max(0.6, aw * 0.3), 3, 0, 0, TAU); ctx.fill();
+}
+function drawEnemy(e, a) {
+  const rx = lerp(e.px, e.x, a), ry = lerp(e.py, e.y, a);
+  ctx.save(); ctx.translate(rx + e.w / 2, ry + e.h);
+  if (e.dead) { const t = clamp(e.deadT / 0.35, 0, 1); ctx.globalAlpha = 1 - t; ctx.scale(1 + t * 0.6, 0.25 * (1 - t) + 0.05); }
+  else { const sx = e.sx, sy = 1 / sx; ctx.scale(sx, sy); }
+  const w = e.w, h = e.h;
+  ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(0, 1, w * 0.55, 3, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#4bbf5a'; ctx.beginPath(); ctx.moveTo(-w / 2 - 2, 0); ctx.bezierCurveTo(-w / 2 - 4, -h * 1.55, w / 2 + 4, -h * 1.55, w / 2 + 2, 0); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#7fe08a'; ctx.beginPath(); ctx.ellipse(-w * 0.18, -h * 0.75, w * 0.16, h * 0.16, -0.5, 0, TAU); ctx.fill();
+  const d = e.dir * 2;
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-6 + d, -h * 0.5, 4.2, 0, TAU); ctx.arc(6 + d, -h * 0.5, 4.2, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#1c2a20'; ctx.beginPath(); ctx.arc(-6 + d * 1.6, -h * 0.5, 2, 0, TAU); ctx.arc(6 + d * 1.6, -h * 0.5, 2, 0, TAU); ctx.fill();
+  ctx.strokeStyle = '#1c5a2a'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-10, -h * 0.5 - 6); ctx.lineTo(-3, -h * 0.5 - 4); ctx.moveTo(10, -h * 0.5 - 6); ctx.lineTo(3, -h * 0.5 - 4); ctx.stroke();
+  ctx.restore();
+}
+function drawPlayer(a) {
+  const p = P; if (p.dead) return;
+  const rx = lerp(p.px, p.x, a), ry = lerp(p.py, p.y, a), ox = rx - p.x, oy = ry - p.y;
+  // سایه‌ی زیر پا
+  let gy = null; for (const pl of plats) if (rx + p.w / 2 >= pl.x && rx + p.w / 2 <= pl.x + pl.w && pl.y >= ry + p.h - 4 && (gy === null || pl.y < gy)) gy = pl.y;
+  if (gy !== null) { const d = gy - (ry + p.h), k = clamp(1 - d / 260, 0, 1); ctx.fillStyle = `rgba(0,0,0,${0.28 * k * (0.4 + env.daylight * 0.6)})`; ctx.beginPath(); ctx.ellipse(rx + p.w / 2, gy + 1, 15 * (0.6 + k * 0.4), 3.5, 0, 0, TAU); ctx.fill(); }
+  ctx.save();
+  if (p.inv > 0 && Math.floor(time * 20) % 2 === 0) ctx.globalAlpha = 0.4;
+  // شال
+  const sc = p.scarf; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (let i = 1; i < sc.length; i++) {
+    ctx.strokeStyle = i % 2 ? '#ffd166' : '#ffb347'; ctx.lineWidth = 8 * (1 - i / sc.length) + 1.5;
+    ctx.beginPath(); ctx.moveTo(sc[i - 1].x + ox, sc[i - 1].y + oy); ctx.lineTo(sc[i].x + ox, sc[i].y + oy); ctx.stroke();
+  }
+  ctx.translate(rx + p.w / 2, ry + p.h);
+  ctx.rotate(clamp(p.vx / MAXV, -1, 1) * 0.14 + (p.onGround ? 0 : clamp(p.vy / 1100, -0.5, 0.5) * 0.06 * p.face));
+  const sx = p.sx, sy = 1 / sx; ctx.scale(sx, sy);
+  const fl = p.flash > 0;
+  // پاها
+  const sw = Math.sin(p.run) * (p.onGround ? 6 : 2), lift = p.onGround ? Math.max(0, Math.cos(p.run)) * 4 * Math.min(1, Math.abs(p.vx) / 120) : 5;
+  ctx.fillStyle = fl ? '#fff' : '#b83b62';
+  ctx.beginPath(); ctx.ellipse(-6 + sw, -3 - lift * (sw > 0 ? 0 : 1), 5.5, 3.6, 0, 0, TAU); ctx.ellipse(6 - sw, -3 - lift * (sw > 0 ? 1 : 0), 5.5, 3.6, 0, 0, TAU); ctx.fill();
+  // بدن
+  ctx.fillStyle = fl ? '#fff' : '#ff6f91'; rr(ctx, -13, -35, 26, 30, 12); ctx.fill();
+  if (!fl) {
+    ctx.fillStyle = '#ffb3c6'; rr(ctx, -8, -19, 16, 12, 6); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'; rr(ctx, -10, -32, 8, 5, 3); ctx.fill();
+  }
+  // جوانه‌ی سر
+  const sp = Math.sin(time * 5) * 0.25 - p.vx * 0.002 - clamp(p.vy, -600, 600) * 0.0006;
+  ctx.strokeStyle = '#3c9c4c'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(0, -34); ctx.quadraticCurveTo(Math.sin(sp) * 6, -41, Math.sin(sp) * 10, -45); ctx.stroke();
+  ctx.fillStyle = '#58c866'; ctx.beginPath(); ctx.ellipse(Math.sin(sp) * 12, -46, 5, 3, sp + 0.6, 0, TAU); ctx.fill();
+  // چشم‌ها
+  const ex = p.face * 3, blink = p.blinkT < 0;
+  if (blink) { ctx.strokeStyle = '#4a1a2a'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(ex - 8, -25); ctx.lineTo(ex - 2, -25); ctx.moveTo(ex + 2, -25); ctx.lineTo(ex + 8, -25); ctx.stroke(); }
+  else {
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(ex - 5, -25, 4.2, 5, 0, 0, TAU); ctx.ellipse(ex + 5, -25, 4.2, 5, 0, 0, TAU); ctx.fill();
+    const lx = clamp(p.vx / 200, -1, 1) * 1.6 + p.face, ly = clamp(p.vy / 700, -1, 1) * 1.8;
+    ctx.fillStyle = '#2a1020'; ctx.beginPath(); ctx.arc(ex - 5 + lx, -25 + ly, 2.2, 0, TAU); ctx.arc(ex + 5 + lx, -25 + ly, 2.2, 0, TAU); ctx.fill();
+  }
+  ctx.fillStyle = 'rgba(255,120,150,0.5)'; ctx.beginPath(); ctx.ellipse(ex - 9, -17, 3, 2, 0, 0, TAU); ctx.ellipse(ex + 9, -17, 3, 2, 0, 0, TAU); ctx.fill();
+  ctx.restore();
+}
+function drawWater() {
+  const x0 = R.cx - 30, x1 = R.cx + V.w + 30, bot = R.cy + V.h + 300;
+  for (let layer = 0; layer < 2; layer++) {
+    const off = layer * 8, sp = layer ? -1 : 1;
+    ctx.beginPath(); ctx.moveTo(x0, bot);
+    for (let x = x0; x <= x1; x += 14) ctx.lineTo(x, WATER_Y + off + Math.sin(x * 0.021 + time * 1.6 * sp) * 4 + Math.sin(x * 0.047 - time * 2.3 * sp) * 2.5);
+    ctx.lineTo(x1, bot); ctx.closePath();
+    const g = ctx.createLinearGradient(0, WATER_Y, 0, WATER_Y + 260);
+    g.addColorStop(0, layer ? 'rgba(60,140,210,0.55)' : 'rgba(90,170,230,0.6)'); g.addColorStop(1, 'rgba(8,30,80,0.92)');
+    ctx.fillStyle = g; ctx.fill();
+    if (!layer) { ctx.strokeStyle = 'rgba(220,245,255,0.55)'; ctx.lineWidth = 2; ctx.stroke(); }
+  }
+}
+function drawStormWall() {
+  const x = lerp(chaser.px, chaser.x, alphaG), top = R.cy - 100, bot = R.cy + V.h + 100;
+  const g = ctx.createLinearGradient(x - 320, 0, x + 140, 0);
+  g.addColorStop(0, 'rgba(18,8,36,1)'); g.addColorStop(0.7, 'rgba(30,14,58,0.85)'); g.addColorStop(1, 'rgba(50,24,90,0)');
+  ctx.fillStyle = g; ctx.fillRect(x - 320, top, 460, bot - top);
+  ctx.fillStyle = 'rgba(18,8,36,1)'; ctx.fillRect(R.cx - 200, top, x - 320 - (R.cx - 200), bot - top);
+  // شعاع برق کوچک روی لبه
+  ctx.strokeStyle = `rgba(210,180,255,${0.15 + 0.15 * Math.sin(time * 9)})`; ctx.lineWidth = 2; ctx.beginPath();
+  for (let y = top; y < bot; y += 24) ctx.lineTo(x - 40 + Math.sin(y * 0.05 + time * 6) * 14, y); ctx.stroke();
+}
+let alphaG = 0;
+function drawWorld(a) {
+  const dg = ctx.createLinearGradient(0, 300, 0, 1000); dg.addColorStop(0, '#8a5b3a'); dg.addColorStop(0.5, '#52362a'); dg.addColorStop(1, '#22160f');
+  const inView = o => o.x + (o.w || 0) > R.cx - 60 && o.x < R.cx + V.w + 60;
+  for (const pl of plats) if (inView(pl)) (pl.oneway ? drawFloat(pl) : drawGround(pl, dg));
+  for (const pl of plats) if (!pl.oneway && inView(pl)) drawGrass(pl);
+  for (const f of fires) if (inView({ x: f.x - 20, w: 40 })) drawFire(f);
+  for (const s of spikes) if (inView(s)) drawSpike(s);
+  for (const pd of pads) if (inView(pd)) drawPad(pd);
+  for (const c of coins) if (!c.got && inView({ x: c.x - 10, w: 20 })) drawCoin(c);
+  for (const e of enemies) if (inView(e)) drawEnemy(e, a);
+  // مه‌ی سطح زمین
+  const mc = mix([220, 230, 245], env.skyB, 0.5);
+  for (const m of mist) { const x = R.cx + mod(m.x + time * m.sp - R.cx * 0.15, V.w + 700) - 350; ctx.fillStyle = rgb(mc, 0.07 + env.rain * 0.05); ctx.beginPath(); ctx.ellipse(x, 415 + m.y, m.w, 26, 0, 0, TAU); ctx.fill(); }
+  drawPlayer(a);
+  drawWater();
+  drawParticles(false);
+  ctx.globalCompositeOperation = 'lighter'; drawParticles(true);
+  // درخشش آتش
+  for (const f of fires) if (inView({ x: f.x - 120, w: 240 })) {
+    const fl = 0.85 + Math.sin(time * 18 + f.ph) * 0.1 + Math.random() * 0.05, r = 110 * fl;
+    const g = ctx.createRadialGradient(f.x, f.y - 14, 0, f.x, f.y - 14, r); g.addColorStop(0, `rgba(255,170,70,${0.32 + (1 - env.daylight) * 0.25})`); g.addColorStop(1, 'rgba(255,120,30,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x, f.y - 14, r, 0, TAU); ctx.fill();
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  // متن‌های شناور
+  ctx.textAlign = 'center'; ctx.font = `bold 15px ${FONT}`;
+  for (const q of popups) { ctx.globalAlpha = 1 - q.t; ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillText(q.txt, q.x + 1, q.y + 1); ctx.fillStyle = q.c; ctx.fillText(q.txt, q.x, q.y); }
+  ctx.globalAlpha = 1;
+  if (state === 'play' || state === 'over') drawStormWall();
+}
+function drawLighting() {
+  const dark = env.dark; if (dark < 0.03) return;
+  const lw = lightCv.width, lh = lightCv.height, s = lw / V.W;
+  lctx.globalCompositeOperation = 'source-over'; lctx.clearRect(0, 0, lw, lh);
+  lctx.fillStyle = `rgba(6,10,34,${dark})`; lctx.fillRect(0, 0, lw, lh);
+  lctx.globalCompositeOperation = 'destination-out';
+  const light = (wx, wy, r, st) => {
+    const p = w2s(wx, wy), x = p.x * s, y = p.y * s, rr2 = r * V.scale * R.zoom * s;
+    if (x < -rr2 || x > lw + rr2 || y < -rr2 || y > lh + rr2) return;
+    const g = lctx.createRadialGradient(x, y, 0, x, y, rr2); g.addColorStop(0, `rgba(0,0,0,${st})`); g.addColorStop(0.5, `rgba(0,0,0,${st * 0.55})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+    lctx.fillStyle = g; lctx.fillRect(x - rr2, y - rr2, rr2 * 2, rr2 * 2);
+  };
+  if (!P.dead) light(lerp(P.px, P.x, alphaG) + P.w / 2, lerp(P.py, P.y, alphaG) + P.h / 2, 230, 0.95);
+  for (const f of fires) light(f.x, f.y - 14, 200 + Math.sin(time * 14 + f.ph) * 8, 0.95);
+  for (const c of coins) if (!c.got && c.x > R.cx - 40 && c.x < R.cx + V.w + 40) light(c.x, c.y, 34, 0.35);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(lightCv, 0, 0, V.W, V.H);
+}
+function drawRain() {
+  if (env.rain < 0.03) return;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const n = (drops.length * env.rain) | 0, sl = 0.16 + env.wind * 0.1;
+  ctx.strokeStyle = `rgba(200,220,255,${0.22 + env.rain * 0.2})`; ctx.lineWidth = Math.max(1, V.dpr); ctx.beginPath();
+  for (let i = 0; i < n; i++) { const d = drops[i], x = d.x * V.W, y = d.y * V.H, l = d.l * V.dpr * 1.3; ctx.moveTo(x, y); ctx.lineTo(x - l * sl, y + l); }
+  ctx.stroke();
+}
+
+/* ---------- HUD و صفحه‌ها ---------- */
+function txt(s, x, y, size, color, align = 'center', weight = 'bold', stroke) {
+  ctx.font = `${weight} ${size}px ${FONT}`; ctx.textAlign = align; ctx.textBaseline = 'middle';
+  if (stroke) { ctx.lineWidth = 4; ctx.strokeStyle = stroke; ctx.lineJoin = 'round'; ctx.strokeText(s, x, y); }
+  ctx.fillStyle = color; ctx.fillText(s, x, y);
+}
+function heart(x, y, s, c) {
+  ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x, y + s * 0.35);
+  ctx.bezierCurveTo(x - s * 0.9, y - s * 0.3, x - s * 0.4, y - s * 0.95, x, y - s * 0.4);
+  ctx.bezierCurveTo(x + s * 0.4, y - s * 0.95, x + s * 0.9, y - s * 0.3, x, y + s * 0.35); ctx.fill();
+}
+function drawHUD() {
+  ctx.setTransform(V.U, 0, 0, V.U, 0, 0); layoutBtns();
+  const hw = V.hw, hh = V.hh, t = time;
+  if (state === 'play' || state === 'paused' || state === 'over') {
+    // قلب‌ها
+    for (let i = 0; i < 3; i++) {
+      const full = i < P.lives, beat = full && P.lives === 1 ? 1 + Math.sin(t * 8) * 0.12 : 1, sh = P.flash > 0 ? Math.sin(t * 90) * 2 : 0;
+      ctx.save(); ctx.translate(36 + i * 34 + sh, 34); ctx.scale(beat, beat);
+      heart(0, 2, 15, full ? '#ff5a7d' : 'rgba(255,255,255,0.18)'); if (full) { ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.arc(-5, -5, 2.4, 0, TAU); ctx.fill(); }
+      ctx.restore();
+    }
+    // امتیاز
+    const k = 1 + popV * 0.03;
+    ctx.save(); ctx.translate(22, 72); ctx.scale(k, k); txt(String(Math.round(dispScore)), 0, 0, 32, '#fff', 'left', 'bold', 'rgba(0,0,0,0.45)'); ctx.restore();
+    txt('رکورد ' + best, 22, 100, 14, 'rgba(255,255,255,0.75)', 'left', 'normal', 'rgba(0,0,0,0.35)');
+    if (mult > 1) txt('ضریب ×' + mult, 22, 124, 16, '#ffd34d', 'left', 'bold', 'rgba(0,0,0,0.4)');
+    if (combo >= 3) { ctx.fillStyle = 'rgba(255,211,77,0.9)'; ctx.fillRect(22, 138, 70 * clamp(comboT / 2.2, 0, 1), 4); }
+    // ساعت روز
+    const dx = hw - 90, dy = 34; ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.arc(dx, dy, 14, 0, TAU); ctx.fill();
+    ctx.fillStyle = env.daylight > 0.4 ? '#ffd45a' : '#dbe6ff'; ctx.beginPath(); ctx.arc(dx, dy, 7, 0, TAU); ctx.fill();
+    if (env.daylight <= 0.4) { ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.beginPath(); ctx.arc(dx + 3, dy - 2, 6, 0, TAU); ctx.fill(); }
+    if (env.rain > 0.3) { ctx.strokeStyle = '#9fd0ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(dx - 30, dy - 6); ctx.lineTo(dx - 33, dy + 2); ctx.moveTo(dx - 24, dy - 6); ctx.lineTo(dx - 27, dy + 2); ctx.stroke(); }
+    // دکمه‌ی مکث
+    const b = btn.pause; ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#fff'; if (state === 'paused') { ctx.beginPath(); ctx.moveTo(b.x - 5, b.y - 8); ctx.lineTo(b.x + 8, b.y); ctx.lineTo(b.x - 5, b.y + 8); ctx.fill(); } else { ctx.fillRect(b.x - 7, b.y - 8, 5, 16); ctx.fillRect(b.x + 2, b.y - 8, 5, 16); }
+    // هشدار طوفان
+    const danger = clamp(1 - (P.x - chaser.x) / 520, 0, 1);
+    if (state === 'play' && danger > 0.05) {
+      const g = ctx.createLinearGradient(0, 0, 200, 0); g.addColorStop(0, `rgba(160,60,255,${danger * 0.55 * (0.75 + 0.25 * Math.sin(t * 10))})`); g.addColorStop(1, 'rgba(160,60,255,0)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, 200, hh);
+      if (danger > 0.55) txt('طوفان نزدیک است!', hw / 2, 70, 20, '#e6c8ff', 'center', 'bold', 'rgba(40,0,70,0.7)');
+    }
+    // دکمه‌های لمسی
+    if (showTouch && state === 'play') {
+      const drawB = (k, label) => { const q = btn[k], on = touch[k]; ctx.fillStyle = on ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.16)'; ctx.beginPath(); ctx.arc(q.x, q.y, q.r * (on ? 0.93 : 1), 0, TAU); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2; ctx.stroke(); txt(label, q.x, q.y + 1, k === 'jump' ? 30 : 32, 'rgba(255,255,255,0.9)'); };
+      drawB('left', '◀'); drawB('right', '▶'); drawB('jump', '▲');
+    }
+  }
+  if (state === 'menu') {
+    const t0 = easeOutBack(clamp(menuT / 0.9, 0, 1));
+    ctx.fillStyle = 'rgba(5,8,25,0.45)'; ctx.fillRect(0, 0, hw, hh);
+    ctx.save(); ctx.translate(hw / 2, hh * 0.3); ctx.scale(t0, t0); ctx.rotate(Math.sin(t * 1.4) * 0.025);
+    txt('فرار از طوفان', 0, 4, Math.min(74, hw / 6.2), 'rgba(90,20,140,0.8)', 'center', 'bold');
+    txt('فرار از طوفان', 0, 0, Math.min(74, hw / 6.2), '#fff', 'center', 'bold', '#5b2a9a'); ctx.restore();
+    txt('پیش از آن‌که تاریکی برسد بدو، سکه بچین، روی دشمن‌ها بپر', hw / 2, hh * 0.3 + 60, 16, '#e3d8ff', 'center', 'normal');
+    const pulse = 1 + Math.sin(t * 4) * 0.05;
+    ctx.save(); ctx.translate(hw / 2, hh * 0.56); ctx.scale(pulse, pulse); ctx.fillStyle = '#ffd34d'; rr(ctx, -130, -26, 260, 52, 26); ctx.fill();
+    txt(showTouch ? 'برای شروع لمس کنید' : 'شروع: Enter یا کلیک', 0, 1, 20, '#3b1f00'); ctx.restore();
+    if (best > 0) txt('بهترین امتیاز: ' + best, hw / 2, hh * 0.56 + 52, 16, '#ffe9a3', 'center', 'bold');
+    txt('حرکت: ← → یا A D   |   پرش: Space ↑ W یا کلیک   |   مکث: P   |   صدا: M', hw / 2, hh - 28, 13, 'rgba(255,255,255,0.75)', 'center', 'normal');
+  }
+  if (state === 'paused') {
+    ctx.fillStyle = 'rgba(5,8,25,0.6)'; ctx.fillRect(0, 0, hw, hh);
+    txt('مکث', hw / 2, hh * 0.4, 56, '#fff', 'center', 'bold', 'rgba(0,0,0,0.4)');
+    txt('برای ادامه P بزنید یا صفحه را لمس کنید', hw / 2, hh * 0.4 + 52, 16, '#cfd6ff', 'center', 'normal');
+  }
+  if (state === 'over') {
+    const k = easeOutCubic(clamp(overT / 0.7, 0, 1));
+    ctx.fillStyle = `rgba(10,4,24,${0.65 * k})`; ctx.fillRect(0, 0, hw, hh);
+    ctx.globalAlpha = k; ctx.save(); ctx.translate(hw / 2, hh * 0.3 - (1 - k) * 30);
+    txt(deathCause === 'storm' ? 'طوفان تو را بلعید' : 'بازی تمام شد', 0, 0, 44, '#fff', 'center', 'bold', '#5b2a9a'); ctx.restore();
+    txt('امتیاز: ' + Math.round(dispScore), hw / 2, hh * 0.3 + 56, 28, '#ffe27a', 'center', 'bold', 'rgba(0,0,0,0.4)');
+    txt(`سکه: ${coinsGot}   |   دشمن: ${kills}   |   مسافت: ${(maxX / 10) | 0} متر`, hw / 2, hh * 0.3 + 92, 15, '#d9d4ff', 'center', 'normal');
+    if (newRecord) txt('رکورد جدید! ★', hw / 2, hh * 0.3 + 126, 24, '#ffd34d', 'center', 'bold', 'rgba(0,0,0,0.4)');
+    else txt('بهترین امتیاز: ' + best, hw / 2, hh * 0.3 + 126, 16, '#cfc6ff', 'center', 'normal');
+    if (overT > 0.7) { const pl = 1 + Math.sin(time * 4) * 0.04; ctx.save(); ctx.translate(hw / 2, hh * 0.3 + 190); ctx.scale(pl, pl); ctx.fillStyle = '#ffd34d'; rr(ctx, -140, -26, 280, 52, 26); ctx.fill(); txt(showTouch ? 'دوباره لمس کنید' : 'دوباره: Enter یا کلیک', 0, 1, 20, '#3b1f00'); ctx.restore(); }
+    ctx.globalAlpha = 1;
+  }
+  if (fade > 0) { ctx.fillStyle = `rgba(0,0,0,${fade})`; ctx.fillRect(0, 0, hw, hh); }
+}
+
+function render(a) {
+  alphaG = a;
+  // دوربین interpolated + لرزش
+  const cx = lerp(cam.px, cam.x, a), cy = lerp(cam.py, cam.y, a), tr = trauma * trauma;
+  R.sx = (Math.sin(time * 61) + Math.sin(time * 37 + 1.3)) * 0.5 * tr * 16; R.sy = (Math.sin(time * 53 + 2) + Math.sin(time * 29)) * 0.5 * tr * 12;
+  R.cx = cx + R.sx; R.cy = cy + R.sy; R.zoom = cam.zoom;
+  ctx.setTransform(V.scale, 0, 0, V.scale, 0, 0);
+  drawBackground();
+  ctx.save();
+  ctx.translate(V.w / 2, V.h / 2); ctx.scale(R.zoom, R.zoom); ctx.translate(-V.w / 2, -V.h / 2); ctx.translate(-R.cx, -R.cy);
+  drawWorld(a);
+  ctx.restore();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  drawLighting();
+  drawRain();
+  if (env.flash > 0.01) { ctx.fillStyle = `rgba(235,240,255,${env.flash * 0.45})`; ctx.fillRect(0, 0, V.W, V.H); }
+  ctx.fillStyle = vignette; ctx.fillRect(0, 0, V.W, V.H);
+  drawHUD();
+}
+
+/* =====================================================================
+   حلقه‌ی اصلی: fixed timestep + interpolation
+   ===================================================================== */
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (!stormIsActive()) { lastT = now; return; }
+  let dt = (now - lastT) / 1000; lastT = now; if (!(dt > 0)) dt = 0; if (dt > 0.1) dt = 0.1;
+  if (state !== 'paused') {
+    acc += dt; let n = 0;
+    while (acc >= STEP && n++ < 16) { update(STEP); acc -= STEP; }
+    if (acc > STEP) acc = 0;
+  }
+  if (state === 'menu') menuT += dt;
+  Sound.music(dt, state === 'play' && P ? clamp(1 - (P.x - chaser.x) / 520, 0, 1) : 0, env.daylight, state === 'play' || state === 'menu');
+  render(state === 'paused' ? 1 : acc / STEP);
+}
+
+/* ---------- شروع ---------- */
+resize(); startMenu(); computeSky();
+lastT = performance.now(); requestAnimationFrame(frame);
+
+/* ---------- پل ادغام با World War (تغییر ضروری برای اتصال) ---------- */
+window.stormRunnerResize = resize;
+window.stormRunnerPause = () => setPause(true);
+})();
+</script>
+
 </body>
 </html>
