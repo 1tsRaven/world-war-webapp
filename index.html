@@ -6780,12 +6780,30 @@ function lastLeafClose() {
 function openLastLeaf() {
   lastLeafClose();
   const b64 = document.getElementById('lastLeafGameB64').textContent.replace(/\s+/g, '');
-  let uid = 'guest'; try { uid = String((tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || 'guest').replace(/[^A-Za-z0-9_-]/g, ''); } catch (e) {}
-  const html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(b64), c => c.charCodeAt(0))).replace('__LL_UID__', uid);
+  let uid = 'guest';
+  try { uid = String((tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || 'guest').replace(/[^A-Za-z0-9_-]/g, ''); } catch (e) {}
+
+  let html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(b64), c => c.charCodeAt(0)));
+  html = html.replace('__LL_UID__', uid);
+
+  /* ============ SHOP EXIT BUTTON PATCH ============ */
+  html = html
+    // ۱) جایگزینی متن راهنمای پایین فروشگاه با یک دکمهی واقعی
+    .replace(
+      /<div class="spExitHint">[^<]*<\/div>/g,
+      `<button id="spExitBtn" style="width:100%;margin-top:10px;padding:11px 14px;border:none;border-radius:11px;background:#3a1a1a;color:#fca5a5;font-family:inherit;font-weight:900;font-size:13px;cursor:pointer;box-shadow:0 6px 18px -6px rgba(239,68,68,.5);">✕ خروج از فروشگاه</button>`
+    )
+    // ۲) وصل کردن دکمه به تابع exitShop
+    .replace(
+      `panel.querySelectorAll('.spBtn').forEach(btn=>{`,
+      `const _spExit=$('spExitBtn');if(_spExit)_spExit.addEventListener('click',()=>exitShop());panel.querySelectorAll('.spBtn').forEach(btn=>{`
+    );
+  /* ============================================== */
+
   const f = document.createElement('iframe');
   f.title = 'LAST LEAF Survival';
   f.setAttribute('allow', 'autoplay');
-  f.srcdoc = html;   // بدون Blob/URL خارجی؛ کد بازی مستقیم داخل همین صفحه است
+  f.srcdoc = html;
   f.addEventListener('load', () => { try { f.contentWindow.focus(); } catch (e) {} });
   document.getElementById('lastLeafStage').appendChild(f);
   lastLeafFrame = f;
