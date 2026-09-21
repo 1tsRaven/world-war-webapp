@@ -1073,6 +1073,13 @@
     font-size: 14px;
     flex-shrink: 0;
   }
+  /* ============ LUCKY WHEEL ============ */
+.wheel-wrap{position:relative;width:100%;max-width:340px;margin:20px auto 14px;aspect-ratio:1}
+.wheel-svg{width:100%;height:100%;display:block;transform-origin:50% 50%;transition:transform 5.2s cubic-bezier(.17,.67,.17,1);filter:drop-shadow(0 0 30px rgba(34,197,94,.28))}
+.wheel-svg.spinning{filter:drop-shadow(0 0 45px rgba(251,191,36,.55))}
+.wheel-pointer{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:34px;line-height:1;color:#fbbf24;filter:drop-shadow(0 0 10px rgba(251,191,36,.9)) drop-shadow(0 0 20px rgba(251,191,36,.5));z-index:5;pointer-events:none;animation:pointerBounce 1.6s ease-in-out infinite}
+@keyframes pointerBounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(4px)}}
+.wheel-hub{position:absolute;top:50%;left:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#1a2530,#050810 75%);border:2px solid rgba(34,197,94,.55);box-shadow:0 0 20px rgba(34,197,94,.35),inset 0 0 12px rgba(0,0,0,.85);display:grid;place-items:center;font-size:22px;z-index:4;pointer-events:none}
 </style>
 </head>
 <body>
@@ -1484,7 +1491,18 @@
       <button class="btn secondary" onclick="openLeaderboard()" style="margin-top:14px">🔄 بروزرسانی</button>
     </div>
   </div>
-
+  <div class="screen" id="screen-wheel">
+    <div class="box">
+      <h2>🎡 گردونه شانس</h2>
+      <div class="subtitle">Lucky Wheel · هر ۲۴ ساعت یک گردش رایگان</div>
+      <div class="wheel-wrap">
+        <div class="wheel-pointer">▼</div>
+        <svg class="wheel-svg" id="wheelSvg" viewBox="0 0 400 400"></svg>
+        <div class="wheel-hub">🎁</div>
+      </div>
+      <button class="btn" id="spinBtn" onclick="spinWheel()">🎡 چرخاندن گردونه</button>
+    </div>
+  </div>
   <div class="screen" id="screen-profile">
     <div class="box">
       <button class="back-btn" onclick="showScreen('hub')">⬅️ بازگشت</button>
@@ -1538,6 +1556,7 @@
 <div class="bottom-nav" id="bottomNav">
   <div class="bottom-nav-inner">
     <button data-screen="hub" onclick="showScreen('hub')">🏠 منو</button>
+    <button data-screen="wheel" onclick="showScreen('wheel')">🎡 گردونه</button>
     <button data-screen="profile" onclick="showScreen('profile')">👤 پروفایل</button>
   </div>
 </div>
@@ -6796,6 +6815,203 @@ window.showScreen = function (id) {
 };
 window.addEventListener('pagehide', () => { if (lastLeafFrame) lastLeafClose(); });
 </script>
+<script>
+/* ===================== LUCKY WHEEL ===================== */
+(function(){
+  const WHEEL_KEY = 'ww_wheel_last_spin';
+  const WHEEL_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+  const WHEEL_FULL_ROTATIONS = 5;
 
+  const SEGMENTS = [
+    { type:'score', amount:500,  weight:20, label:'۵۰۰',     color:'#22c55e' },
+    { type:'blank', amount:0,    weight:10, label:'پوچ',     color:'#475569' },
+    { type:'xp',    amount:1000, weight:10, label:'1k XP',   color:'#a855f7' },
+    { type:'score', amount:1000, weight:15, label:'۱٬۰۰۰',   color:'#10b981' },
+    { type:'blank', amount:0,    weight:10, label:'پوچ',     color:'#475569' },
+    { type:'score', amount:2500, weight:7,  label:'۲٬۵۰۰',   color:'#06b6d4' },
+    { type:'score', amount:1500, weight:10, label:'۱٬۵۰۰',   color:'#0ea5e9' },
+    { type:'blank', amount:0,    weight:10, label:'پوچ',     color:'#475569' },
+    { type:'xp',    amount:2500, weight:5,  label:'2.5k XP', color:'#8b5cf6' },
+    { type:'score', amount:5000, weight:3,  label:'۵٬۰۰۰',   color:'#fbbf24' },
+  ];
+
+  let rotation = 0, spinning = false, built = false;
+
+  function buildWheel() {
+    const svg = document.getElementById('wheelSvg');
+    if (!svg) return;
+    const cx=200, cy=200, r=178, n=SEGMENTS.length, segAngle=360/n;
+    let html = `<circle cx="${cx}" cy="${cy}" r="${r+12}" fill="rgba(0,0,0,.45)"/>`;
+    html += `<circle cx="${cx}" cy="${cy}" r="${r+6}" fill="rgba(34,197,94,.10)" stroke="rgba(34,197,94,.35)" stroke-width="2"/>`;
+    SEGMENTS.forEach((seg, i) => {
+      const a0=i*segAngle, a1=(i+1)*segAngle;
+      const rad0=(a0-90)*Math.PI/180, rad1=(a1-90)*Math.PI/180;
+      const x0=cx+r*Math.cos(rad0), y0=cy+r*Math.sin(rad0);
+      const x1=cx+r*Math.cos(rad1), y1=cy+r*Math.sin(rad1);
+      html += `<path d="M ${cx} ${cy} L ${x0.toFixed(2)} ${y0.toFixed(2)} A ${r} ${r} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z" fill="${seg.color}" stroke="rgba(0,0,0,.55)" stroke-width="1.8"/>`;
+      const midA=(a0+a1)/2, midRad=(midA-90)*Math.PI/180, lr=r*0.7;
+      const lx=cx+lr*Math.cos(midRad), ly=cy+lr*Math.sin(midRad);
+      let rot = midA - 90;
+      if (midA >= 90 && midA < 270) rot += 180;
+      const fill = seg.type === 'xp' ? '#f5e9ff' : '#fff';
+      const size = seg.label.length > 5 ? 12 : 15;
+      html += `<text x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" fill="${fill}" font-size="${size}" font-weight="900" text-anchor="middle" dominant-baseline="middle" transform="rotate(${rot.toFixed(2)} ${lx.toFixed(2)} ${ly.toFixed(2)})" style="pointer-events:none;font-family:Tahoma,sans-serif;text-shadow:0 1px 3px rgba(0,0,0,.65)">${seg.label}</text>`;
+    });
+    html += `<circle cx="${cx}" cy="${cy}" r="${r+3}" fill="none" stroke="rgba(251,191,36,.55)" stroke-width="2.2"/>`;
+    for (let i = 0; i < 24; i++) {
+      const ang = (i / 24) * Math.PI * 2 - Math.PI / 2;
+      const px = cx + (r + 3) * Math.cos(ang), py = cy + (r + 3) * Math.sin(ang);
+      const col = i % 2 === 0 ? '#fbbf24' : 'rgba(255,255,255,.35)';
+      html += `<circle cx="${px.toFixed(2)}" cy="${py.toFixed(2)}" r="2.2" fill="${col}"/>`;
+    }
+    svg.innerHTML = html;
+  }
+
+  function remainingMs() {
+    let last = 0;
+    try { last = parseInt(localStorage.getItem(WHEEL_KEY) || '0', 10) || 0; } catch(e) {}
+    return Math.max(0, (last + WHEEL_COOLDOWN_MS) - Date.now());
+  }
+
+  function humanRemain(ms) {
+    const totalMin = Math.ceil(ms / 60000);
+    const h = Math.floor(totalMin / 60), m = totalMin % 60;
+    const toFa = s => String(s).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+    if (h > 0 && m > 0) return `${toFa(h)} ساعت و ${toFa(m)} دقیقه`;
+    if (h > 0) return `${toFa(h)} ساعت`;
+    return `${toFa(m)} دقیقه`;
+  }
+
+  function updateBtn() {
+    const btn = document.getElementById('spinBtn');
+    if (!btn) return;
+    if (spinning) { btn.disabled = true; btn.textContent = '🎡 در حال چرخش...'; return; }
+    btn.disabled = false;
+    btn.textContent = '🎡 چرخاندن گردونه';
+  }
+
+  function initWheel() {
+    if (!built) { buildWheel(); built = true; }
+    updateBtn();
+  }
+
+  function pick() {
+    const total = SEGMENTS.reduce((s, x) => s + x.weight, 0);
+    let r = Math.random() * total, cum = 0;
+    for (let i = 0; i < SEGMENTS.length; i++) {
+      cum += SEGMENTS[i].weight;
+      if (r < cum) return i;
+    }
+    return SEGMENTS.length - 1;
+  }
+
+  window.spinWheel = function() {
+    if (spinning) return;
+
+    const remain = remainingMs();
+    if (remain > 0) {
+      showModal({
+        win: false,
+        icon: '⏳',
+        title: 'هنوز وقتش نشده!',
+        body: `گردونه هر ۲۴ ساعت یک بار رایگان می‌شود.\n\nبعدی: ${humanRemain(remain)} دیگر بیا تلاش کن.`,
+        reward: '—',
+        rewardZero: true,
+        primaryText: 'باشه',
+        onPrimary: () => {},
+        secondaryText: 'بستن',
+        onSecondary: () => {},
+      });
+      return;
+    }
+
+    const svg = document.getElementById('wheelSvg');
+    if (!svg) return;
+    spinning = true;
+    updateBtn();
+
+    const idx = pick();
+    const seg = SEGMENTS[idx];
+    const segAngle = 360 / SEGMENTS.length;
+    const midAngle = idx * segAngle + segAngle / 2;
+    const target = ((360 - midAngle) % 360 + 360) % 360;
+    const current = ((rotation % 360) + 360) % 360;
+    let delta = target - current;
+    if (delta < 0) delta += 360;
+    rotation += WHEEL_FULL_ROTATIONS * 360 + delta;
+
+    svg.classList.add('spinning');
+    svg.style.transition = 'transform 5.2s cubic-bezier(.17,.67,.17,1)';
+    svg.style.transform = `rotate(${rotation}deg)`;
+    try { localStorage.setItem(WHEEL_KEY, String(Date.now())); } catch(e) {}
+
+    setTimeout(() => {
+      rotation = rotation % 360;
+      svg.style.transition = 'none';
+      svg.style.transform = `rotate(${rotation}deg)`;
+      void svg.offsetWidth;
+      svg.style.transition = 'transform 5.2s cubic-bezier(.17,.67,.17,1)';
+      svg.classList.remove('spinning');
+      applyPrize(seg);
+      spinning = false;
+      updateBtn();
+    }, 5300);
+  };
+
+  function applyPrize(seg) {
+    if (seg.type === 'blank') {
+      showModal({
+        win: false, icon: '💨', title: 'پوچ شد!',
+        body: 'این بار شانس با تو نبود…\n\n۲۴ ساعت دیگر یک گردش رایگان دیگر داری.',
+        reward: 'بدون جایزه', rewardZero: true,
+        primaryText: 'باشه', onPrimary: () => {},
+        secondaryText: '🏠 منو', onSecondary: () => showScreen('hub'),
+      });
+      return;
+    }
+    if (seg.type === 'xp') {
+      try { profileData.xp += seg.amount; pfSaveProfile(); } catch(e) {}
+      showModal({
+        win: true, icon: '⚡', title: 'XP گرفتی!',
+        body: `+${toPersianDigits(seg.amount)} XP به پروفایلت اضافه شد.`,
+        reward: `+${toPersianDigits(seg.amount)} XP`,
+        primaryText: '👤 پروفایل', onPrimary: () => showScreen('profile'),
+        secondaryText: '🏠 منو', onSecondary: () => showScreen('hub'),
+      });
+      return;
+    }
+    state.score += seg.amount;
+    state.gamesPlayed++;
+    try { saveMyStats(); } catch(e) {}
+    try { updateHub(); } catch(e) {}
+    showModal({
+      win: true, icon: seg.amount >= 2500 ? '🎉' : '⭐', title: 'تبریک!',
+      body: `برنده شدی!\n\n${toPersianDigits(seg.amount)} امتیاز به حسابت اضافه شد.`,
+      reward: `+${toPersianDigits(seg.amount)} امتیاز`,
+      primaryText: '🏠 منو', onPrimary: () => showScreen('hub'),
+      secondaryText: '👤 پروفایل', onSecondary: () => showScreen('profile'),
+    });
+  }
+
+  // نوار پایین رو در صفحه گردونه هم نمایش بده
+  window.pfUpdateBottomNav = function(screenId) {
+    const nav = document.getElementById('bottomNav');
+    if (!nav) return;
+    const show = (screenId === 'hub' || screenId === 'profile' || screenId === 'wheel');
+    nav.classList.toggle('visible', show);
+    document.body.classList.toggle('has-bottom-nav', show);
+    nav.querySelectorAll('button').forEach(b => {
+      b.classList.toggle('active', b.dataset.screen === screenId);
+    });
+  };
+
+  // با ورود به صفحه گردونه، اولیه‌سازی
+  const _origShow = window.showScreen;
+  window.showScreen = function(id) {
+    _origShow(id);
+    if (id === 'wheel') initWheel();
+  };
+})();
+</script>
 </body>
 </html>
