@@ -6780,12 +6780,29 @@ function lastLeafClose() {
 function openLastLeaf() {
   lastLeafClose();
   const b64 = document.getElementById('lastLeafGameB64').textContent.replace(/\s+/g, '');
-  let uid = 'guest'; try { uid = String((tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || 'guest').replace(/[^A-Za-z0-9_-]/g, ''); } catch (e) {}
-  const html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(b64), c => c.charCodeAt(0))).replace('__LL_UID__', uid);
+  let uid = 'guest';
+  try { uid = String((tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || 'guest').replace(/[^A-Za-z0-9_-]/g, ''); } catch (e) {}
+
+  let html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(b64), c => c.charCodeAt(0)));
+  html = html.replace('__LL_UID__', uid);
+
+  /* ============ ZOOM-OUT PATCH ============ */
+  const ZOOM = 0.75;  // ← عدد دوربین (۱ = پیش‌فرض، کوچیک‌تر = عقب‌تر)
+  html = html
+    // مقدار پایه‌ی دوربین
+    .replace('let camZoom=1,camZoomTarget=1;', `let camZoom=${ZOOM},camZoomTarget=${ZOOM};`)
+    // ضربه‌ی زوم موقع برداشتن کارت (نسبت ۱.۰۵ حفظ شده)
+    .replace('camZoomTarget=1.05;', `camZoomTarget=${(ZOOM * 1.05).toFixed(4)};`)
+    // مقدار "استراحت" که دوربین بعد از کارت بهش برمی‌گرده
+    .replace('camZoomTarget=lerp(camZoomTarget,1,', `camZoomTarget=lerp(camZoomTarget,${ZOOM},`)
+    // پر کردن پس‌زمینه قبل از transform تا نواحی بیرون از مپ سیاه نشه
+    .replace('function draw(){', `function draw(){ctx.fillStyle="#050706";ctx.fillRect(0,0,W,H);`);
+  /* ====================================== */
+
   const f = document.createElement('iframe');
   f.title = 'LAST LEAF Survival';
   f.setAttribute('allow', 'autoplay');
-  f.srcdoc = html;   // بدون Blob/URL خارجی؛ کد بازی مستقیم داخل همین صفحه است
+  f.srcdoc = html;
   f.addEventListener('load', () => { try { f.contentWindow.focus(); } catch (e) {} });
   document.getElementById('lastLeafStage').appendChild(f);
   lastLeafFrame = f;
