@@ -6796,7 +6796,8 @@ function openLastLeaf() {
     // مقدار "استراحت" که دوربین بعد از کارت بهش برمی‌گرده
     .replace('camZoomTarget=lerp(camZoomTarget,1,', `camZoomTarget=lerp(camZoomTarget,${ZOOM},`)
     // پر کردن پس‌زمینه قبل از transform تا نواحی بیرون از مپ سیاه نشه
-    .replace('function draw(){', `function draw(){ctx.fillStyle="#050706";ctx.fillRect(0,0,W,H);`);
+.replace('function draw(){',
+  `function draw(){const _a=atmosphereFor(state.wave);const _g=ctx.createLinearGradient(0,0,0,H);_g.addColorStop(0,_a.top);_g.addColorStop(.52,_a.mid);_g.addColorStop(1,_a.bot);ctx.fillStyle=_g;ctx.fillRect(0,0,W,H);`);
   /* ====================================== */
 
   const f = document.createElement('iframe');
