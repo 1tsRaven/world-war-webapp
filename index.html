@@ -6780,26 +6780,12 @@ function lastLeafClose() {
 function openLastLeaf() {
   lastLeafClose();
   const b64 = document.getElementById('lastLeafGameB64').textContent.replace(/\s+/g, '');
-  let uid = 'guest';
-  try { uid = String((tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || 'guest').replace(/[^A-Za-z0-9_-]/g, ''); } catch (e) {}
-
-  let html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(b64), c => c.charCodeAt(0)));
-  html = html.replace('__LL_UID__', uid);
-
-  /* ============ ZOOM-OUT PATCH ============ */
-const ZOOM = 0.75;
-html = html
-  .replace('let camZoom=1,camZoomTarget=1;', `let camZoom=${ZOOM},camZoomTarget=${ZOOM};`)
-  .replace('camZoomTarget=1.05;', `camZoomTarget=${(ZOOM * 1.05).toFixed(4)};`)
-  .replace('camZoomTarget=lerp(camZoomTarget,1,', `camZoomTarget=lerp(camZoomTarget,${ZOOM},`)
-  .replace('function draw(){',
-    `function draw(){const _a=atmosphereFor(state.wave);const _g=ctx.createLinearGradient(0,0,0,H);_g.addColorStop(0,_a.top);_g.addColorStop(.52,_a.mid);_g.addColorStop(1,_a.bot);ctx.fillStyle=_g;ctx.fillRect(0,0,W,H);`);
-  /* ====================================== */
-
+  let uid = 'guest'; try { uid = String((tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || 'guest').replace(/[^A-Za-z0-9_-]/g, ''); } catch (e) {}
+  const html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(b64), c => c.charCodeAt(0))).replace('__LL_UID__', uid);
   const f = document.createElement('iframe');
   f.title = 'LAST LEAF Survival';
   f.setAttribute('allow', 'autoplay');
-  f.srcdoc = html;
+  f.srcdoc = html;   // بدون Blob/URL خارجی؛ کد بازی مستقیم داخل همین صفحه است
   f.addEventListener('load', () => { try { f.contentWindow.focus(); } catch (e) {} });
   document.getElementById('lastLeafStage').appendChild(f);
   lastLeafFrame = f;
