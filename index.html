@@ -761,9 +761,14 @@
   .storm-stage canvas { display: block; width: 100%; height: 100%; outline: none; touch-action: none; }
 
   /* ============ LAST LEAF Survival ============ */
-  .lastleaf-stage { position: relative; width: 100%; height: clamp(380px, calc(var(--app-vh) - 190px), 600px);
-    background: #050706; border-radius: 16px; border: 1px solid rgba(168,85,247,.3);
-    overflow: hidden; margin: 12px 0; touch-action: none; }
+.lastleaf-stage { position: relative; width: 100%; height: calc(var(--app-vh) - 105px);
+  background: #050706; border-radius: 16px; border: 1px solid rgba(168,85,247,.3);
+  overflow: hidden; margin: 4px 0; touch-action: none; }
+  #screen-lastleaf .box { padding: 8px; border-radius: 14px; }
+#screen-lastleaf .back-btn { padding: 5px 12px; font-size: 11px; margin-bottom: 4px; }
+#screen-lastleaf h2,
+#screen-lastleaf .subtitle { display: none; }
+#screen-lastleaf .hint-text { display: none; }
   .lastleaf-stage iframe { display: block; width: 100%; height: 100%; border: 0; background: #050706; }
 
   /* ============ BOTTOM NAV ============ */
@@ -6799,6 +6804,7 @@ function openLastLeaf() {
       `const _spExit=$('spExitBtn');if(_spExit)_spExit.addEventListener('click',()=>exitShop());panel.querySelectorAll('.spBtn').forEach(btn=>{`
     );
   /* ============================================== */
+  
 
   const f = document.createElement('iframe');
   f.title = 'LAST LEAF Survival';
